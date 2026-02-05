@@ -1,2 +1,4 @@
 book
 /target
+/scripts/publish.ps1
+/scripts/pull.ps1
