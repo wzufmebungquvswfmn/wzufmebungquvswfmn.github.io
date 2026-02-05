@@ -1,0 +1,13 @@
+/* Use Cascadia Code only for code-related elements */
+:root {
+  --mdbook-code-font: "Cascadia Code", "Cascadia Mono", "Fira Code",
+    "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--mdbook-code-font);
+}

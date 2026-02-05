@@ -1,0 +1,16 @@
+[book]
+title = "rust_tour"
+authors = ["wzufmebungquvswfmn"]
+language = "cn"
+
+[build]
+build-dir = "docs"
+
+[output.html]
+additional-css = ["src/theme/custom.css"]
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
+
+[preprocessor]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
