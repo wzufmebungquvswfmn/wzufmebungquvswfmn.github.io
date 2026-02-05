@@ -5,3 +5,4 @@
 - [第一篇](blog/2026-02-05-hello.md)
 - [知识库](notes/README.md)
 - [工具链](notes/tooling.md)
+- [rust](rust/知识点总结.md)
