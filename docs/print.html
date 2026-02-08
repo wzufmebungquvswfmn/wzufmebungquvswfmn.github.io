@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3284801d.js";
+            window.path_to_searchindex_js = "searchindex-b1fe1cba.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-7fb9a209.js"></script>
+        <script src="toc-b0a467e0.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -198,6 +198,8 @@
 <p>这里存储的是我在学习rust时的一些零碎知识点总结</p>
 <ul>
 <li><a href="#rust-结构体">结构体</a></li>
+<li><a href="#这里有关字符串的一些零碎知识点">字符串</a></li>
+<li><a href="#这里记录模式匹配的一些零碎知识点">模式匹配</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rust-结构体"><a class="header" href="#rust-结构体">Rust 结构体</a></h1>
@@ -313,6 +315,219 @@ let another = ColorRegularStruct {
 </span>let c = ColorRegularStruct::green();
 let ok = c.is_green();
 <span class="boring">}</span></code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="这里有关字符串的一些零碎知识点"><a class="header" href="#这里有关字符串的一些零碎知识点">这里有关字符串的一些零碎知识点</a></h1>
+<ul>
+<li><a href="#字符串比较">字符串比较</a></li>
+<li><a href="#本节是一些字符串和切片转换的碎片知识点总结">字符串与切片转换</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="字符串比较"><a class="header" href="#字符串比较">字符串比较</a></h1>
+<p>rust 中为String类型实现了 PartialEq 和 Eq 两个trait，所以可以直接使用==、!=来进行比较；切片、字面量都可以用来比较</p>
+<p>如果想要比较两个String的地址，可以使用std::ptr::eq(&amp;s1, &amp;s2) 或 转换成内存地址指针：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let s1 = String::from("hello");
+let s2 = String::from("hello");
+
+let s1_ptr = &amp;s1 as *const String;
+let s2_ptr = &amp;s2 as *const String;
+
+assert!(s1_ptr != s2_ptr);
+<span class="boring">}</span></code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="本节是一些字符串和切片转换的碎片知识点总结"><a class="header" href="#本节是一些字符串和切片转换的碎片知识点总结">本节是一些字符串和切片转换的碎片知识点总结</a></h1>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>&amp;str //字符串切片，必须加&amp;，因为str是动态大小类型（DST），就如[T]一样
+String //标准字符串
+<span class="boring">}</span></code></pre>
+<p>当一个函数或trait对字符串的修改不仅仅是掐头去尾时，返回的一般是String类型，因为String类型可以容纳更多的修改操作，比如插入、删除等。例如：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>&amp;str::replace() //和
+&amp;str::to_lowercase()
+<span class="boring">}</span></code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="这里记录模式匹配的一些零碎知识点"><a class="header" href="#这里记录模式匹配的一些零碎知识点">这里记录模式匹配的一些零碎知识点</a></h1>
+<ul>
+<li><a href="#这里列举常用的模式匹配形式">全模式列表</a></li>
+</ul>
+<h2 id="常用模式匹配工具"><a class="header" href="#常用模式匹配工具">常用模式匹配工具</a></h2>
+<p>match, if let, while let, match!宏, let else等</p>
+<h2 id="不可反驳模式"><a class="header" href="#不可反驳模式">不可反驳模式</a></h2>
+<p>let, match, fn, for等要求完全匹配覆盖，被称作<code>不可反驳模式</code>（irrefutable patterns）</p>
+<h2 id="可反驳模式"><a class="header" href="#可反驳模式">可反驳模式</a></h2>
+<p>if let, while let, let else等允许不完全匹配，被称作<code>可反驳模式</code>（refutable patterns）</p>
+<ul>
+<li>let else 的一个显著特点是其创建的变量具有更广泛的作用域，而非if let那样仅在特定分支内使用</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="这里列举常用的模式匹配形式"><a class="header" href="#这里列举常用的模式匹配形式">这里列举常用的模式匹配形式</a></h1>
+<ol>
+<li>
+<p>匹配命名变量</p>
+<pre class="playground"><code class="language-rust">fn main() {
+    let x = Some(5);
+    let y = 10;
+
+    match x {
+        Some(50) =&gt; println!("Got 50"),
+        Some(y) =&gt; println!("Matched, y = {:?}", y),
+        _ =&gt; println!("Default case, x = {:?}", x),
+    }
+
+    println!("at the end: x = {:?}, y = {:?}", x, y);
+}</code></pre>
+<p>例子里y会遇上变量遮蔽，因而 x 会匹配到Some(y)</p>
+<pre><code class="language-output">Matched, y = 5
+at the end: x = Some(5), y = 10
+</code></pre>
+</li>
+<li>
+<p>单分支多模式</p>
+<pre class="playground"><code class="language-rust">fn main() {
+    let x = 1;
+    match x {
+        1 | 2 =&gt; println!("one or two"),
+        _ =&gt; println!("other")
+    }
+}</code></pre>
+<p>使用 | 可以在一个分支中匹配多个模式</p>
+</li>
+<li>
+<p>范围匹配</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    let a = 'c';
+    match a {
+        'a'..='j' =&gt; println!("early ASCII letter"),
+        'k'..='z' =&gt; println!("late ASCII letter"),
+        _ =&gt; println!("something else"),
+    }
+<span class="boring">}</span></code></pre>
+<p>使用 ..= 可以匹配一个闭区间</p>
+</li>
+<li>
+<p>解构结构体</p>
+<pre class="playground"><code class="language-rust">struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    let p = Point { x: 0, y: 7 };
+    match p {
+        Point { x, y: 0 } =&gt; println!("On the x axis at {}", x),
+        
+        Point { x: 0, y } =&gt; println!("On the y axis at {}", y),
+        
+        Point { x, y } =&gt; println!("On neither axis: ({}, {})", x, y),
+    }
+}</code></pre>
+<pre><code class="language-output">On the y axis at 7
+</code></pre>
+</li>
+<li>
+<p>多级匹配</p>
+<pre class="playground"><code class="language-rust">enum Color {
+Rgb(i32, i32, i32),
+Hsv(i32, i32, i32),
+}
+
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(Color),
+}
+
+fn main() {
+    let msg = Message::ChangeColor(Color::Hsv(0, 160, 255));
+
+    match msg {
+        Message::ChangeColor(Color::Rgb(r, g, b)) =&gt; println!(
+            "Change the color to red {}, green {}, and blue {}",
+            r, g, b
+        ),
+        Message::ChangeColor(Color::Hsv(h, s, v)) =&gt; println!(
+            "Change the color to hue {}, saturation {}, and value {}",
+            h, s, v
+        ),
+        _ =&gt; (),
+    }
+}</code></pre>
+</li>
+<li>
+<p>数组结构</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arr: &amp;[u16] = &amp;[114, 514];
+
+if let [x, ..] = arr {
+    assert_eq!(x, &amp;114);
+}
+<span class="boring">}</span></code></pre>
+<p>以上展示了不定长数组的解构</p>
+</li>
+<li>
+<p>_ 占位符 或者 .. 占位符</p>
+<p>忽略匹配值并且不绑定</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn foo(_: i32, y: i32) ;
+<span class="boring">}</span></code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let numbers = (2, 4, 8, 16, 32);
+match numbers {
+    (first, _, third, _, fifth) =&gt; {
+        println!("Some numbers: {}, {}, {}", first, third, fifth)
+    },
+}
+<span class="boring">}</span></code></pre>
+<p>在必要时绑定，用来避免“未使用变量“的 WARNING</p>
+<pre class="playground"><code class="language-rust">fn main() {
+    let _x = 5; // x不会出现未使用警告,但是x绑定了5
+    let y = 10; // y会被警告
+}</code></pre>
+</li>
+<li>
+<p>匹配守卫</p>
+<p>在模式匹配后添加一个if表达式，可以进一步过滤分支</p>
+</li>
+<li>
+<p>@ 绑定</p>
+<p>我们可以使用范围匹配进行快速过滤，但是为了拿到范围内的值，我们需要使用@绑定</p>
+<pre class="playground"><code class="language-rust">fn main() {
+    let age = 21;
+
+    match age {
+        exact_age @ 18..=29 =&gt; println!("age is {}", exact_age),
+        _ =&gt; println!("age is {}", age),
+    }
+}</code></pre>
+<p>更常见的用法是匹配结构体字段或枚举内部数据，如：</p>
+<pre class="playground"><code class="language-rust">struct User {
+    id: u32,
+    age: u32,
+}
+
+fn main() {
+    let user = User { id: 1, age: 25 };
+
+    match user {
+        User { id: 3..=7, .. } =&gt; println!("ID 在 3 到 7 之间"),
+        User {
+            age: a @ 18..=30, // 使用 a 来获取 age 的值
+            ..
+        } =&gt; println!("用户是青年，具体岁数是: {}", a), 
+
+        User { .. } =&gt; println!("其他用户"),
+    }
+}</code></pre>
+</li>
+</ol>
 
                     </main>
 

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>结构体 - rust_tour</title>
+        <title>字符串 - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -175,129 +175,21 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="rust-结构体"><a class="header" href="#rust-结构体">Rust 结构体</a></h1>
-<p>Rust 常见有三种结构体：普通结构体、元组结构体、单元结构体。下面依次补全定义、创建实例和常用操作。</p>
-<h2 id="1-普通结构体regular-struct"><a class="header" href="#1-普通结构体regular-struct">1. 普通结构体（Regular Struct）</a></h2>
-<h3 id="定义"><a class="header" href="#定义">定义</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct ColorRegularStruct {
-    red: u8,
-    green: u8,
-    blue: u8,
-}
-<span class="boring">}</span></code></pre>
-<h3 id="创建实例"><a class="header" href="#创建实例">创建实例</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let green = ColorRegularStruct {
-    red: 0,
-    green: 255,
-    blue: 0,
-};
-<span class="boring">}</span></code></pre>
-<h3 id="访问字段"><a class="header" href="#访问字段">访问字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let g = green.green;
-<span class="boring">}</span></code></pre>
-<h3 id="可变实例与修改字段"><a class="header" href="#可变实例与修改字段">可变实例与修改字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut color = ColorRegularStruct {
-    red: 255,
-    green: 255,
-    blue: 255,
-};
-color.red = 0;
-<span class="boring">}</span></code></pre>
-<h3 id="结构体更新语法"><a class="header" href="#结构体更新语法">结构体更新语法</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let base = ColorRegularStruct {
-    red: 10,
-    green: 20,
-    blue: 30,
-};
-
-let another = ColorRegularStruct {
-    red: 0,
-    ..base
-};
-<span class="boring">}</span></code></pre>
-<blockquote>
-<p>注意：使用 <code>..base</code> 之后，<code>base</code> 中被“移动”的字段将不可再用（取决于字段类型是否实现 <code>Copy</code>）。</p>
-</blockquote>
-<hr>
-<h2 id="2-元组结构体tuple-struct"><a class="header" href="#2-元组结构体tuple-struct">2. 元组结构体（Tuple Struct）</a></h2>
-<h3 id="定义-1"><a class="header" href="#定义-1">定义</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct ColorTupleStruct(u8, u8, u8);
-<span class="boring">}</span></code></pre>
-<h3 id="创建实例-1"><a class="header" href="#创建实例-1">创建实例</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let green = ColorTupleStruct(0, 255, 0);
-<span class="boring">}</span></code></pre>
-<h3 id="访问字段-1"><a class="header" href="#访问字段-1">访问字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let g = green.1;
-<span class="boring">}</span></code></pre>
-<hr>
-<h2 id="3-单元结构体unit-struct--空结构体"><a class="header" href="#3-单元结构体unit-struct--空结构体">3. 单元结构体（Unit Struct / 空结构体）</a></h2>
-<h3 id="定义-2"><a class="header" href="#定义-2">定义</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct UnitStruct;
-<span class="boring">}</span></code></pre>
-<h3 id="创建实例-2"><a class="header" href="#创建实例-2">创建实例</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let unit = UnitStruct;
-<span class="boring">}</span></code></pre>
-<h3 id="常见用途"><a class="header" href="#常见用途">常见用途</a></h3>
+                        <h1 id="这里有关字符串的一些零碎知识点"><a class="header" href="#这里有关字符串的一些零碎知识点">这里有关字符串的一些零碎知识点</a></h1>
 <ul>
-<li>作为“类型标记”（type marker）</li>
-<li>实现 trait 而不需要存储数据</li>
+<li><a href="字符串&#92;字符串比较.html">字符串比较</a></li>
+<li><a href="字符串&#92;字符串与切片转换.html">字符串与切片转换</a></li>
 </ul>
-<hr>
-<h2 id="4-结构体方法与关联函数补充"><a class="header" href="#4-结构体方法与关联函数补充">4. 结构体方法与关联函数（补充）</a></h2>
-<h3 id="定义方法"><a class="header" href="#定义方法">定义方法</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>impl ColorRegularStruct {
-    fn is_green(&amp;self) -&gt; bool {
-        self.red == 0 &amp;&amp; self.green == 255 &amp;&amp; self.blue == 0
-    }
-}
-<span class="boring">}</span></code></pre>
-<h3 id="关联函数类似静态方法"><a class="header" href="#关联函数类似静态方法">关联函数（类似静态方法）</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>impl ColorRegularStruct {
-    fn green() -&gt; Self {
-        Self { red: 0, green: 255, blue: 0 }
-    }
-}
-<span class="boring">}</span></code></pre>
-<h3 id="使用"><a class="header" href="#使用">使用</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let c = ColorRegularStruct::green();
-let ok = c.is_green();
-<span class="boring">}</span></code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../rust/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../rust/结构体.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../rust/字符串.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../rust/字符串/字符串比较.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -307,11 +199,11 @@ let ok = c.is_green();
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../rust/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../rust/结构体.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../rust/字符串.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../rust/字符串/字符串比较.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
