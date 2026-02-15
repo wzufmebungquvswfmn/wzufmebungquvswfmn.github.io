@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-b1fe1cba.js";
+            window.path_to_searchindex_js = "../searchindex-24b7a290.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-b0a467e0.js"></script>
+        <script src="../toc-c4961926.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -176,7 +176,8 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="rust-结构体"><a class="header" href="#rust-结构体">Rust 结构体</a></h1>
-<p>Rust 常见有三种结构体：普通结构体、元组结构体、单元结构体。下面依次补全定义、创建实例和常用操作。</p>
+<p>Rust 常见有三种结构体：普通结构体、元组结构体、单元结构体。下面依次补全定义、创建实例和常用操作。
+Rust 为结构体实现了自动解引用，当一个结构体被引用时，为了访问它的成员或方法，无需像C语言那样 p-&gt;member,只需使用p.member，它等价于(*p).member</p>
 <h2 id="1-普通结构体regular-struct"><a class="header" href="#1-普通结构体regular-struct">1. 普通结构体（Regular Struct）</a></h2>
 <h3 id="定义"><a class="header" href="#定义">定义</a></h3>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -293,7 +294,7 @@ let ok = c.is_green();
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../rust/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../rust/所有权.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -307,7 +308,7 @@ let ok = c.is_green();
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../rust/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../rust/所有权.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 

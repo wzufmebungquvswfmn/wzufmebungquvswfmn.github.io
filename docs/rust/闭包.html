@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>博客 - rust_tour</title>
+        <title>闭包 - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -175,21 +175,43 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="博客"><a class="header" href="#博客">博客</a></h1>
-<p>这里是我的博客目录。</p>
+                        <h1 id="闭包"><a class="header" href="#闭包">闭包</a></h1>
+<p>本节简单介绍闭包概念和它的三类型</p>
+<h2 id="闭包-1"><a class="header" href="#闭包-1">闭包</a></h2>
+<p>闭包类似于函数，不同之处在于，除了传入的参数之外，其还可以捕获环境中的变量：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = 12345; // 环境中的变量
+let b = 54321; // 传入的参数
+let func = |x|{println!("env_var: {a}\nparameter: {x}");};
+func(b);
+<span class="boring">}</span></code></pre>
+<pre><code>env_var: 12345
+parameter: 54321
+</code></pre>
+<h2 id="根据闭包对捕获变量的所有权的处理权限可将闭包分为以下三类"><a class="header" href="#根据闭包对捕获变量的所有权的处理权限可将闭包分为以下三类">根据闭包对<code>捕获变量的所有权</code>的处理权限，可将闭包分为以下三类：</a></h2>
 <ul>
-<li><a href="2026-02-05-hello.html">第一篇博客</a></li>
+<li>Fn:<br>仅能对捕获的变量执行不可变借用，也就是只读，因而可以调用无限次</li>
+<li>FnMut:<br>可以对捕获的变量最大执行可变借用，也就是可读可写，也可以调用无限次</li>
+<li>FnOnce:<br>权力最大，可拿走捕获的变量的所有权，只能调用一次
+要注意的几点是：</li>
 </ul>
+<ol>
+<li>闭包分类的 <strong>唯一依据</strong> 是 <em>闭包对捕获的变量所有权的权限大小</em></li>
+<li>三种类型并不是并列关系，而是包含关系，从权限上来说Fn ⊂ FnMut ⊂ FnMut；因此一个Fn类型的闭包也是FnMut和FnOnce的</li>
+<li>闭包的类型由<strong>编译器自动推断</strong>，遵循<em>最小特权原则</em>，也就是默认是最小不可变借用，若是必须采用Move而不是Copy，那么必须给予更大权限</li>
+<li>闭包前添加move会将捕获的变量以函数参数同样的方式进行处理</li>
+</ol>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../rust/生命周期.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../blog/2026-02-05-hello.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../rust/多线程.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -199,11 +221,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../rust/生命周期.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../blog/2026-02-05-hello.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../rust/多线程.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
