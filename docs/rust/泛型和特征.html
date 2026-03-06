@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-01975107.js";
+            window.path_to_searchindex_js = "../searchindex-f1121b5c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-c4961926.js"></script>
+        <script src="../toc-fa9efeae.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -180,21 +180,21 @@
 <h2 id="泛-型"><a class="header" href="#泛-型">泛 型</a></h2>
 <p>泛型是一种类型参数，可以是任何类型，在编译时会被替换为具体的类型</p>
 <ul>
-<li>fn func<t>(arg: T) -&gt; N ;</t></li>
-<li>struct S<t> { arg: T, .. };</t></li>
-<li>enum E<t> { A(T), B, .. };</t></li>
-<li>impl&lt;T: <code>约束条件</code>&gt; S<t> { fn func<t>(arg: T) -&gt; N { ..<code>T受约束的调用</code>.. } }
+<li><code>fn func&lt;T&gt;(arg: T) -&gt; N;</code></li>
+<li><code>struct S&lt;T&gt; { arg: T, .. };</code></li>
+<li><code>enum E&lt;T&gt; { A(T), B, .. };</code></li>
+<li><code>impl&lt;T: 约束条件&gt; S&lt;T&gt; { fn func&lt;T&gt;(arg: T) -&gt; N { ..T受约束的调用.. } }</code>
 <ul>
 <li><code>约束条件</code> 为 <code>特征</code> 或 <code>类型</code> 或 <code>特征+类型</code> 或 <code>特征+特征</code> 或 <code>特征+特征+类型</code> 等</li>
 </ul>
-</t></t></li>
+</li>
 </ul>
 <h2 id="特征"><a class="header" href="#特征">特征</a></h2>
 <ul>
-<li>trait TraitName { fn func(&amp;self) -&gt; N; }</li>
-<li>impl TraitName for S { fn func(&amp;self) -&gt; N { .. } }</li>
-<li>fn func( arg: impl TraitName ) &lt;==&gt; fn func&lt;T: TraitName&gt;( arg: T )</li>
-<li>fn func( arg: impl TraitName + TraitName2 ) &lt;==&gt; fn func&lt;T: TraitName + TraitName2&gt;( arg: T ) //多重约束</li>
+<li><code>trait TraitName { fn func(&amp;self) -&gt; N; }</code></li>
+<li><code>impl TraitName for S { fn func(&amp;self) -&gt; N { .. } }</code></li>
+<li><code>fn func(arg: impl TraitName) &lt;==&gt; fn func&lt;T: TraitName&gt;(arg: T)</code></li>
+<li><code>fn func(arg: impl TraitName + TraitName2) &lt;==&gt; fn func&lt;T: TraitName + TraitName2&gt;(arg: T)</code> //多重约束</li>
 </ul>
 
                     </main>
