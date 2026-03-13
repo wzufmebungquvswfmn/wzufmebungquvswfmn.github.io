@@ -3,6 +3,7 @@
 - [首页](index.md)
 - [博客](blog/README.md)
   - [第一篇](blog/2026-02-05-hello.md)
+  - [暑期实习备战指南](blog/2026-03-13-internship-guide.md)
 - [知识库](notes/README.md)
   - [网络编程](notes/web/网络编程.md)
 - [工具链](notes/tooling.md)
