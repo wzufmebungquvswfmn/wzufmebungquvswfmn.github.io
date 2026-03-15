@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>博客 - rust_tour</title>
+        <title>宏 - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -12,34 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../css/general-2459343d.css">
+        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="src/theme/custom-f4bc2cfa.css">
+        <link rel="stylesheet" href="../src/theme/custom-f4bc2cfa.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "";
+            const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-9d58db42.js";
+            window.path_to_searchindex_js = "../searchindex-9d58db42.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-fa536f24.js"></script>
+        <script src="../toc-fa536f24.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -106,7 +106,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -141,7 +141,7 @@
                     <h1 class="menu-title">rust_tour</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
 
@@ -175,18 +175,249 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="博客"><a class="header" href="#博客">博客</a></h1>
-<p>这里是我基于mdbook构建的个人博客，记录一些学习笔记和生活感悟。</p>
+                        <h1 id="宏"><a class="header" href="#宏">宏</a></h1>
+<p>本节主要介绍rust中的宏，它实现了代码-&gt;代码的转换，可以用来简化代码，提高代码的可读性。</p>
+<h2 id="宏的分类"><a class="header" href="#宏的分类">宏的分类</a></h2>
+<p>rust中的宏分为两种，一种是声明式宏，另一种是过程宏。</p>
 <ul>
-<li><a href="博客构建.html">博客构建</a></li>
+<li><strong>声明式宏 (Declarative Macros)</strong>: 使用 <code>macro_rules!</code> 定义的宏，通过模式匹配来生成代码。</li>
+<li><strong>过程宏 (Procedural Macros)</strong>: 操作AST的宏，更强大但更复杂，需要单独的crate。</li>
+</ul>
+<h2 id="声明式宏"><a class="header" href="#声明式宏">声明式宏</a></h2>
+<h3 id="基本语法"><a class="header" href="#基本语法">基本语法</a></h3>
+<p>宏定义的格式如下：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>macro_rules! macro_name {
+    // pattern =&gt; expansion
+    ($arg:expr) =&gt; {
+        // 宏展开后的代码
+    };
+}
+<span class="boring">}</span></code></pre>
+<h3 id="简单示例"><a class="header" href="#简单示例">简单示例</a></h3>
+<pre class="playground"><code class="language-rust">// 定义一个简单的宏，用于计算平方
+macro_rules! square {
+    ($x:expr) =&gt; {
+        $x * $x
+    };
+}
+
+fn main() {
+    let num = 5;
+    println!("Square of {} is {}", num, square!(num));
+}</code></pre>
+<h3 id="元变量类型"><a class="header" href="#元变量类型">元变量类型</a></h3>
+<p>在宏中，可以使用不同的元变量类型：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>元变量</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td><code>expr</code></td><td>表达式</td></tr>
+<tr><td><code>ident</code></td><td>标识符</td></tr>
+<tr><td><code>ty</code></td><td>类型</td></tr>
+<tr><td><code>stmt</code></td><td>语句</td></tr>
+<tr><td><code>pat</code></td><td>模式</td></tr>
+<tr><td><code>path</code></td><td>路径</td></tr>
+<tr><td><code>literal</code></td><td>字面量</td></tr>
+<tr><td><code>tt</code></td><td>标记树</td></tr>
+<tr><td><code>block</code></td><td>代码块</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="多模式匹配"><a class="header" href="#多模式匹配">多模式匹配</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>macro_rules! my_macro {
+    // 匹配单个参数
+    ($arg:expr) =&gt; {
+        println!("Single arg: {}", $arg);
+    };
+    // 匹配两个参数
+    ($arg1:expr, $arg2:expr) =&gt; {
+        println!("Two args: {}, {}", $arg1, $arg2);
+    };
+    // 匹配可变参数
+    ($($arg:expr),*) =&gt; {
+        $(println!("Var arg: {}", $arg);)*
+    };
+}
+<span class="boring">}</span></code></pre>
+<h3 id="重复模式"><a class="header" href="#重复模式">重复模式</a></h3>
+<pre class="playground"><code class="language-rust">// 使用 $(...)* 或 $(...)+ 进行重复
+macro_rules! vector {
+    ($($x:expr),*) =&gt; {
+        {
+            let mut temp_vec = Vec::new();
+            $(temp_vec.push($x);)*
+            temp_vec
+        }
+    };
+}
+
+fn main() {
+    let v = vector![1, 2, 3, 4, 5];
+    println!("{:?}", v);
+}</code></pre>
+<h2 id="过程宏"><a class="header" href="#过程宏">过程宏</a></h2>
+<p>过程宏分为三种类型：</p>
+<h3 id="1-派生宏-derive-macros"><a class="header" href="#1-派生宏-derive-macros">1. 派生宏 (Derive Macros)</a></h3>
+<p>用于自动实现trait。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 在 lib.rs 中
+use proc_macro::TokenStream;
+use quote::quote;
+use syn::{parse_macro_input, DeriveInput};
+
+#[proc_macro_derive(HelloMacro)]
+pub fn hello_macro_derive(input: TokenStream) -&gt; TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = &amp;input.ident;
+    let expanded = quote! {
+        impl HelloMacro for #name {
+            fn hello_macro() {
+                println!("Hello, Macro! My name is {}!", stringify!(#name));
+            }
+        }
+    };
+    TokenStream::from(expanded)
+}
+<span class="boring">}</span></code></pre>
+<p>使用：</p>
+<pre class="playground"><code class="language-rust">#[derive(HelloMacro)]
+struct Pancakes;
+
+fn main() {
+    Pancakes::hello_macro();
+}</code></pre>
+<h3 id="2-属性宏-attribute-macros"><a class="header" href="#2-属性宏-attribute-macros">2. 属性宏 (Attribute Macros)</a></h3>
+<p>类似于派生宏，但可以添加参数。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[proc_macro_attribute]
+pub fn route(attr: TokenStream, item: TokenStream) -&gt; TokenStream {
+    // 处理属性宏
+}
+<span class="boring">}</span></code></pre>
+<p>使用：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[route(GET, "/")]
+fn index() {}
+<span class="boring">}</span></code></pre>
+<h3 id="3-函数式宏-function-like-macros"><a class="header" href="#3-函数式宏-function-like-macros">3. 函数式宏 (Function-like Macros)</a></h3>
+<p>看起来像函数调用，但操作的是TokenStream。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[proc_macro]
+pub fn sql(input: TokenStream) -&gt; TokenStream {
+    // 编译时SQL解析
+}
+<span class="boring">}</span></code></pre>
+<p>使用：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>sql!(SELECT * FROM users WHERE id = 1);
+<span class="boring">}</span></code></pre>
+<h2 id="常用内置宏"><a class="header" href="#常用内置宏">常用内置宏</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 打印调试信息
+println!("Hello, world!");
+println!("Number: {}", 42);
+println!("Name: {}, Age: {}", "Alice", 30);
+
+// 格式化字符串
+let s = format!("x = {}, y = {}", 10, 20);
+
+// 断言
+assert!(1 + 1 == 2);
+assert_eq!(1 + 1, 2);
+assert_ne!(1 + 1, 3);
+
+// 调试断言（仅在debug模式生效）
+debug_assert!(true);
+
+// 恐慌
+panic!("Something went wrong!");
+
+// 编译时检查
+compile_error!("This code should not compile!");
+
+// 环境变量
+let path = env!("PATH");
+
+// 文件内容
+const CONFIG: &amp;str = include_str!("config.txt");
+
+// 模块导入
+mod my_module;
+
+// 测试
+#[test]
+fn test_example() {
+    assert_eq!(2 + 2, 4);
+}
+<span class="boring">}</span></code></pre>
+<h2 id="宏的卫生性"><a class="header" href="#宏的卫生性">宏的卫生性</a></h2>
+<p>Rust宏是“卫生“的，意味着宏中定义的变量不会与调用处的变量冲突：</p>
+<pre class="playground"><code class="language-rust">macro_rules! using_a {
+    ($e:expr) =&gt; {
+        {
+            let a = 42;
+            $e  // 这里的a不会与外部的a冲突
+        }
+    };
+}
+
+fn main() {
+    let a = 1;
+    let result = using_a!(a + 2);  // 这里a = 1，而不是42
+    println!("Result: {}", result);  // 输出: 3
+}</code></pre>
+<h2 id="宏的最佳实践"><a class="header" href="#宏的最佳实践">宏的最佳实践</a></h2>
+<ol>
+<li><strong>优先使用函数</strong>: 如果函数可以解决问题，就不要用宏</li>
+<li><strong>保持简单</strong>: 宏越复杂，越难调试</li>
+<li><strong>添加文档</strong>: 使用 <code>///</code> 为宏添加文档注释</li>
+<li><strong>考虑可读性</strong>: 宏展开后的代码应该容易理解</li>
+<li><strong>使用 <code>#[macro_export]</code></strong>: 如果想让宏在其他crate中使用</li>
+</ol>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 计算两个数的最大值
+/// 
+/// # Examples
+/// ```
+/// let max = max!(1, 2);
+/// assert_eq!(max, 2);
+/// ```
+#[macro_export]
+macro_rules! max {
+    ($a:expr, $b:expr) =&gt; {
+        if $a &gt; $b { $a } else { $b }
+    };
+}
+<span class="boring">}</span></code></pre>
+<h2 id="参考资源"><a class="header" href="#参考资源">参考资源</a></h2>
+<ul>
+<li><a href="https://doc.rust-lang.org/book/ch19-06-macros.html">Rust官方文档 - Macros</a></li>
+<li><a href="https://doc.rust-lang.org/reference/macros.html">Rust Reference - Macros</a></li>
+<li><a href="https://veykril.github.io/tlborm/">The Little Book of Rust Macros</a></li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../rust/异步.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
-                            <a rel="next prefetch" href="notes/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../tokio/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -196,8 +427,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../rust/异步.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
-                    <a rel="next prefetch" href="notes/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../tokio/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -233,17 +467,17 @@
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../mark-09e88c2c.min.js"></script>
+        <script src="../searcher-c2a407aa.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="../clipboard-1626706a.min.js"></script>
+        <script src="../highlight-abc7f01d.js"></script>
+        <script src="../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="mermaid-35374ef1.min.js"></script>
-        <script src="mermaid-init-12acb6c2.js"></script>
+        <script src="../mermaid-35374ef1.min.js"></script>
+        <script src="../mermaid-init-12acb6c2.js"></script>
 
 
 

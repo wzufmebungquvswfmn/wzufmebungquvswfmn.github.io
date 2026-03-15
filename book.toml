@@ -4,7 +4,7 @@ authors = ["wzufmebungquvswfmn"]
 language = "cn"
 
 [build]
-build-dir = "docs"
+build-dir = "docs/notes"
 
 [output.html]
 additional-css = ["src/theme/custom.css"]
