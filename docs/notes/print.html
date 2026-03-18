@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-9d58db42.js";
+            window.path_to_searchindex_js = "searchindex-8a04e008.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-fa536f24.js"></script>
+        <script src="toc-4582980b.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,8 +179,16 @@
                         <h1 id="博客"><a class="header" href="#博客">博客</a></h1>
 <p>这里是我基于mdbook构建的个人博客，记录一些学习笔记和生活感悟。</p>
 <ul>
-<li><a href="blog/博客构建.html">博客构建</a></li>
+<li><a href="#博客构建">博客构建</a></li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="博客构建"><a class="header" href="#博客构建">博客构建</a></h1>
+<h2 id="mdbook"><a class="header" href="#mdbook">mdbook</a></h2>
+<p>当前博客采用mdbook构建，这是一个rust编写的markdown文档构建工具，可以将markdown文档转换为html文档，同时支持目录、搜索、高亮等功能。同时它也是rust官方文档的构建工具。</p>
+<h2 id="使用方法"><a class="header" href="#使用方法">使用方法</a></h2>
+<p>cargo install mdbook
+mdbook init
+mdbook serve / mdbook build</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="知识库"><a class="header" href="#知识库">知识库</a></h1>
 <p>这里是我的知识库目录。</p>
@@ -190,8 +198,30 @@
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id=""><a class="header" href="#"></a></h1>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="操作系统"><a class="header" href="#操作系统">操作系统</a></h1>
+<h1 id="-1"><a class="header" href="#-1"></a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="工具链"><a class="header" href="#工具链">工具链</a></h1>
 <p>这里记录常用工具与配置。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="有些只是不是很好分类我就都放在这里了"><a class="header" href="#有些只是不是很好分类我就都放在这里了">有些只是不是很好分类，我就都放在这里了</a></h1>
+<ul>
+<li><a href="#utf8">utf8</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="utf8"><a class="header" href="#utf8">utf8</a></h1>
+<h2 id="utf-8-错误"><a class="header" href="#utf-8-错误">UTF-8 错误</a></h2>
+<h3 id="在-utf-8-的规则里字节被分成几种角色"><a class="header" href="#在-utf-8-的规则里字节被分成几种角色">在 UTF-8 的规则里，字节被分成几种角色：</a></h3>
+<ul>
+<li>普通人 (ASCII)： 0 到 127。自己就能成事。</li>
+<li>队长 (起始字节)： 192 到 244。它告诉解析器：“我是队长，后面跟着 1 到 3 个跟班”。其开头若有 n 个 1，就是 n - 1 字节队长，如：1110xxxx 后面需跟2个跟班。</li>
+<li>跟班 (连续字节)： 128 到 191，即二进制10开头。它必须跟在队长后面，不能单独出现。</li>
+</ul>
+<h3 id="根据以上规则utf8的错误有以下几种"><a class="header" href="#根据以上规则utf8的错误有以下几种">根据以上规则，utf8的错误有以下几种：</a></h3>
+<ul>
+<li>跟班前面不是队长：<br>如 <code>b00000000,b10000000</code> ，错误长度为 1</li>
+<li>队长后面跟的跟班数量不对：<br>如 <code>b11100000,b10000000,b00000000</code>，本应跟两个跟班但是只跟了一个，错误长度为 2</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rust"><a class="header" href="#rust">Rust</a></h1>
 <p>这里存储的是我在学习rust时的一些零碎知识点总结</p>
@@ -359,6 +389,28 @@ String //标准字符串
 </span>&amp;str::replace() //和
 &amp;str::to_lowercase()
 <span class="boring">}</span></code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="字符串相关转换"><a class="header" href="#字符串相关转换">字符串相关转换</a></h1>
+<h1 id="从-vecu8-到-string-的转换"><a class="header" href="#从-vecu8-到-string-的转换">从 <code>Vec::&lt;u8&gt;</code> 到 String 的转换</a></h1>
+<ul>
+<li>
+<p><code>String::from_utf8(vec: [u8])</code>:<br>· 会夺走vec的所有权，<br>· 伴随着严格的错误处理，不允许无效u8字符，返回<code>Result&lt;String, FromUtf8Error&gt;</code>,<br>· 其中 FromUtf8Error 结构如下：</p>
+<pre><code>FromUtf8Error { 
+    bytes, // 存储原有的数据，使其不至于丢失 
+    error: Utf8Error { 
+        valid_up_to: usize，  // 第一个无效字符的索引，也是最长的有效字符前缀的长度
+        error_len: Option&lt;u8&gt; // 无效字符的长度，详见 utf8 章节
+    } 
+}
+</code></pre>
+</li>
+<li>
+<p><code>String::from_utf8_lossy(&amp;vec: &amp;[u8])</code>:<br>· 只拿vec的借用，无条件转换，返回 <code>Cow&lt;'_, str&gt;</code><br>· 若是全都有效字符，则返回 <code>Cow::Borrowed</code>，直接将原数组作为String， 无额外的拷贝与内存分配<br>· 若存在无效字符，则返回 <code>Cow::Owned</code>，将有效字符拷贝到新分配的内存中，无效字符用一个空字符 <code>U+FFFD</code> 代替</p>
+</li>
+<li>
+<p><code>String::from_utf8_unchecked(vec: [u8])</code>:<br>· 会夺走vec的所有权，<br>· 无条件转换，返回 <code>String</code><br>· 无错误处理，若存在无效字符，会导致程序崩溃，但是很快</p>
+</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="这里记录模式匹配的一些零碎知识点"><a class="header" href="#这里记录模式匹配的一些零碎知识点">这里记录模式匹配的一些零碎知识点</a></h1>
 <ul>

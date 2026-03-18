@@ -1,9 +1,13 @@
 # Summary
 
 - [博客](blog/README.md)
+  - [博客构建](blog/博客构建.md)
 - [知识库](notes/README.md)
   - [网络编程](notes/web/网络编程.md)
+  - [操作系统(在学)](notes/os/README.md)
 - [工具链](notes/tooling.md)
+- [琐碎](notes/misc/README.md)
+  - [utf8](notes/misc/utf8.md)
 
 
 - [Rust](rust/README.md)
@@ -12,6 +16,7 @@
   - [字符串](rust/字符串.md)
     - [字符串比较](rust/字符串/字符串比较.md)
     - [字符串与切片转换](rust/字符串/字符串与切片转换.md)
+    - [字符串相关转换](rust/字符串/字符串相关转换.md)
   - [模式匹配](rust/模式匹配.md)
     - [全模式列表](rust/模式匹配/全模式列表.md)
   - [泛型和特征](rust/泛型和特征.md)
