@@ -118,7 +118,7 @@ function App() {
             <p className="eyebrow">Personal Learning Journal</p>
             <h1>My Learning Journey.</h1>
             <p className="lead">
-              记录我在编程与技术上的学习与实践。保持简洁、可回看、可复用。
+              记录我在编程与技术上的学习与实践。。。
             </p>
             <div className="hero-actions">
               <a className="btn btn-primary" href={notesUrl} target="_blank" rel="noopener noreferrer">进入笔记</a>
