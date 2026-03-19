@@ -1,34 +1,25 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
 :root {
-  --text: #333;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --primary: #667eea;
-  --primary-dark: #764ba2;
+  --bg: #fafafa;
+  --text: #09090b;
+  --muted: #3f3f46;
+  --line: #e4e4e7;
+  --accent: #ec4899;
+  --accent-ink: #ffffff;
+  --shadow: 0 20px 60px rgba(9, 9, 11, 0.08);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --font-body: 'Quicksand', system-ui, sans-serif;
+  --font-display: 'Caveat', 'Quicksand', system-ui, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
 
-  font: 16px/145% var(--sans);
-  color-scheme: light dark;
+  font: 16px/1.5 var(--font-body);
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #e5e7eb;
-    --text-h: #f3f4f6;
-    --bg: #1a1a2e;
-    --border: #2e303a;
-    --primary: #818cf8;
-    --primary-dark: #a78bfa;
-  }
 }
 
 * {
@@ -47,50 +38,40 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--heading);
+  font-family: var(--font-body);
   font-weight: 600;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 2.5rem;
-  margin: 0;
-}
-
-h2 {
-  font-size: 1.75rem;
-  margin: 0;
-}
-
-h3 {
-  font-size: 1.25rem;
   margin: 0;
 }
 
 p {
   margin: 0;
-  line-height: 1.6;
 }
 
 a {
-  color: var(--primary);
+  color: inherit;
   text-decoration: none;
 }
 
-a:hover {
-  color: var(--primary-dark);
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 code {
-  font-family: var(--mono);
+  font-family: var(--font-mono);
   font-size: 0.9em;
   padding: 2px 6px;
-  background: #f4f3ec;
+  background: #f4f4f5;
   border-radius: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  code {
-    background: #2a2a3e;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
