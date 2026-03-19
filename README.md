@@ -1,5 +1,5 @@
 # 新增 React 页面
-由于添加新的 web 主页， 每次修改后的构建方式先为：
+由于添加新的 web 主页， 每次修改后的构建方式先为：  
 mdbook build  
 cd web && npm run dev  
 简单起见，可使用脚本 build.ps1 达到同样功能  
