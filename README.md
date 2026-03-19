@@ -1,3 +1,9 @@
+# 新增 React 页面
+由于添加新的 web 主页， 每次修改后的构建方式先为：
+mdbook build
+cd web && npm run dev
+简单起见，可使用脚本 build.ps1 达到同样功能
+
 # mdBook 目录结构说明
 
 这个仓库使用 `mdBook` 来编写博客与知识库。所有页面内容在 `src/` 下，目录结构由 `src/SUMMARY.md` 控制，构建输出在 `book/` 目录。
