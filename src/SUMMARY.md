@@ -8,6 +8,7 @@
 - [工具链](notes/tooling.md)
 - [琐碎](notes/misc/README.md)
   - [utf8](notes/misc/utf8.md)
+  - [位运算](notes/misc/bit.md)
 
 
 - [Rust](rust/README.md)

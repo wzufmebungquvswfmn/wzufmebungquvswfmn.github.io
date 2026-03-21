@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8a04e008.js";
+            window.path_to_searchindex_js = "searchindex-bb3fb208.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-4582980b.js"></script>
+        <script src="toc-fae4bc01.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -222,6 +222,14 @@ mdbook serve / mdbook build</p>
 <li>跟班前面不是队长：<br>如 <code>b00000000,b10000000</code> ，错误长度为 1</li>
 <li>队长后面跟的跟班数量不对：<br>如 <code>b11100000,b10000000,b00000000</code>，本应跟两个跟班但是只跟了一个，错误长度为 2</li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="位运算"><a class="header" href="#位运算">位运算</a></h1>
+<h2 id="内存对齐"><a class="header" href="#内存对齐">内存对齐</a></h2>
+<p>给定一个地址 addr 和一个对齐 align<br>任务是把 addr 向上或者向下与 align 对齐，例如：</p>
+<pre><code>addr = 3， align = 8, then:  
+align_up_addr = 8, align_down_addr  
+</code></pre>
+<p>向下对齐即末尾置0， 即 <code>align_down_addr = addr &amp; !(align - 1)</code><br>向上对齐需检查是否需要进位，然后在末尾置0，即 <code>align_up_addr = (addr + align - 1) &amp; !(align - 1)</code></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rust"><a class="header" href="#rust">Rust</a></h1>
 <p>这里存储的是我在学习rust时的一些零碎知识点总结</p>

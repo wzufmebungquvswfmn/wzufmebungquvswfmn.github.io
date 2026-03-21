@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>字符串相关转换 - rust_tour</title>
+        <title>位运算 - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -175,37 +175,23 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="字符串相关转换"><a class="header" href="#字符串相关转换">字符串相关转换</a></h1>
-<h1 id="从-vecu8-到-string-的转换"><a class="header" href="#从-vecu8-到-string-的转换">从 <code>Vec::&lt;u8&gt;</code> 到 String 的转换</a></h1>
-<ul>
-<li>
-<p><code>String::from_utf8(vec: [u8])</code>:<br>· 会夺走vec的所有权，<br>· 伴随着严格的错误处理，不允许无效u8字符，返回<code>Result&lt;String, FromUtf8Error&gt;</code>,<br>· 其中 FromUtf8Error 结构如下：</p>
-<pre><code>FromUtf8Error { 
-    bytes, // 存储原有的数据，使其不至于丢失 
-    error: Utf8Error { 
-        valid_up_to: usize，  // 第一个无效字符的索引，也是最长的有效字符前缀的长度
-        error_len: Option&lt;u8&gt; // 无效字符的长度，详见 utf8 章节
-    } 
-}
+                        <h1 id="位运算"><a class="header" href="#位运算">位运算</a></h1>
+<h2 id="内存对齐"><a class="header" href="#内存对齐">内存对齐</a></h2>
+<p>给定一个地址 addr 和一个对齐 align<br>任务是把 addr 向上或者向下与 align 对齐，例如：</p>
+<pre><code>addr = 3， align = 8, then:  
+align_up_addr = 8, align_down_addr  
 </code></pre>
-</li>
-<li>
-<p><code>String::from_utf8_lossy(&amp;vec: &amp;[u8])</code>:<br>· 只拿vec的借用，无条件转换，返回 <code>Cow&lt;'_, str&gt;</code><br>· 若是全都有效字符，则返回 <code>Cow::Borrowed</code>，直接将原数组作为String， 无额外的拷贝与内存分配<br>· 若存在无效字符，则返回 <code>Cow::Owned</code>，将有效字符拷贝到新分配的内存中，无效字符用一个空字符 <code>U+FFFD</code> 代替</p>
-</li>
-<li>
-<p><code>String::from_utf8_unchecked(vec: [u8])</code>:<br>· 会夺走vec的所有权，<br>· 无条件转换，返回 <code>String</code><br>· 无错误处理，若存在无效字符，会导致程序崩溃，但是很快</p>
-</li>
-</ul>
+<p>向下对齐即末尾置0， 即 <code>align_down_addr = addr &amp; !(align - 1)</code><br>向上对齐需检查是否需要进位，然后在末尾置0，即 <code>align_up_addr = (addr + align - 1) &amp; !(align - 1)</code></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../rust/字符串/字符串与切片转换.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../notes/misc/utf8.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../rust/模式匹配.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../rust/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -215,11 +201,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../rust/字符串/字符串与切片转换.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../notes/misc/utf8.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../rust/模式匹配.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../rust/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
