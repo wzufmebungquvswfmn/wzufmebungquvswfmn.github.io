@@ -9,6 +9,7 @@
 - [琐碎](notes/misc/README.md)
   - [utf8](notes/misc/utf8.md)
   - [位运算](notes/misc/bit.md)
+  - [刷题常用](notes/misc/leetcode.md)
 
 
 - [Rust](rust/README.md)
