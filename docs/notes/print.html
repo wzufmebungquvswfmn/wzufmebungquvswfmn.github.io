@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6e01fc1f.js";
+            window.path_to_searchindex_js = "searchindex-4527b350.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-7a824783.js"></script>
@@ -246,7 +246,7 @@ align_up_addr = 8, align_down_addr
 返回仅有“值”的迭代器，其它与iter()/into_iter()类似</li>
 </ol>
 <h2 id="二维数组边界的优雅处理-checked_add_signeddir"><a class="header" href="#二维数组边界的优雅处理-checked_add_signeddir">二维数组边界的优雅处理 checked_add_signed(dir)</a></h2>
-<p>grid[m][n]是一个二维矩阵，如果对于一个格子，需要检查它相邻的四个格子，可使用以下方法</p>
+<p>grid[m][n]是一个二维矩阵，如果对于一个格子，需要检查它相邻的四个格子，可使用以下标准方法</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let dir = [-1, 0, 1, 0, -1];
@@ -254,12 +254,24 @@ for i in 0..m {
     for j in 0..n {
         for d in dir.windows(2) {
             if let (Some(r), Some(c)) = (i.checked_add_signed(d[0]), j.checked_add_signed(d[1])) {
-                 if r &lt; m &amp;&amp; c &lt; n {print!("合法格子:{}",grid[r][c]);}
+                if r &lt; m &amp;&amp; c &lt; n {print!("合法格子:{}",grid[r][c]);}
             }
         }
     }
 }
 <span class="boring">}</span></code></pre>
+<p>但是由于usize类型小于0时会发生下溢，故即使不使用checked_add_signed可行”</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for i in 0..m {
+    for j in 0..n {
+        for (r, c) in [(i - 1, j), (i, j - 1), (i + 1, j), (i, j + 1)] {
+            if r &lt; m &amp;&amp; c &lt; n {print!("合法格子:{}",grid[r][c]);}
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>但是[(i - 1, j), (i, j - 1), (i + 1, j), (i, j + 1)]写起来真的很烦人</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rust"><a class="header" href="#rust">Rust</a></h1>
 <p>这里存储的是我在学习rust时的一些零碎知识点总结</p>
