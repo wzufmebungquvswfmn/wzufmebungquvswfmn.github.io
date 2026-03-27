@@ -11,3 +11,7 @@ kbd,
 samp {
   font-family: var(--mdbook-code-font);
 }
+
+#mdbook-sidebar a[href$="problem/VSCode终端自动换行刷屏排查与修复.html"] {
+  display: none !important;
+}
