@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-4527b350.js";
+            window.path_to_searchindex_js = "searchindex-6dcfa293.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-7a824783.js"></script>
+        <script src="toc-857fd99b.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -272,6 +272,41 @@ for i in 0..m {
 }
 <span class="boring">}</span></code></pre>
 <p>但是[(i - 1, j), (i, j - 1), (i + 1, j), (i, j + 1)]写起来真的很烦人</p>
+<h2 id="大顶堆-stdcollectionsbinaryheap"><a class="header" href="#大顶堆-stdcollectionsbinaryheap">大顶堆 std::collections::BinaryHeap</a></h2>
+<p>rust的BinaryHeap默认是大顶堆，如果需要小顶堆，可以使用Reverse</p>
+<pre class="playground"><code class="language-rust">use std::collections::BinaryHeap;
+use std::cmp::Reverse;
+fn main() {
+    let mut heap = BinaryHeap::new();
+    heap.push(Reverse(5));
+    heap.push(Reverse(2));
+    heap.push(Reverse(8));
+
+    while let Some(Reverse(value)) = heap.pop() {
+        println!("{}", value); // 输出：2, 5, 8
+    }
+
+    let mut max_heap = BinaryHeap::new();
+    max_heap.push(5);
+    max_heap.push(2);
+    max_heap.push(8);
+    while let Some(value) = max_heap.pop() {
+        println!("{}", value); // 输出：8, 5, 2
+    }
+}</code></pre>
+<h2 id="优先队列-stdcollectionsvecdeque"><a class="header" href="#优先队列-stdcollectionsvecdeque">优先队列 std::collections::VecDeque</a></h2>
+<p>rust的VecDeque是一个双端队列，可以在两端高效地添加和移除元素</p>
+<pre class="playground"><code class="language-rust">use std::collections::VecDeque;
+fn main() {
+    let mut queue = VecDeque::new();
+    queue.push_back(1); // 从队尾添加元素
+    queue.push_back(2);
+    queue.push_back(3);
+
+    while let Some(value) = queue.pop_front() { // 从队头移除元素
+        println!("{}", value); // 输出：1, 2, 3
+    }
+}</code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rust"><a class="header" href="#rust">Rust</a></h1>
 <p>这里存储的是我在学习rust时的一些零碎知识点总结</p>
@@ -460,6 +495,78 @@ String //标准字符串
 <li>
 <p><code>String::from_utf8_unchecked(vec: [u8])</code>:<br>· 会夺走vec的所有权，<br>· 无条件转换，返回 <code>String</code><br>· 无错误处理，若存在无效字符，会导致程序崩溃，但是很快</p>
 </li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rust-中的标准输入"><a class="header" href="#rust-中的标准输入">rust 中的标准输入</a></h1>
+<p>在 rust 中，标准输入可以通过 <code>std::io</code> 模块中的 <code>stdin</code> 函数来获取。这个函数返回一个 <code>Stdin</code> 结构体的实例，可以用来读取用户输入的数据。</p>
+<h2 id="rust-的输入哲学"><a class="header" href="#rust-的输入哲学">rust 的输入哲学</a></h2>
+<p>rust 倾向于一次性读取所有输入，而不是逐行读取，这样可以更高效地处理输入数据。下面是一些标准示例，展示如何使用 <code>stdin</code> 来读取用户输入：</p>
+<ul>
+<li>一次性读入：</li>
+</ul>
+<pre class="playground"><code class="language-rust">use std::io::{self, Read};
+
+fn main() {
+    let mut input = String::new();
+    let stdin = io::stdin();
+    stdin.read_to_string(&amp;mut input).unwrap();
+    // 按分隔符（包括空格、制表符、换行符等）划分输入：
+    let mut tokens = input.split_whitespace();
+}</code></pre>
+<p>对于上面得到的tokens，可以使用 <code>next()</code> 方法来逐个获取输入的值，并进行类型转换：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 读取为字符串：
+let s: String = tokens.next().unwrap().to_string();
+// 读取为数字类型：
+let n: i32 = tokens.next().unwrap().parse().unwrap();
+// 读取为数组(第一项为数组大小n，后续项为数组元素)：
+let n: usize = tokens.next().unwrap().parse().unwrap();
+let arr: Vec&lt;i32&gt; = tokens.take(n).filter_map(|s| s.parse().ok()).collect(); // 或者写成 let arr: Vec&lt;i32&gt; = (0..n).map(|_| tokens.next().unwrap().parse().unwrap()).collect(); 也具有一样的效果
+<span class="boring">}</span></code></pre>
+<p>若是觉得.next().unwrap().parse().unwrap()太麻烦，可以写成宏：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::io::{self, Read};
+macro_rules! read {
+    ($expr:expr, $t:ty) =&gt; {
+        $expr.next().unwrap().parse::&lt;$t&gt;().unwrap()
+    };
+    ($expr:expr) =&gt; {
+        $expr.next().unwrap().to_string()
+};  
+}
+<span class="boring">}</span></code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 使用宏读取输入：
+let s: String = read!(tokens);
+let n: i32 = read!(tokens, i32);
+let n: usize = read!(tokens, usize);
+let arr: Vec&lt;i32&gt; = (0..n).map(|_| read!(tokens, i32)).collect();
+<span class="boring">}</span></code></pre>
+<ul>
+<li>上面为一般方法，除此之外也可以逐行读入:</li>
+</ul>
+<pre class="playground"><code class="language-rust">use std::io::{self, BufRead};
+
+fn main() {
+    let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        let line = line.unwrap();
+        // 处理每行输入
+    }
+    // 或者 let mut lines = stdin.lock().lines();
+    // while let Some(Ok(line)) = lines.next() {
+    //     // 处理每行输入
+    //}
+    
+}</code></pre>
+<h2 id="read-和-bufread"><a class="header" href="#read-和-bufread">Read 和 BufRead</a></h2>
+<p>在 Rust 中，<code>Read</code> 和 <code>BufRead</code> 是两个重要的 trait，用于处理输入输出操作。以下是二者的区别：</p>
+<ul>
+<li><code>Read</code> trait：提供了基本的读取方法，适用于一次性读取大量数据。在实际使用中，<code>stdin</code> 返回的 <code>Stdin</code> 结构体实现了 <code>Read</code> trait，因此你可以直接使用 <code>read_to_string</code>（读取到一个字符串）、<code>read</code>（读取到字节数组）方法来一次性读取所有输入。</li>
+<li><code>BufRead</code> trait：提供了缓冲读取的方法，适用于逐行读取输入，可以提高效率并减少系统调用的次数。如 <code>stdin.lock()</code> 获取一个实现了 <code>BufRead</code> trait 的锁定版本，从而使用 <code>lines</code>（读取所有行）、<code>read_line</code>（读取单行）方法来逐行读取输入。</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="这里记录模式匹配的一些零碎知识点"><a class="header" href="#这里记录模式匹配的一些零碎知识点">这里记录模式匹配的一些零碎知识点</a></h1>

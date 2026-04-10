@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-4527b350.js";
+            window.path_to_searchindex_js = "../../searchindex-6dcfa293.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-7a824783.js"></script>
+        <script src="../../toc-857fd99b.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -214,6 +214,41 @@ for i in 0..m {
 }
 <span class="boring">}</span></code></pre>
 <p>但是[(i - 1, j), (i, j - 1), (i + 1, j), (i, j + 1)]写起来真的很烦人</p>
+<h2 id="大顶堆-stdcollectionsbinaryheap"><a class="header" href="#大顶堆-stdcollectionsbinaryheap">大顶堆 std::collections::BinaryHeap</a></h2>
+<p>rust的BinaryHeap默认是大顶堆，如果需要小顶堆，可以使用Reverse</p>
+<pre class="playground"><code class="language-rust">use std::collections::BinaryHeap;
+use std::cmp::Reverse;
+fn main() {
+    let mut heap = BinaryHeap::new();
+    heap.push(Reverse(5));
+    heap.push(Reverse(2));
+    heap.push(Reverse(8));
+
+    while let Some(Reverse(value)) = heap.pop() {
+        println!("{}", value); // 输出：2, 5, 8
+    }
+
+    let mut max_heap = BinaryHeap::new();
+    max_heap.push(5);
+    max_heap.push(2);
+    max_heap.push(8);
+    while let Some(value) = max_heap.pop() {
+        println!("{}", value); // 输出：8, 5, 2
+    }
+}</code></pre>
+<h2 id="优先队列-stdcollectionsvecdeque"><a class="header" href="#优先队列-stdcollectionsvecdeque">优先队列 std::collections::VecDeque</a></h2>
+<p>rust的VecDeque是一个双端队列，可以在两端高效地添加和移除元素</p>
+<pre class="playground"><code class="language-rust">use std::collections::VecDeque;
+fn main() {
+    let mut queue = VecDeque::new();
+    queue.push_back(1); // 从队尾添加元素
+    queue.push_back(2);
+    queue.push_back(3);
+
+    while let Some(value) = queue.pop_front() { // 从队头移除元素
+        println!("{}", value); // 输出：1, 2, 3
+    }
+}</code></pre>
 
                     </main>
 

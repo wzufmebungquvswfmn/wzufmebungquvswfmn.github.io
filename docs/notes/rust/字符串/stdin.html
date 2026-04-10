@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>字符串比较 - rust_tour</title>
+        <title>字符串输入stdin - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -175,29 +175,87 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="字符串比较"><a class="header" href="#字符串比较">字符串比较</a></h1>
-<p>rust 中为String类型实现了 PartialEq 和 Eq 两个trait，所以可以直接使用==、!=来进行比较；切片、字面量都可以用来比较</p>
-<p>如果想要比较两个String的地址，可以使用std::ptr::eq(&amp;s1, &amp;s2) 或 转换成内存地址指针：</p>
+                        <h1 id="rust-中的标准输入"><a class="header" href="#rust-中的标准输入">rust 中的标准输入</a></h1>
+<p>在 rust 中，标准输入可以通过 <code>std::io</code> 模块中的 <code>stdin</code> 函数来获取。这个函数返回一个 <code>Stdin</code> 结构体的实例，可以用来读取用户输入的数据。</p>
+<h2 id="rust-的输入哲学"><a class="header" href="#rust-的输入哲学">rust 的输入哲学</a></h2>
+<p>rust 倾向于一次性读取所有输入，而不是逐行读取，这样可以更高效地处理输入数据。下面是一些标准示例，展示如何使用 <code>stdin</code> 来读取用户输入：</p>
+<ul>
+<li>一次性读入：</li>
+</ul>
+<pre class="playground"><code class="language-rust">use std::io::{self, Read};
+
+fn main() {
+    let mut input = String::new();
+    let stdin = io::stdin();
+    stdin.read_to_string(&amp;mut input).unwrap();
+    // 按分隔符（包括空格、制表符、换行符等）划分输入：
+    let mut tokens = input.split_whitespace();
+}</code></pre>
+<p>对于上面得到的tokens，可以使用 <code>next()</code> 方法来逐个获取输入的值，并进行类型转换：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let s1 = String::from("hello");
-let s2 = String::from("hello");
-
-let s1_ptr = &amp;s1 as *const String;
-let s2_ptr = &amp;s2 as *const String;
-
-assert!(s1_ptr != s2_ptr);
+</span>// 读取为字符串：
+let s: String = tokens.next().unwrap().to_string();
+// 读取为数字类型：
+let n: i32 = tokens.next().unwrap().parse().unwrap();
+// 读取为数组(第一项为数组大小n，后续项为数组元素)：
+let n: usize = tokens.next().unwrap().parse().unwrap();
+let arr: Vec&lt;i32&gt; = tokens.take(n).filter_map(|s| s.parse().ok()).collect(); // 或者写成 let arr: Vec&lt;i32&gt; = (0..n).map(|_| tokens.next().unwrap().parse().unwrap()).collect(); 也具有一样的效果
 <span class="boring">}</span></code></pre>
+<p>若是觉得.next().unwrap().parse().unwrap()太麻烦，可以写成宏：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::io::{self, Read};
+macro_rules! read {
+    ($expr:expr, $t:ty) =&gt; {
+        $expr.next().unwrap().parse::&lt;$t&gt;().unwrap()
+    };
+    ($expr:expr) =&gt; {
+        $expr.next().unwrap().to_string()
+};  
+}
+<span class="boring">}</span></code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 使用宏读取输入：
+let s: String = read!(tokens);
+let n: i32 = read!(tokens, i32);
+let n: usize = read!(tokens, usize);
+let arr: Vec&lt;i32&gt; = (0..n).map(|_| read!(tokens, i32)).collect();
+<span class="boring">}</span></code></pre>
+<ul>
+<li>上面为一般方法，除此之外也可以逐行读入:</li>
+</ul>
+<pre class="playground"><code class="language-rust">use std::io::{self, BufRead};
+
+fn main() {
+    let stdin = io::stdin();
+    for line in stdin.lock().lines() {
+        let line = line.unwrap();
+        // 处理每行输入
+    }
+    // 或者 let mut lines = stdin.lock().lines();
+    // while let Some(Ok(line)) = lines.next() {
+    //     // 处理每行输入
+    //}
+    
+}</code></pre>
+<h2 id="read-和-bufread"><a class="header" href="#read-和-bufread">Read 和 BufRead</a></h2>
+<p>在 Rust 中，<code>Read</code> 和 <code>BufRead</code> 是两个重要的 trait，用于处理输入输出操作。以下是二者的区别：</p>
+<ul>
+<li><code>Read</code> trait：提供了基本的读取方法，适用于一次性读取大量数据。在实际使用中，<code>stdin</code> 返回的 <code>Stdin</code> 结构体实现了 <code>Read</code> trait，因此你可以直接使用 <code>read_to_string</code>（读取到一个字符串）、<code>read</code>（读取到字节数组）方法来一次性读取所有输入。</li>
+<li><code>BufRead</code> trait：提供了缓冲读取的方法，适用于逐行读取输入，可以提高效率并减少系统调用的次数。如 <code>stdin.lock()</code> 获取一个实现了 <code>BufRead</code> trait 的锁定版本，从而使用 <code>lines</code>（读取所有行）、<code>read_line</code>（读取单行）方法来逐行读取输入。</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../rust/字符串.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../rust/字符串/字符串相关转换.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../rust/字符串/字符串与切片转换.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../rust/模式匹配.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -207,11 +265,11 @@ assert!(s1_ptr != s2_ptr);
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../rust/字符串.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../rust/字符串/字符串相关转换.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../rust/字符串/字符串与切片转换.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../rust/模式匹配.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
