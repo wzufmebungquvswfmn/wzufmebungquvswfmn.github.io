@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6dcfa293.js";
+            window.path_to_searchindex_js = "searchindex-a07ea6b8.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-857fd99b.js"></script>
@@ -1508,6 +1508,41 @@ fn main() {
 <p><code>T</code> 是 <code>Sync</code> &lt;==&gt; <code>&amp;T</code> 是 <code>Send</code></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="异步"><a class="header" href="#异步">异步</a></h1>
+<p>I/O 密集型的任务如果直接交给一个线程执行，那么这个线程会阻塞且占用系统资源，使得 CPU 无法高效利用。Rust 提供的异步编程模型在需要等待时会直接挂起当前任务，并将控制权交给异步运行时（最常用的是 Tokio），这样 CPU 就可以继续执行其他任务。</p>
+<p>Rust 异步模型提供了 async和 await 两个语法糖来实现异步模型，async 用于定义一个异步函数或异步块， await 用于等待一个异步操作完成并获取结果。</p>
+<p>.await 只能在 async 函数或 async 块中使用，不能在普通函数中使用（async main需要使用#[tokio::main]）。如需在普通函数中等待异步操作，可以使用 block_on 函数来运行一个 Future 并等待其完成。</p>
+<p>使用这两个语法糖时，不需要手写实现 Future trait，事实上写下 async 就是让编译器自动为你生成实现 Future trait 的代码。Future 的核心是一个必须方法 poll：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>enum Poll&lt;T&gt; {
+    Ready(T),
+    Pending,
+}
+
+trait Future {
+    type Output;
+    fn poll(self: Pin&lt;&amp;mut Self&gt;, cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Self::Output&gt;;
+}
+<span class="boring">}</span></code></pre>
+<h2 id="原理"><a class="header" href="#原理">原理</a></h2>
+<p>async 根据异步函数中的每个 await 进行切割生成一个枚举状态机，每个 await 都会将当前状态（之后还会用到的变量）保存到一个状态变量中，并在下次调用 poll 时恢复状态继续执行。</p>
+<p>而 poll 是状态机的推进器，每次调用 poll 都会检查当前状态并执行相应的代码。至于 poll 的参数 cx 是一个上下文对象，包含了当前任务的 waker（唤醒器），当异步操作完成时，可以通过 waker 来通知运行时继续执行该任务。</p>
+<p>waker 可以理解为“唤醒任务的句柄”。在 poll 返回 Pending 后，运行时会把它和底层 I/O 事件关联起来；当事件就绪时，再通过 waker 把任务放回就绪队列。</p>
+<p>executor（实际还有reactor） 是一个调度器/执行器，它检查就绪队列内有没有任务，有的话就调用 poll 来推进状态机。</p>
+<h3 id="总结一下"><a class="header" href="#总结一下">总结一下</a></h3>
+<p>waker, executor, poll 是 Rust 异步编程的核心，分别负责唤醒任务、调度任务、更新状态机。async 语法本身由编译器转换为状态机；手写实现 Future 时，本质上是在自己维护这套状态推进逻辑。<br>通过 async 和 await 语法糖，Rust 提供了一个高效且易用的异步编程模型，使得开发者能够轻松编写高性能的异步代码。</p>
+<h2 id="进阶为什么会看到-pin"><a class="header" href="#进阶为什么会看到-pin">进阶：为什么会看到 Pin</a></h2>
+<p>看到 <code>poll(self: Pin&lt;&amp;mut Self&gt;, ...)</code> 时，很多人会疑惑：为啥不是普通的 <code>&amp;mut self</code>？</p>
+<p>一句话理解：<code>Pin</code> 约束的是“这个值一旦被固定，就不能再随便移动它在内存里的位置”。</p>
+<p>这在 async 里很关键，因为 Future 会被多次 <code>poll</code>，每次都要接着上一次状态继续跑。为了保证状态里那些跨 <code>await</code> 保存的数据关系不被破坏，poll 接口就要求在一个被 pin 住的可变引用上推进。</p>
+<p>具体是这样的:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Pin&lt;P&gt; {
+    pointer: P, // pointer 不是 pub 的
+}
+<span class="boring">}</span></code></pre>
+<p>Pin 是一个实现了 <code>Deref</code> 和 <code>DerefMut</code> 的智能指针，他内部包裹了另外一个指针P，并且只要P指针指向的内容（我们称为T）没有实现Unpin，则可以保证T永远不会被移动</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="宏"><a class="header" href="#宏">宏</a></h1>
 <p>本节主要介绍rust中的宏，它实现了代码-&gt;代码的转换，可以用来简化代码，提高代码的可读性。</p>

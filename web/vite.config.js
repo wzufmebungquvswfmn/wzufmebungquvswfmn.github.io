@@ -10,6 +10,6 @@ export default defineConfig({
     emptyOutDir: false,  // Don't clear docs/ - mdbook also writes there
   },
   server: {
-    port: 3000,
+    port: 5173,
   },
 })
