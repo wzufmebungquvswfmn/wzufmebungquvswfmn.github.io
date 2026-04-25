@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>tokio - rust_tour</title>
+        <title>mdbook的尖括号转义 - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -175,36 +175,22 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="tokio"><a class="header" href="#tokio">tokio</a></h1>
-<p>tokio 是一个异步编程框架，它提供了一个事件循环（Event Loop）和一个异步任务执行器（Task Executor），用于在 Rust 中编写高性能的异步代码。</p>
-<h2 id="tokio-的核心组件包括"><a class="header" href="#tokio-的核心组件包括">tokio 的核心组件包括</a></h2>
-<p>tokio::runtime：用于创建和管理异步任务的运行时环境。
-tokio::task：用于创建和管理异步任务。
-tokio::net：用于创建和管理网络连接。
-tokio::io：用于创建和管理异步 I/O 操作。
-tokio::time：用于创建和管理定时器和延迟任务。
-tokio::sync：用于创建和管理异步同步原语，如 Mutex、Semaphore 等。
-tokio::stream：用于创建和管理异步流。
-tokio::macros：用于创建和管理异步宏。
-tokio::fs：用于创建和管理异步文件系统操作。
-tokio::process：用于创建和管理异步进程操作。
-tokio::signal：用于创建和管理异步信号处理。
-tokio::sync::mpsc：用于创建和管理异步消息传递通道。
-tokio::sync::oneshot：用于创建和管理一次性消息传递通道。
-tokio::sync::watch：用于创建和管理异步观察者模式。
-tokio::sync::broadcast：用于创建和管理异步广播模式。</p>
+                        <h1 id="mdbook的尖括号转义"><a class="header" href="#mdbook的尖括号转义">mdbook的尖括号转义</a></h1>
+<p>对于</p>
+<pre><code>&lt;code&gt;...&lt;/code&gt;
+</code></pre>
+<p>中的尖括号，mdbook会自动转义为 <code>&amp;lt;</code> 和 <code>&amp;gt;</code>，导致显示不正确。解决方法将尖括号包裹在反引号内，如下所示：</p>
+<pre><code>`&lt;code&gt;...&lt;/code&gt;`
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../rust/宏.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../problem/VSCode终端自动换行刷屏排查与修复.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../problem/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -212,13 +198,10 @@ tokio::sync::broadcast：用于创建和管理异步广播模式。</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../rust/宏.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../problem/VSCode终端自动换行刷屏排查与修复.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../problem/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                    </a>
             </nav>
 
         </div>

@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-a07ea6b8.js";
+            window.path_to_searchindex_js = "../searchindex-dfc947d7.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-857fd99b.js"></script>
+        <script src="../toc-c96e9e95.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -185,7 +185,8 @@
 <li><code>enum E&lt;T&gt; { A(T), B, .. };</code></li>
 <li><code>impl&lt;T: 约束条件&gt; S&lt;T&gt; { fn func&lt;T&gt;(arg: T) -&gt; N { ..T受约束的调用.. } }</code>
 <ul>
-<li><code>约束条件</code> 为 <code>特征</code> 或 <code>类型</code> 或 <code>特征+类型</code> 或 <code>特征+特征</code> 或 <code>特征+特征+类型</code> 等</li>
+<li><code>约束条件</code> 为 <code>特征</code> 或 <code>类型</code> 或 <code>特征+类型</code> 或 <code>特征+特征</code> 等</li>
+<li>只有&lt; &gt;里面和 where 子句等处的T才能跟约束条件，函数列表中的类型参数一般跟普通类型、泛型或具体实现，如 <code>i32</code>, <code>T</code>, <code>impl Trait</code> 等</li>
 </ul>
 </li>
 </ul>
@@ -195,6 +196,251 @@
 <li><code>impl TraitName for S { fn func(&amp;self) -&gt; N { .. } }</code></li>
 <li><code>fn func(arg: impl TraitName) &lt;==&gt; fn func&lt;T: TraitName&gt;(arg: T)</code></li>
 <li><code>fn func(arg: impl TraitName + TraitName2) &lt;==&gt; fn func&lt;T: TraitName + TraitName2&gt;(arg: T)</code> //多重约束</li>
+</ul>
+<h1 id="常用-trait-特征"><a class="header" href="#常用-trait-特征">常用 Trait 特征</a></h1>
+<h2 id="movecopy-和-clone"><a class="header" href="#movecopy-和-clone"><code>Move</code>、<code>Copy</code> 和 <code>Clone</code></a></h2>
+<h3 id="简介"><a class="header" href="#简介">简介</a></h3>
+<ul>
+<li><code>Move</code> 是默认行为，在栈上进行位拷贝（实际可能不进行拷贝），所有权转移，原变量失效。</li>
+<li><code>Copy</code> 也在栈上进行位拷贝，原变量仍然有效。适用于完全在栈上的类型，包括固定大小的数组。它与 <code>Drop</code> 不兼容。</li>
+<li><code>Clone</code> 为无法实现 <code>Copy</code> 的类型提供深拷贝，若不采用引用计数会比较昂贵。</li>
+</ul>
+<h3 id="派生"><a class="header" href="#派生">派生</a></h3>
+<ul>
+<li>以下是常用的派生方式，适用于简单类型组合：<br><code>#[derive(Copy, Clone)]</code></li>
+<li>这样写的原因在于 <code>Copy</code> 继承自 <code>Clone</code>（<code>Copy: Clone</code>），所以必须同时实现 <code>Clone</code>。</li>
+</ul>
+<h2 id="sized-sized-和-sized"><a class="header" href="#sized-sized-和-sized"><code>Sized</code> 、<code>!Sized</code> 和 <code>?Sized</code></a></h2>
+<p>-<code>Sized</code> 标记编译器已知大小固定的类型，默认所有类型都满足 Sized 约束。<br>-<code>!Sized</code> 表示类型大小在编译时未知，如动态大小类型 <code>str</code> 和 <code>dyn Trait</code>。<br>-<code>?Sized</code> 表示类型可能是 Sized 也可能是 !Sized，所以需要作为动态大小类型 (DST) 处理，即传参时传引用，因为地址长度总是固定的 8 字节或 16 字节，例如：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn print_it&lt;T: ?Sized&gt;(arg: &amp;T) {
+    // ...
+}
+<span class="boring">}</span></code></pre>
+<h2 id="send-和-sync"><a class="header" href="#send-和-sync"><code>Send</code> 和 <code>Sync</code></a></h2>
+<p>这两个特征标记类型是否可以安全的在线程之间传递共享，是典型的标记特征，无具体实现。<a href="多线程.html">多线程并发</a> 中有提到。</p>
+<h3 id="send"><a class="header" href="#send"><code>Send</code></a></h3>
+<p>它标记一个类型可以在线程间安全的转移所有权，即可以把它 move 到其它线程里去。</p>
+<p>大多数 Rust 类型都是 Send 的；而典型的非 Send 类型是 <code>Rc&lt;T&gt;</code>，因为它的引用计数器不是线程安全的，还有裸指针 <code>*const T</code> 和 <code>*mut T</code>，因为它们没有任何所有权和生命周期的保证。</p>
+<h3 id="sync"><a class="header" href="#sync"><code>Sync</code></a></h3>
+<p>标记一个类型可以在多个线程间安全的共享引用，即 <code>T: Sync</code> &lt;=&gt; <code>&amp;T: Send</code>。<br>典型非 Sync 的类型是 <code>Cell&lt;T&gt;</code> 和 <code>RefCell&lt;T&gt;</code>，因为它们提供了内部可变性，但没有线程安全的保证。</p>
+<h3 id="线程安全组合"><a class="header" href="#线程安全组合">线程安全组合：</a></h3>
+<p><code>T: Send</code> =&gt; <code>Mutex&lt;T&gt;: Sync</code> 和 <code>RwLock&lt;T&gt;: Sync</code>
+<code>T: Send + Sync</code> =&gt; <code>Arc&lt;T&gt;: Send + Sync</code></p>
+<h3 id="实现或派生"><a class="header" href="#实现或派生">实现或派生</a></h3>
+<p>自动派生，但如果有裸指针或 <code>Rc&lt;T&gt;</code>，在确保线程安全的情况下，可以手动在unsafe块中实现</p>
+<h2 id="stdio-的核心-read-和-write-以及-bufread-和-seek"><a class="header" href="#stdio-的核心-read-和-write-以及-bufread-和-seek"><code>std::io</code> 的核心： <code>Read</code> 和 <code>Write</code> 以及 <code>BufRead</code> 和 <code>Seek</code></a></h2>
+<h3 id="read"><a class="header" href="#read"><code>Read</code></a></h3>
+<p>实现了 Read 的读者，有必需（实现的）方法 read()：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 从 self 读取数据到 buf 中，尽可能读满并返回实际读取的字节数
+fn read(&amp;mut self, buf: &amp;mut [u8]) -&gt; Result&lt;usize&gt;;
+<span class="boring">}</span></code></pre>
+<p>除此之外还有以下常用默认方法，它们都会尽可能读至self的EOF，并返回实际读取的字节数：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 从 self 读取数据直到 EOF，追加到 buf 中
+read_to_end(&amp;mut self, buf: &amp;mut Vec&lt;u8&gt;) -&gt; Result&lt;usize&gt;  
+// 从 self 读取数据直到 EOF，追加到 buf 中，要求字符是 UTF-8 编码
+read_to_string(&amp;mut self, buf: &amp;mut String) -&gt; Result&lt;usize&gt;
+<span class="boring">}</span></code></pre>
+<h3 id="write"><a class="header" href="#write"><code>Write</code></a></h3>
+<p>实现了 Write 的写者，有必需方法 write() 和 flush()：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 从 buf 中写入数据到 self 中，返回实际写入的字节数
+fn write(&amp;mut self, buf: &amp;[u8]) -&gt; Result&lt;usize&gt;;
+// 把内部缓冲区（self的一个成员）的数据强制写入底层设备，确保数据被发送或保存
+fn flush(&amp;mut self) -&gt; Result&lt;()&gt;;
+<span class="boring">}</span></code></pre>
+<h3 id="seek"><a class="header" href="#seek"><code>Seek</code></a></h3>
+<p>它对读者或写者进行定位，有必需方法 seek()，配合枚举 <code>SeekFrom</code> 使用：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>enum SeekFrom {
+    Start(u64), // 从起始位置偏移
+    End(i64),   // 从末尾位置偏移
+    Current(i64) // 从当前位置偏移
+}
+// 将 self 的当前位置设置为 pos 所指定的位置，并返回新的位置
+fn seek(&amp;mut self, pos: SeekFrom) -&gt; Result&lt;u64&gt;;
+<span class="boring">}</span></code></pre>
+<h3 id="bufread"><a class="header" href="#bufread"><code>BufRead</code></a></h3>
+<p>带缓冲区的读者，继承自 <code>Read</code>，有必需方法 fill_buf() 和 consume()：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn fill_buf(&amp;mut self) -&gt; Result&lt;&amp;[u8]&gt;; // 返回内部缓冲区中可用的数据
+fn consume(&amp;mut self, amount: usize); // 从内部缓冲区中消费 amount 字节的数据
+<span class="boring">}</span></code></pre>
+<p>常有默认方法有：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 读取一行 UTF-8 字符到 buf 中，返回实际读取的字节数
+fn read_line(&amp;mut self, buf: &amp;mut String) -&gt; Result&lt;usize&gt;;
+// 返回一个迭代器，逐行读取数据
+fn lines(self) -&gt; Lines&lt;Self&gt; where Self: Sized;
+<span class="boring">}</span></code></pre>
+<p>读者需要转换为带缓冲区的读者才能使用 <code>BufRead</code> 的方法，可以通过：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>BufReader::new(inner: R) -&gt; BufReader&lt;R&gt;
+BufReader::with_capacity(capacity: usize, inner: R) -&gt; BufReader&lt;R&gt;```
+<span class="boring">}</span></code></pre>
+<p>来实现转换，其中 <code>R: Read</code>，<code>capacity</code> 是缓冲区的大小，默认为 8KB。</p>
+<p><strong>特别地</strong>，对 <strong>stdin</strong> 来说，<code>lock()</code> 方法可以将其转换为 <code>BufReader</code>,详见<a href="字符串/stdin.html">标准输入</a></p>
+<h2 id="default"><a class="header" href="#default">Default</a></h2>
+<p>标记特征，便于初始化，只有一个方法：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn default() -&gt; Self;
+<span class="boring">}</span></code></pre>
+<p>可以直接派生 <code>#derive(Default)</code>。</p>
+<h2 id="debug-和-display"><a class="header" href="#debug-和-display"><code>Debug</code> 和 <code>Display</code></a></h2>
+<ul>
+<li>
+<p><code>Debug</code> 两种打印语法糖的具体实现：<br><code>{:?} // 格式化打印</code><br><code>{:#?} // 漂亮打印</code><br>可以通过 <code>#[derive(Debug)]</code> 派生。</p>
+</li>
+<li>
+<p><code>Display</code> 用于内容显示，使得类型可以使用 <code>{}</code> 进行格式化输出。<br>需手动实现：</p>
+</li>
+</ul>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+    // 这里实现格式化逻辑，例如：
+    write!(f, "MyStruct {{ field1: {}, field2: {} }}", self.field1, self.field2)
+}
+<span class="boring">}</span></code></pre>
+<p>除此之外它还还赠予了 <strong>ToString</strong> 的实现，使得类型可以使用 <code>to_string()</code> 和 <code>format!()</code>等。</p>
+<h2 id="partialeq-和-eq"><a class="header" href="#partialeq-和-eq"><code>PartialEq</code> 和 <code>Eq</code></a></h2>
+<ul>
+<li><code>PartialEq</code> 用于比较两个值是否相等，提供了 <code>==</code> 和 <code>!=</code> 操作符的实现，之所以叫 Partial，是因为浮点数中NaN不等于任何值，包括它自己。</li>
+<li><code>Eq</code> 继承自 <code>PartialEq</code>，表示类型的值可以完全比较相等，浮点数未实现。
+可以通过 <code>#[derive(PartialEq, Eq)]</code> 派生。</li>
+</ul>
+<h2 id="partialord-和-ord"><a class="header" href="#partialord-和-ord"><code>PartialOrd</code> 和 <code>Ord</code></a></h2>
+<h3 id="partialord"><a class="header" href="#partialord"><code>PartialOrd</code></a></h3>
+<ul>
+<li>必需方法:</li>
+</ul>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn partial_cmp(&amp;self, other: &amp;Rhs) -&gt; Option&lt;Ordering&gt;; // 实现和任何类型右值Rhs的比较
+<span class="boring">}</span></code></pre>
+<p>附赠了 lt（&lt;）、le（&lt;=）、gt（&gt;）、ge（&gt;=）四个方法的实现</p>
+<ul>
+<li>Ordering 是一个枚举，表示比较结果：</li>
+</ul>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>enum Ordering {
+    Less,    // 小于
+    Equal,   // 等于
+    Greater, // 大于
+}
+<span class="boring">}</span></code></pre>
+<h3 id="ord-eq--partialord"><a class="header" href="#ord-eq--partialord"><code>Ord： Eq + PartialOrd</code></a></h3>
+<ul>
+<li>和 Eq 类似，必需方法:</li>
+</ul>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn cmp(&amp;self, other: &amp;Rhs) -&gt; Ordering;
+<span class="boring">}</span></code></pre>
+<p>提供max、min 以及 clamp等方法的实现:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 将 self 限制在 min 和 max 之间
+fn clamp(self, min: Self, max: Self) -&gt; Self 
+where Self: Sized + PartialOrd; 
+<span class="boring">}</span></code></pre>
+<ul>
+<li><code>#[derive(PartialOrd, Ord)]</code> 可以派生, 比较按照字段在结构体中的顺序进行。</li>
+</ul>
+<h3 id="关联宏"><a class="header" href="#关联宏">关联宏</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Derivative)] // 需要在 Cargo.toml 中添加 derivative 依赖
+#[derivative(PartialOrd, Ord)] // 写在结构体前
+struct MyStruct {
+    field1: i32,
+    #[derivative(PartialOrd = "ignore", Ord = "ignore")] 
+    field2: String, // 忽略该字段的比较
+}
+<span class="boring">}</span></code></pre>
+<h2 id="from-和-into"><a class="header" href="#from-和-into"><code>From</code> 和 <code>Into</code></a></h2>
+<ul>
+<li>
+<p><code>from</code> 定义了如何从其它类型创建一个自己类型的值</p>
+</li>
+<li>
+<p><code>into</code> 恰恰相反，它定义了如何将自己类型转换为其它类型的值</p>
+</li>
+</ul>
+<p>只需实现 <code>From</code> 就会自动获得 <code>Into</code> 的实现</p>
+<h2 id="asref-和-asmut"><a class="header" href="#asref-和-asmut"><code>AsRef</code> 和 <code>AsMut</code></a></h2>
+<p>不同于 <code>From</code> 和 <code>Into</code>, 它们是不消耗所有权的转换:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn as_ref(&amp;self) -&gt; &amp;T;
+fn as_mut(&amp;mut self) -&gt; &amp;mut T;
+<span class="boring">}</span></code></pre>
+<p>这两个特征使得借用多态实现非常方便，如在函数入口加一个<code>.as_ref()</code>，就可以接受任何实现了 <code>AsRef</code> 的类型:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn print_it(arg: impl AsRef&lt;str&gt;) {
+    println!("{}", arg.as_ref());
+}
+<span class="boring">}</span></code></pre>
+<h2 id="deref-和-derefmut"><a class="header" href="#deref-和-derefmut"><code>Deref</code> 和 <code>DerefMut</code></a></h2>
+<p><code>Deref</code> 和 <code>DerefMut</code> 是对智能指针解引用操作符 <code>*</code> 的重载，允许我们定义自己的智能指针类型，并使其行为类似于普通引用。</p>
+<h3 id="deref-定义了如何通过--操作符获取智能指针内部的值的引用"><a class="header" href="#deref-定义了如何通过--操作符获取智能指针内部的值的引用"><code>Deref</code> 定义了如何通过 <code>*</code> 操作符获取智能指针内部的值的引用：</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct MyBox&lt;T&gt;(T);
+impl&lt;T&gt; std::ops::Deref for MyBox&lt;T&gt; {
+    type Target = T;
+    fn deref(&amp;self) -&gt; &amp;T {
+        &amp;self.0
+    }
+}
+<span class="boring">}</span></code></pre>
+<h3 id="derefmut-则是-deref-的mut版本继承自-deref"><a class="header" href="#derefmut-则是-deref-的mut版本继承自-deref"><code>DerefMut</code> 则是 <code>Deref</code> 的mut版本，继承自 <code>Deref</code></a></h3>
+<p>除了显式使用 <code>*</code> 时会解引用，在<strong>函数传参</strong>与<strong>方法调用</strong>时也会自动解引用（解引用强制转换）。</p>
+<h2 id="hash"><a class="header" href="#hash"><code>Hash</code></a></h2>
+<h3 id="stdhash-模块下的特征实现了-hash-类型可以变成一个哈希值通过下方的必须方法"><a class="header" href="#stdhash-模块下的特征实现了-hash-类型可以变成一个哈希值通过下方的必须方法">std::hash 模块下的特征，实现了 Hash 类型可以变成一个哈希值，通过下方的必须方法：</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn hash&lt;H: Hasher&gt;(&amp;self, state: &amp;mut H); // 实现了 Hasher 的 H 是一个哈希生成器
+<span class="boring">}</span></code></pre>
+<h3 id="实现通过-derivehash-可以派生或者把需要计算的字段手动哈希"><a class="header" href="#实现通过-derivehash-可以派生或者把需要计算的字段手动哈希">实现通过 <code>#[derive(Hash)]</code> 可以派生，或者把需要计算的字段手动哈希：</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn hash&lt;H: Hasher&gt;(&amp;self, state: &amp;mut H) {
+    self.field1.hash(state); // 只哈希 field1 字段
+}
+<span class="boring">}</span></code></pre>
+<ul>
+<li>实现了 <code>Hash + Eq</code> 的类型可以作为 HashMap、HashSet 的键。</li>
+</ul>
+<h2 id="borrow"><a class="header" href="#borrow"><code>Borrow</code></a></h2>
+<h3 id="borrow-模块有下面几个-trait主要用来扩展借用和所有权的功能"><a class="header" href="#borrow-模块有下面几个-trait主要用来扩展借用和所有权的功能"><code>borrow</code> 模块有下面几个 trait，主要用来扩展借用和所有权的功能</a></h3>
+<ul>
+<li><code>Borrow</code> 使得一个类型的引用能转换成另一个类型的引用，常见于 Hash 的键查找：</li>
+</ul>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;Q: ?Sized&gt; Borrow&lt;Q&gt; for K where K: Hash + Eq, Q: Hash + Eq {
+    fn borrow(&amp;self) -&gt; &amp;Q;
+}
+<span class="boring">}</span></code></pre>
+<p>一个典型的例子是 <code>String</code> 实现了 <code>Borrow&lt;str&gt;</code>，使得对于 <code>get(s: &amp;str)</code> 来说，传入的参数类型是 <code>&amp;str</code> 和 <code>&amp;String</code> 得到的哈希值相同。</p>
+<ul>
+<li><code>BorrowMut</code> 是 <code>Borrow</code> 的 mut 版本。</li>
+<li><code>ToOwned</code> 是 <code>Clone</code> 的泛用版本，提供了 <code>to_owned()</code> 方法，可以从一个引用类型直接创建一个拥有所有权的类型，例如 <code>str</code> 的 <code>to_owned()</code> 会返回一个 <code>String</code>。</li>
+<li><code>Cow&lt;'a,T&gt;</code>（Clone on Write, 写时克隆）是一个智能指针, 在需要写时（比如调用 to_mut()）就会用 <code>to_owned()</code> 克隆出一个拥有所有权的类型，否则保持对原始数据的引用。</li>
 </ul>
 
                     </main>
