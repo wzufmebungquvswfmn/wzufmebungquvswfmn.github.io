@@ -28,7 +28,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../src/theme/custom-abd24dee.css">
+        <link rel="stylesheet" href="../src/theme/custom-93cefb21.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-c40b54be.js";
+            window.path_to_searchindex_js = "../searchindex-512d7026.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-c96e9e95.js"></script>
+        <script src="../toc-e2c684f2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,24 +175,109 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="tokio"><a class="header" href="#tokio">tokio</a></h1>
-<p>tokio 是一个异步编程框架，它提供了一个事件循环（Event Loop）和一个异步任务执行器（Task Executor），用于在 Rust 中编写高性能的异步代码。</p>
-<h2 id="tokio-的核心组件包括"><a class="header" href="#tokio-的核心组件包括">tokio 的核心组件包括</a></h2>
-<p>tokio::runtime：用于创建和管理异步任务的运行时环境。
-tokio::task：用于创建和管理异步任务。
-tokio::net：用于创建和管理网络连接。
-tokio::io：用于创建和管理异步 I/O 操作。
-tokio::time：用于创建和管理定时器和延迟任务。
-tokio::sync：用于创建和管理异步同步原语，如 Mutex、Semaphore 等。
-tokio::stream：用于创建和管理异步流。
-tokio::macros：用于创建和管理异步宏。
-tokio::fs：用于创建和管理异步文件系统操作。
-tokio::process：用于创建和管理异步进程操作。
-tokio::signal：用于创建和管理异步信号处理。
-tokio::sync::mpsc：用于创建和管理异步消息传递通道。
-tokio::sync::oneshot：用于创建和管理一次性消息传递通道。
-tokio::sync::watch：用于创建和管理异步观察者模式。
-tokio::sync::broadcast：用于创建和管理异步广播模式。</p>
+                        <p><a href="rust/异步.html">rust 异步</a> 中介绍了 Rust 的异步编程模型和 Future 的概念，这里主要是对 Tokio 的介绍</p>
+<h1 id="tokio"><a class="header" href="#tokio">tokio</a></h1>
+<h2 id="1-运行时-runtime"><a class="header" href="#1-运行时-runtime">1. 运行时 Runtime</a></h2>
+<p>tokio 提供异步运行时，负责调度任务、I/O 事件和定时器。</p>
+<pre class="playground"><code class="language-rust">#[tokio::main]
+async fn main() {
+	// async 入口
+}</code></pre>
+<ul>
+<li>常用运行时模式:
+<ul>
+<li>multi_thread: 默认，多线程调度。</li>
+<li>current_thread: 单线程调度，适合轻量场景。</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-任务-task"><a class="header" href="#2-任务-task">2. 任务 Task</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let handle = tokio::spawn(async {
+	1 + 2
+});
+
+let v = handle.await?;
+<span class="boring">}</span></code></pre>
+<ul>
+<li><code>tokio::spawn</code> 要求任务是 <code>'static + Send</code>（多线程运行时）。</li>
+<li>任务取消: <code>handle.abort()</code>。</li>
+</ul>
+<h2 id="3-并发组合"><a class="header" href="#3-并发组合">3. 并发组合</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let (a, b) = tokio::join!(task_a(), task_b());
+let (x, y) = tokio::try_join!(op_x(), op_y())?;
+<span class="boring">}</span></code></pre>
+<ul>
+<li><code>join!</code>: 等全部完成，保留各自结果。</li>
+<li><code>try_join!</code>: 任一返回错误则整体返回错误。</li>
+</ul>
+<h2 id="4-超时与-select"><a class="header" href="#4-超时与-select">4. 超时与 select</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use tokio::time::{timeout, Duration};
+
+let r = timeout(Duration::from_secs(2), slow_op()).await;
+<span class="boring">}</span></code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>tokio::select! {
+	_ = shutdown.recv() =&gt; {},
+	msg = rx.recv() =&gt; {
+		// 处理消息
+	}
+}
+<span class="boring">}</span></code></pre>
+<ul>
+<li><code>timeout</code> 用于给异步操作设置时限。</li>
+<li><code>select!</code> 用于等待多个异步分支，谁先完成就走谁。</li>
+</ul>
+<h2 id="5-异步通道"><a class="header" href="#5-异步通道">5. 异步通道</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use tokio::sync::{mpsc, oneshot};
+
+let (tx, mut rx) = mpsc::channel::&lt;String&gt;(64);
+let (done_tx, done_rx) = oneshot::channel::&lt;u32&gt;();
+<span class="boring">}</span></code></pre>
+<ul>
+<li><code>mpsc</code>: 多生产者单消费者。</li>
+<li><code>oneshot</code>: 一次性响应，常用于请求-响应。</li>
+</ul>
+<h2 id="6-同步原语"><a class="header" href="#6-同步原语">6. 同步原语</a></h2>
+<ul>
+<li><code>tokio::sync::Mutex</code> / <code>RwLock</code>: 异步锁。</li>
+<li><code>Semaphore</code>: 并发限流。</li>
+<li><code>Notify</code>: 轻量通知。</li>
+</ul>
+<p>注意: 尽量避免在持锁期间做耗时 await。</p>
+<h2 id="7-阻塞代码"><a class="header" href="#7-阻塞代码">7. 阻塞代码</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let v = tokio::task::spawn_blocking(|| {
+	heavy_cpu_or_blocking_io()
+}).await?;
+<span class="boring">}</span></code></pre>
+<ul>
+<li>CPU 密集或阻塞操作放入 <code>spawn_blocking</code>。</li>
+<li>不要在 async 任务里直接长时间阻塞线程。</li>
+</ul>
+<h2 id="8-常见坑"><a class="header" href="#8-常见坑">8. 常见坑</a></h2>
+<ul>
+<li>忘记 <code>.await</code>，future 实际没有执行。</li>
+<li>在 async 任务中使用 <code>std::sync::Mutex</code> 并跨 await 持锁。</li>
+<li>无限制 <code>spawn</code> 导致内存和调度压力过大。</li>
+<li>任务里捕获了非 <code>'static</code> 引用，导致无法 <code>spawn</code>。</li>
+</ul>
+<h2 id="9-学习顺序建议"><a class="header" href="#9-学习顺序建议">9. 学习顺序建议</a></h2>
+<ol>
+<li><code>spawn</code> + <code>join!</code> + <code>try_join!</code></li>
+<li><code>mpsc</code> + <code>oneshot</code></li>
+<li><code>select!</code> + <code>timeout</code></li>
+<li><code>Semaphore</code> + <code>spawn_blocking</code></li>
+</ol>
 
                     </main>
 

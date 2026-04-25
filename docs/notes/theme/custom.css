@@ -12,6 +12,21 @@ samp {
   font-family: var(--mdbook-code-font);
 }
 
-#mdbook-sidebar a[href$="problem/VSCode终端自动换行刷屏排查与修复.html"] {
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/字符串/字符串比较.html"]),
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/字符串/字符串与切片转换.html"]),
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/字符串/字符串相关转换.html"]),
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/字符串/stdin.html"]),
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/模式匹配/全模式列表.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/字符串/字符串比较.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/字符串/字符串与切片转换.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/字符串/字符串相关转换.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/字符串/stdin.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/模式匹配/全模式列表.html"]) {
   display: none !important;
 }
+
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="blog/博客构建.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="blog/博客构建.html"]) {
+  display: none !important;
+}
+
