@@ -290,7 +290,7 @@ BufReader::with_capacity(capacity: usize, inner: R) -&gt; BufReader&lt;R&gt;```
 <span class="boring">}</span></code></pre>
 <p>来实现转换，其中 <code>R: Read</code>，<code>capacity</code> 是缓冲区的大小，默认为 8KB。</p>
 <p><strong>特别地</strong>，对 <strong>stdin</strong> 来说，<code>lock()</code> 方法可以将其转换为 <code>BufReader</code>,详见<a href="字符串/stdin.html">标准输入</a></p>
-<h2 id="default"><a class="header" href="#default">Default</a></h2>
+<h2 id="default"><a class="header" href="#default"><code>Default</code></a></h2>
 <p>标记特征，便于初始化，只有一个方法：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
