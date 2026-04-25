@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-dfc947d7.js";
+            window.path_to_searchindex_js = "../searchindex-c40b54be.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-c96e9e95.js"></script>
@@ -211,7 +211,11 @@
 <li>这样写的原因在于 <code>Copy</code> 继承自 <code>Clone</code>（<code>Copy: Clone</code>），所以必须同时实现 <code>Clone</code>。</li>
 </ul>
 <h2 id="sized-sized-和-sized"><a class="header" href="#sized-sized-和-sized"><code>Sized</code> 、<code>!Sized</code> 和 <code>?Sized</code></a></h2>
-<p>-<code>Sized</code> 标记编译器已知大小固定的类型，默认所有类型都满足 Sized 约束。<br>-<code>!Sized</code> 表示类型大小在编译时未知，如动态大小类型 <code>str</code> 和 <code>dyn Trait</code>。<br>-<code>?Sized</code> 表示类型可能是 Sized 也可能是 !Sized，所以需要作为动态大小类型 (DST) 处理，即传参时传引用，因为地址长度总是固定的 8 字节或 16 字节，例如：</p>
+<ul>
+<li><code>Sized</code> 标记编译器已知大小固定的类型，默认所有类型都满足 Sized 约束。</li>
+<li><code>!Sized</code> 表示类型大小在编译时未知，如动态大小类型 <code>str</code> 和 <code>dyn Trait</code>。</li>
+<li><code>?Sized</code> 表示类型可能是 Sized 也可能是 !Sized，所以需要作为动态大小类型 (DST) 处理，即传参时传引用，因为地址长度总是固定的 8 字节或 16 字节，例如：</li>
+</ul>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>fn print_it&lt;T: ?Sized&gt;(arg: &amp;T) {
