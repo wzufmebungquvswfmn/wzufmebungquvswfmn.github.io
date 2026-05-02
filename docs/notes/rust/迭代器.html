@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>结构体 - rust_tour</title>
+        <title>迭代器 - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -175,130 +175,154 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="rust-结构体"><a class="header" href="#rust-结构体">Rust 结构体</a></h1>
-<p>Rust 常见有三种结构体：普通结构体、元组结构体、单元结构体。下面依次补全定义、创建实例和常用操作。
-Rust 为结构体实现了自动解引用，当一个结构体被引用时，为了访问它的成员或方法，无需像C语言那样 p-&gt;member,只需使用p.member，它等价于(*p).member</p>
-<h2 id="1-普通结构体regular-struct"><a class="header" href="#1-普通结构体regular-struct">1. 普通结构体（Regular Struct）</a></h2>
-<h3 id="定义"><a class="header" href="#定义">定义</a></h3>
+                        <h1 id="迭代器及相关内容"><a class="header" href="#迭代器及相关内容">迭代器及相关内容</a></h1>
+<p>作为函数式风格语言，rust提供了非常强大的迭代器功能，也是rust中极其优雅的处理方式之一；迭代器往往作用于Vec、HashMap等集合类型上，能够让我们以一种非常简洁的方式对集合进行各种操作，如转换、过滤、累积等。</p>
+<h2 id="迭代器的两个重要-trait-iterator-和-intoiterator"><a class="header" href="#迭代器的两个重要-trait-iterator-和-intoiterator">迭代器的两个重要 trait ：<code>Iterator</code> 和 <code>IntoIterator</code></a></h2>
+<p>若需要为<em>某个类型</em>实现迭代器，需要实现 <code>Iterator</code> trait ，其必要方法是 <code>next()</code> ，用于获取迭代器中的下一个元素，如果迭代器中还有元素，则返回Some(元素)，否则返回None。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>struct ColorRegularStruct {
-    red: u8,
-    green: u8,
-    blue: u8,
+</span>trait Iterator {
+    type Item;
+    fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt;;
 }
 <span class="boring">}</span></code></pre>
-<h3 id="创建实例"><a class="header" href="#创建实例">创建实例</a></h3>
+<p>如需将<em>某个集合</em>转换为迭代器，则需要实现 <code>IntoIterator</code> trait，必要方法为 <code>into_iter()</code> ，它返回一个生成的迭代器。</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let green = ColorRegularStruct {
-    red: 0,
-    green: 255,
-    blue: 0,
-};
-<span class="boring">}</span></code></pre>
-<h3 id="访问字段"><a class="header" href="#访问字段">访问字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let g = green.green;
-<span class="boring">}</span></code></pre>
-<h3 id="可变实例与修改字段"><a class="header" href="#可变实例与修改字段">可变实例与修改字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut color = ColorRegularStruct {
-    red: 255,
-    green: 255,
-    blue: 255,
-};
-color.red = 0;
-<span class="boring">}</span></code></pre>
-<h3 id="结构体更新语法"><a class="header" href="#结构体更新语法">结构体更新语法</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let base = ColorRegularStruct {
-    red: 10,
-    green: 20,
-    blue: 30,
-};
-
-let another = ColorRegularStruct {
-    red: 0,
-    ..base
-};
-<span class="boring">}</span></code></pre>
-<blockquote>
-<p>注意：使用 <code>..base</code> 之后，<code>base</code> 中被“移动”的字段将不可再用（取决于字段类型是否实现 <code>Copy</code>）。</p>
-</blockquote>
-<hr>
-<h2 id="2-元组结构体tuple-struct"><a class="header" href="#2-元组结构体tuple-struct">2. 元组结构体（Tuple Struct）</a></h2>
-<h3 id="定义-1"><a class="header" href="#定义-1">定义</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct ColorTupleStruct(u8, u8, u8);
-<span class="boring">}</span></code></pre>
-<h3 id="创建实例-1"><a class="header" href="#创建实例-1">创建实例</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let green = ColorTupleStruct(0, 255, 0);
-<span class="boring">}</span></code></pre>
-<h3 id="访问字段-1"><a class="header" href="#访问字段-1">访问字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let g = green.1;
-<span class="boring">}</span></code></pre>
-<hr>
-<h2 id="3-单元结构体unit-struct--空结构体"><a class="header" href="#3-单元结构体unit-struct--空结构体">3. 单元结构体（Unit Struct / 空结构体）</a></h2>
-<h3 id="定义-2"><a class="header" href="#定义-2">定义</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct UnitStruct;
-<span class="boring">}</span></code></pre>
-<h3 id="创建实例-2"><a class="header" href="#创建实例-2">创建实例</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let unit = UnitStruct;
-<span class="boring">}</span></code></pre>
-<h3 id="常见用途"><a class="header" href="#常见用途">常见用途</a></h3>
-<ul>
-<li>作为“类型标记”（type marker）</li>
-<li>实现 trait 而不需要存储数据</li>
-</ul>
-<hr>
-<h2 id="4-结构体方法与关联函数补充"><a class="header" href="#4-结构体方法与关联函数补充">4. 结构体方法与关联函数（补充）</a></h2>
-<h3 id="定义方法"><a class="header" href="#定义方法">定义方法</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>impl ColorRegularStruct {
-    fn is_green(&amp;self) -&gt; bool {
-        self.red == 0 &amp;&amp; self.green == 255 &amp;&amp; self.blue == 0
-    }
+</span>trait IntoIterator {
+    type Item;
+    type IntoIter: Iterator&lt;Item = Self::Item&gt;;
+    fn into_iter(self) -&gt; Self::IntoIter;
 }
 <span class="boring">}</span></code></pre>
-<h3 id="关联函数类似静态方法"><a class="header" href="#关联函数类似静态方法">关联函数（类似静态方法）</a></h3>
+<h1 id="从集合生成迭代器"><a class="header" href="#从集合生成迭代器">从集合生成迭代器</a></h1>
+<p>迭代器只用于迭代，而数据一般存储在集合中，所以首先需要从集合生成迭代器（对应于 <code>IntoIterator</code> trait），下面是一些常见的从集合生成迭代器的方法：</p>
+<h2 id="vec---迭代器"><a class="header" href="#vec---迭代器">Vec -&gt; 迭代器</a></h2>
+<h3 id="iter--iter_mut-和-into_iter"><a class="header" href="#iter--iter_mut-和-into_iter"><code>iter</code> , <code>iter_mut</code> 和 <code>into_iter</code></a></h3>
+<p><strong>iter</strong> 方法返回对集合的不可变引用的迭代器</p>
+<p><strong>iter_mut</strong> 方法返回对集合的可变引用的迭代器，使用iter_mut后，可以修改集合中的元素，但原来的集合仍然可用</p>
+<p><strong>into_iter</strong> 方法则返回集合的所有权的迭代器，使用into_iter后，原来的集合将<strong>不再可用</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>Item类型</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td>iter</td><td>&amp;T</td><td>只读遍历</td></tr>
+<tr><td>iter_mut</td><td>&amp;mut T</td><td>原地修改集合元素</td></tr>
+<tr><td>into_iter</td><td>T</td><td>消费集合，拿到所有权</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="字符串---迭代器"><a class="header" href="#字符串---迭代器">字符串 -&gt; 迭代器</a></h2>
+<p>字符串 String 是一个特殊的存在，它的迭代方式很不同而且非常丰富</p>
+<h3 id="chars-和-bytes-从字符串生成的字符迭代器"><a class="header" href="#chars-和-bytes-从字符串生成的字符迭代器"><code>chars</code> 和 <code>bytes</code>: 从字符串生成的字符迭代器</a></h3>
+<p>字符串的迭代与集合有所不同，它不拿到字符串的引用作为元素，而是直接迭代字符串中的字符或字节</p>
+<p><strong>chars</strong> 按照 utf-8 编码返回每个字符的迭代器</p>
+<p><strong>bytes</strong> 直接按字节返回迭代器。有趣的是, <code>as_bytes</code> 返回字符串的字节切片，想要迭代器的话可以使用as_bytes().iter()</p>
+<p>rust中的字符串是UTF-8编码的，所以一个字符可能由多个字节组成, <code>chars</code> 方法会正确处理这些字符，而 <code>bytes</code> 方法只返回每个字节的迭代器。</p>
+<h3 id="lines-和-split-从字符串生成元素为字符串迭代器"><a class="header" href="#lines-和-split-从字符串生成元素为字符串迭代器"><code>lines</code> 和 <code>split</code>: 从字符串生成元素为字符串迭代器</a></h3>
+<p><strong>lines</strong> 将字符串按行分割，返回一个迭代器，每个元素是字符串的一行</p>
+<p><strong>split</strong> 根据指定分隔字符串将字符串分割，返回一个迭代器，每个元素是分割后的字符串片段，此外还有 <code>split_whitespace</code>, <code>split_inclusive</code> 等变体</p>
+<h3 id="matches-从字符串生成匹配模式迭代器"><a class="header" href="#matches-从字符串生成匹配模式迭代器"><code>matches</code>: 从字符串生成匹配模式迭代器</a></h3>
+<p><strong>matches</strong> 方法传入一个pattern（字符串、正则表达式等），返回一个迭代器，包含字符串中所有匹配指定模式(如果只找第一个，可以使用find或position方法，尽管他俩传入的参数应该是一个返回值为bool的闭包)的子串。</p>
+<h3 id="chars_indices--bytes_indices-和-match_indices-从字符串生成带索引的迭代器"><a class="header" href="#chars_indices--bytes_indices-和-match_indices-从字符串生成带索引的迭代器"><code>chars_indices</code> , <code>bytes_indices</code> 和 <code>match_indices</code>: 从字符串生成带索引的迭代器</a></h3>
+<p>这几个相当于上面几个方法的带索引版本，返回的迭代器中的元素是一个元组，包含元素的索引和元素本身。</p>
+<h2 id="hashmaphashset---迭代器"><a class="header" href="#hashmaphashset---迭代器">HashMap/HashSet -&gt; 迭代器</a></h2>
+<h3 id="iter-和-into_iter-从hashmap生成键值对的迭代器"><a class="header" href="#iter-和-into_iter-从hashmap生成键值对的迭代器"><code>iter</code> 和 <code>into_iter</code>: 从HashMap生成键值对的迭代器</a></h3>
+<p>它们也可以用于HashMap和HashSet，和Vec的实际上一样，区别只在于HashMap返回键值对元组</p>
+<h3 id="keys-和-values-从hashmap生成键和值的迭代器"><a class="header" href="#keys-和-values-从hashmap生成键和值的迭代器"><code>keys</code> 和 <code>values</code>: 从HashMap生成键和值的迭代器</a></h3>
+<p><strong>keys</strong> 返回一个包含HashMap中的所有键的引用的迭代器<br><strong>values</strong> 返回一个包含HashMap中的所有值的引用的迭代器</p>
+<h1 id="迭代器上的常用方法"><a class="header" href="#迭代器上的常用方法">迭代器上的常用方法</a></h1>
+<p>迭代器上的方法往往有两类，分别是适配器和消费器，适配器构造新迭代器，消费器则调用 next 推动迭代器运行（对应于 <code>Iterator</code> trait），得到一个最终结果。</p>
+<h2 id="迭代器---迭代器迭代器适配器"><a class="header" href="#迭代器---迭代器迭代器适配器">迭代器 -&gt; 迭代器（迭代器适配器）</a></h2>
+<p>迭代器适配器通常是惰性的，只是描述了一串转换过程，只有遇到消费器时才会真正执行<br>以下这些方法可以通过一个迭代器返回新的迭代器，用来实现各种转换</p>
+<h3 id="map--filter-和-filter_map"><a class="header" href="#map--filter-和-filter_map"><code>map</code> ， <code>filter</code> 和 <code>filter_map</code></a></h3>
+<p><strong>map</strong> 用于对迭代器中的每个元素进行转换，返回<strong>一个新的迭代器</strong></p>
+<p><strong>filter</strong> 则用于过滤迭代器中的元素，返回<strong>一个新的迭代器</strong>，只包含满足条件的元素</p>
+<p><strong>filter_map</strong> 则是map和filter的结合体，能够过滤的同时进行转换</p>
+<p><em>注意：map和filter方法返回的都是<strong>新的迭代器</strong>，原来的迭代器并没有被修改</em></p>
+<h3 id="rev-翻转操作无需多言"><a class="header" href="#rev-翻转操作无需多言"><code>rev</code>: 翻转操作，无需多言</a></h3>
+<h3 id="zip-和-unzip"><a class="header" href="#zip-和-unzip"><code>zip</code> 和 <code>unzip</code></a></h3>
+<p><strong>zip</strong> 用于将两个迭代器进行配对，返回一个新的迭代器，包含两个迭代器中对应位置的元素组成的元组，如：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>impl ColorRegularStruct {
-    fn green() -&gt; Self {
-        Self { red: 0, green: 255, blue: 0 }
-    }
+</span>let zipped = iterator1.iter().zip(iterator2.iter());
+<span class="boring">}</span></code></pre>
+<p><strong>unzip</strong> 作用于元素为二元组的迭代器，拆分成两个迭代器，并包裹成一个元组返回。</p>
+<h3 id="enumerate"><a class="header" href="#enumerate"><code>enumerate</code></a></h3>
+<p><strong>enumerate</strong> 用于将迭代器中的元素进行枚举，返回一个新的迭代器，包含元素的索引和元素本身组成的元组，如：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for (index, value) in iterator.iter().enumerate() {
+    println!("Index: {}, Value: {}", index, value);
 }
 <span class="boring">}</span></code></pre>
-<h3 id="使用"><a class="header" href="#使用">使用</a></h3>
+<h3 id="chain"><a class="header" href="#chain"><code>chain</code></a></h3>
+<p><strong>chain</strong> 用于将两个迭代器连接起来，返回一个新的迭代器，包含两个迭代器中的所有元素，如：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let c = ColorRegularStruct::green();
-let ok = c.is_green();
+</span>let chained = iterator1.iter().chain(iterator2.iter());
 <span class="boring">}</span></code></pre>
+<h3 id="scan"><a class="header" href="#scan"><code>scan</code></a></h3>
+<p><strong>scan</strong> 用于对迭代器中的元素进行累积操作，返回一个新的迭代器，包含每次累积的结果，如：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let scan_result:Vec&lt;_&gt; = iterator.iter().scan(0, |acc, &amp;x| {
+    *acc += x;
+    Some(*acc)
+})
+.collect();
+<span class="boring">}</span></code></pre>
+<p>scan接受的两个参数中，第一个是积累值的初始值，第二个是一个返回值为Option类型的闭包，闭包又接受两个参数，第一个是积累值的可变引用，第二个是迭代器中的元素；<br>迭代到某一步时，若返回Some(值)，则将该值作为新的迭代器中的元素；若返回None，则迭代直接结束。</p>
+<h3 id="take-和-skip"><a class="header" href="#take-和-skip"><code>take</code> 和 <code>skip</code></a></h3>
+<p><strong>take</strong> 取前n个元素作为一个新的迭代器返回
+<strong>skip</strong> 则跳过前n个元素，取剩下的元素作为迭代器返回</p>
+<h3 id="step_by"><a class="header" href="#step_by"><code>step_by</code></a></h3>
+<p><strong>step_by</strong> 指定迭代器的步长，从而得到一个跳过一些元素的新迭代器</p>
+<h3 id="cloned-和-copied"><a class="header" href="#cloned-和-copied"><code>cloned</code> 和 <code>copied</code></a></h3>
+<p>他俩主要是为了把原来迭代器引用的元素拿出来转成值的元素，形成一个新迭代器</p>
+<h2 id="迭代器---其它-迭代器消费器"><a class="header" href="#迭代器---其它-迭代器消费器">迭代器 -&gt; 其它 （迭代器消费器）</a></h2>
+<p>消费器会真正推动迭代器运行，可能消费部分元素，也可能消费完整个迭代器，它们常常通过能够通过迭代器得到一个最终结果</p>
+<h2 id="collect"><a class="header" href="#collect"><code>collect</code></a></h2>
+<p><strong>collect</strong> 是rust中最强大的迭代器方法之一，用于将迭代器中的元素收集到一个其它存储结构中。它可以将迭代器中的元素收集到一个Vec、HashMap、HashSet等集合类型中，也可以收集到一个字符串中，甚至可以收集到一个自定义的结构体中。使用collect方法时，需要指定要收集到的目标类型。</p>
+<h2 id="nth"><a class="header" href="#nth"><code>nth</code></a></h2>
+<p><strong>nth</strong> 用于获取迭代器中第n个元素，返回一个Option类型的值，如果迭代器中有第n个元素，则返回Some(元素)，否则返回None。</p>
+<h2 id="find-和-position"><a class="header" href="#find-和-position"><code>find</code> 和 <code>position</code></a></h2>
+<p><strong>find</strong> 在迭代器中查找满足条件的第一个元素，如果找到满足条件的元素，则返回Some(元素)，否则返回None。
+<strong>position</strong> 用迭代器中查找满足条件的第一个元素的位置，如果找到满足条件的元素，则返回Some(位置)，否则返回None。</p>
+<h2 id="any-和-all"><a class="header" href="#any-和-all"><code>any</code> 和 <code>all</code></a></h2>
+<p>显然，这两个方法是来判断迭代器中的元素是否存在或全都满足某个条件的，返回一个bool值。</p>
+<h2 id="fold-和-reduce"><a class="header" href="#fold-和-reduce"><code>fold</code> 和 <code>reduce</code></a></h2>
+<p><strong>fold</strong> 用于将迭代器中的元素进行累积，返回 <strong>一个最终的结果</strong></p>
+<p><strong>reduce</strong> 同样也是累积，与fold方法不同的是，reduce方法没有初始值，而是将迭代器中的第一个元素作为初始值,并且它的返回值是Option类型，None用来应对空迭代器的情况。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 将vec中的元素进行累积，最终得到sum的值为6。
+// fold 实现
+let sum1 = vec![1, 2, 3].into_iter().fold(0, |acc, x| acc + x); // sum1 == 6
+// reduce 实现
+let sum2 = vec![1, 2, 3].into_iter().reduce(|acc, x| acc + x); // sum2 == Some(6)
+<span class="boring">}</span></code></pre>
+<h2 id="for-循环"><a class="header" href="#for-循环">for 循环</a></h2>
+<p>for 循环也是一种消费迭代器的方式，能够对迭代器中的每个元素执行某些操作，如打印、修改等。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for element in &amp;mut iterator {
+    element.do_something();
+}
+<span class="boring">}</span></code></pre>
+<p>除了上面提到的方法外，还有很多其他的迭代器方法，如 <code>max</code> 、 <code>min</code> 、 <code>sum</code> 、 <code>count</code> 、 <code>eq</code> 、<code>cmp</code>、<code>is_sorted</code>、<code>product</code>(累乘) 等等，通过名称可以轻易推断它们的功能，也就不多赘述了。</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../rust/所有权.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../rust/宏.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../rust/字符串.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../tokio/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -308,11 +332,11 @@ let ok = c.is_green();
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../rust/所有权.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../rust/宏.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../rust/字符串.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../tokio/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

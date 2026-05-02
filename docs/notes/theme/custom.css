@@ -30,3 +30,15 @@ body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[hr
   display: none !important;
 }
 
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/vec.html"]),
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/hash.html"]),
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/binaryheap.html"]),
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/vecdeque.html"]),
+#mdbook-sidebar li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/btreemap.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/vec.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/hash.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/binaryheap.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/vecdeque.html"]),
+body.sidebar-iframe-inner li.chapter-item:has(> span.chapter-link-wrapper > a[href$="rust/集合数据结构/btreemap.html"]) {
+  display: none !important;
+}

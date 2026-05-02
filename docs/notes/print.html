@@ -29,7 +29,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="src/theme/custom-93cefb21.css">
+        <link rel="stylesheet" href="src/theme/custom-5829cf29.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-512d7026.js";
+            window.path_to_searchindex_js = "searchindex-4e47de78.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-e2c684f2.js"></script>
+        <script src="toc-c4128f91.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -206,11 +206,10 @@ body.sidebar-iframe-inner li.chapter-item:has(&gt; span.chapter-link-wrapper &gt
 <h1 id="工具链"><a class="header" href="#工具链">工具链</a></h1>
 <p>这里记录常用工具与配置。</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="有些只是不是很好分类我就都放在这里了"><a class="header" href="#有些只是不是很好分类我就都放在这里了">有些只是不是很好分类，我就都放在这里了</a></h1>
+<h1 id="有些知识不是很好分类我就都放在这里了"><a class="header" href="#有些知识不是很好分类我就都放在这里了">有些知识不是很好分类，我就都放在这里了</a></h1>
 <ul>
 <li><a href="#utf8">utf8</a></li>
 <li><a href="#位运算">bit</a></li>
-<li><a href="#刷题常用">刷题</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="utf8"><a class="header" href="#utf8">utf8</a></h1>
@@ -235,81 +234,6 @@ align_up_addr = 8, align_down_addr
 </code></pre>
 <p>向下对齐即末尾置0， 即 <code>align_down_addr = addr &amp; !(align - 1)</code><br>向上对齐需检查是否需要进位，然后在末尾置0，即 <code>align_up_addr = (addr + align - 1) &amp; !(align - 1)</code></p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="刷题常用"><a class="header" href="#刷题常用">刷题常用</a></h1>
-<p>本节记录刷题中经常会遇到的一些数据结构以及技巧的使用</p>
-<h2 id="哈希表-stdcollectionshashmap"><a class="header" href="#哈希表-stdcollectionshashmap">哈希表 std::collections::HashMap</a></h2>
-<ol>
-<li>entry() + or_insert()<br>用法：<br><strong>entry(key).or_insert(new_val) -&gt; &amp;(orign_val|new_val)</strong>：</li>
-</ol>
-<p>试图插入(key, new_val)，并返回插入值的引用；但如果key已存在，则返回原有值的引用,例如：</p>
-<p><code>*map.entry("banana").or_insert(0) += 1; // 插入 "banana” 并计数</code></p>
-<ol start="2">
-<li>values()/into_values():
-返回仅有“值”的迭代器，其它与iter()/into_iter()类似</li>
-</ol>
-<h2 id="二维数组边界的优雅处理-checked_add_signeddir"><a class="header" href="#二维数组边界的优雅处理-checked_add_signeddir">二维数组边界的优雅处理 checked_add_signed(dir)</a></h2>
-<p>grid[m][n]是一个二维矩阵，如果对于一个格子，需要检查它相邻的四个格子，可使用以下标准方法</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let dir = [-1, 0, 1, 0, -1];
-for i in 0..m {
-    for j in 0..n {
-        for d in dir.windows(2) {
-            if let (Some(r), Some(c)) = (i.checked_add_signed(d[0]), j.checked_add_signed(d[1])) {
-                if r &lt; m &amp;&amp; c &lt; n {print!("合法格子:{}",grid[r][c]);}
-            }
-        }
-    }
-}
-<span class="boring">}</span></code></pre>
-<p>但是由于usize类型小于0时会发生下溢，故即使不使用checked_add_signed可行”</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>for i in 0..m {
-    for j in 0..n {
-        for (r, c) in [(i - 1, j), (i, j - 1), (i + 1, j), (i, j + 1)] {
-            if r &lt; m &amp;&amp; c &lt; n {print!("合法格子:{}",grid[r][c]);}
-        }
-    }
-}
-<span class="boring">}</span></code></pre>
-<p>但是[(i - 1, j), (i, j - 1), (i + 1, j), (i, j + 1)]写起来真的很烦人</p>
-<h2 id="大顶堆-stdcollectionsbinaryheap"><a class="header" href="#大顶堆-stdcollectionsbinaryheap">大顶堆 std::collections::BinaryHeap</a></h2>
-<p>rust的BinaryHeap默认是大顶堆，如果需要小顶堆，可以使用Reverse</p>
-<pre class="playground"><code class="language-rust">use std::collections::BinaryHeap;
-use std::cmp::Reverse;
-fn main() {
-    let mut heap = BinaryHeap::new();
-    heap.push(Reverse(5));
-    heap.push(Reverse(2));
-    heap.push(Reverse(8));
-
-    while let Some(Reverse(value)) = heap.pop() {
-        println!("{}", value); // 输出：2, 5, 8
-    }
-
-    let mut max_heap = BinaryHeap::new();
-    max_heap.push(5);
-    max_heap.push(2);
-    max_heap.push(8);
-    while let Some(value) = max_heap.pop() {
-        println!("{}", value); // 输出：8, 5, 2
-    }
-}</code></pre>
-<h2 id="优先队列-stdcollectionsvecdeque"><a class="header" href="#优先队列-stdcollectionsvecdeque">优先队列 std::collections::VecDeque</a></h2>
-<p>rust的VecDeque是一个双端队列，可以在两端高效地添加和移除元素</p>
-<pre class="playground"><code class="language-rust">use std::collections::VecDeque;
-fn main() {
-    let mut queue = VecDeque::new();
-    queue.push_back(1); // 从队尾添加元素
-    queue.push_back(2);
-    queue.push_back(3);
-
-    while let Some(value) = queue.pop_front() { // 从队头移除元素
-        println!("{}", value); // 输出：1, 2, 3
-    }
-}</code></pre>
-<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rust"><a class="header" href="#rust">Rust</a></h1>
 <p>这里存储的是我在学习rust时的一些知识点总结</p>
 <ul>
@@ -322,6 +246,7 @@ fn main() {
 <li><a href="#多线程并发">多线程</a></li>
 <li><a href="#异步">异步</a></li>
 <li><a href="#宏">宏</a></li>
+<li><a href="#迭代器及相关内容">迭代器</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="所有权"><a class="header" href="#所有权">所有权</a></h1>
@@ -499,6 +424,11 @@ String //标准字符串
 <p><code>String::from_utf8_unchecked(vec: [u8])</code>:<br>· 会夺走vec的所有权，<br>· 无条件转换，返回 <code>String</code><br>· 无错误处理，若存在无效字符，会导致程序崩溃，但是很快</p>
 </li>
 </ul>
+<p>以上[u8]均可替换为Vec<u8>或&amp;[u8]，根据方法的参数类型而定</u8></p>
+<h1 id="从-string-到-u8-的转换"><a class="header" href="#从-string-到-u8-的转换">从 String 到 <code>&amp;[u8]</code> 的转换</a></h1>
+<ul>
+<li><code>as_bytes</code> 方法返回字符串的字节切片 <code>&amp;[u8]</code>，这是一个安全的操作，因为字符串在 Rust 中是 UTF-8 编码的，每个字符都由一个或多个字节组成，所以直接获取字节切片是没有问题的。</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="rust-中的标准输入"><a class="header" href="#rust-中的标准输入">rust 中的标准输入</a></h1>
 <p>在 rust 中，标准输入可以通过 <code>std::io</code> 模块中的 <code>stdin</code> 函数来获取。这个函数返回一个 <code>Stdin</code> 结构体的实例，可以用来读取用户输入的数据。</p>
@@ -571,6 +501,961 @@ fn main() {
 <li><code>Read</code> trait：提供了基本的读取方法，适用于一次性读取大量数据。在实际使用中，<code>stdin</code> 返回的 <code>Stdin</code> 结构体实现了 <code>Read</code> trait，因此你可以直接使用 <code>read_to_string</code>（读取到一个字符串）、<code>read</code>（读取到字节数组）方法来一次性读取所有输入。</li>
 <li><code>BufRead</code> trait：提供了缓冲读取的方法，适用于逐行读取输入，可以提高效率并减少系统调用的次数。如 <code>stdin.lock()</code> 获取一个实现了 <code>BufRead</code> trait 的锁定版本，从而使用 <code>lines</code>（读取所有行）、<code>read_line</code>（读取单行）方法来逐行读取输入。</li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="集合数据结构"><a class="header" href="#集合数据结构">集合数据结构</a></h1>
+<p>Rust 中最常用的集合类型是 <code>Vec</code> 和 <code>HashMap</code>。前者用于存储一组有顺序的数据，后者用于通过键快速查找值。很多时候，光靠这两个类型就已经能解决大部分数据存储和处理问题。</p>
+<p>不过在刷题时，还经常会遇到队列、堆、有序映射、集合判重等场景，因此这一章主要整理 Rust 中常用集合数据结构的基本用法。这里不会完整复刻标准库文档，而是重点记录平时写题时容易查、容易忘、容易踩坑的操作。</p>
+<p>需要注意的是，<code>Vec</code>、切片、数组、<code>String</code> 并不都在 <code>std::collections</code> 模块中，但它们同样是 Rust 中最重要的数据结构。本章暂时重点放在这些常用集合：</p>
+<ul>
+<li><a href="#vec">Vec</a></li>
+<li><a href="#hashmap与hashset">HashMap/HashSet</a></li>
+<li><a href="#binaryheap">BinaryHeap</a></li>
+<li><a href="#vecdeque">VecDeque</a></li>
+<li><a href="#btreemap与btreeset">BTreeMap/BTreeSet</a></li>
+</ul>
+<h2 id="如何选择集合"><a class="header" href="#如何选择集合">如何选择集合</a></h2>
+<p>如果只是存储一组元素，并且需要按照下标访问，优先考虑 <code>Vec</code>。</p>
+<p>如果需要通过某个 key 快速找到对应的 value，使用 <code>HashMap</code>。</p>
+<p>如果只关心某个元素是否出现过，使用 <code>HashSet</code>。</p>
+<p>如果需要队列，尤其是 BFS 中从队头取元素、从队尾加入元素，使用 <code>VecDeque</code>。</p>
+<p>如果需要每次取出最大值或最小值，使用 <code>BinaryHeap</code>。</p>
+<p>如果需要 key 保持有序，或者需要范围查询，使用 <code>BTreeMap</code> / <code>BTreeSet</code>。</p>
+<p>至于 <code>LinkedList</code>，Rust 标准库中确实有这个类型，但日常代码和刷题中通常很少直接使用。LeetCode 中的链表题一般是题目自定义的 <code>Option&lt;Box&lt;ListNode&gt;&gt;</code>，它的重点是所有权、<code>Option::take</code> 和节点重连，而不是 <code>std::collections::LinkedList</code>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vec"><a class="header" href="#vec">Vec</a></h1>
+<p><code>Vec&lt;T&gt;</code> 是 Rust 中最常用的动态数组，元素在内存中连续存储，可以通过下标快速访问。刷题时，只要需要存储一组有顺序的数据，基本都会优先想到 <code>Vec</code>。</p>
+<p>如果是为了查阅相关方法，可以直接跳转：</p>
+<ul>
+<li><a href="#常用速查">常用方法速查</a></li>
+</ul>
+<h2 id="创建-vec"><a class="header" href="#创建-vec">创建 Vec</a></h2>
+<p>最常用的是 <code>vec![]</code> 宏：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3];
+let empty: Vec&lt;i32&gt; = Vec::new();
+<span class="boring">}</span></code></pre>
+<p>如果已经知道大概需要存多少元素，可以使用 <code>with_capacity</code> 预先分配容量：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = Vec::with_capacity(100);
+<span class="boring">}</span></code></pre>
+<p><code>capacity</code> 是已经分配的容量，<code>len</code> 是当前实际元素个数：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3];
+
+assert_eq!(nums.len(), 3);
+<span class="boring">}</span></code></pre>
+<h2 id="添加和删除"><a class="header" href="#添加和删除">添加和删除</a></h2>
+<p><code>push</code> 和 <code>pop</code> 用于在尾部添加和删除元素，是最常见的栈操作：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![1, 2];
+
+nums.push(3);
+assert_eq!(nums.pop(), Some(3));
+<span class="boring">}</span></code></pre>
+<p><code>insert</code> 可以在指定位置插入元素，<code>remove</code> 可以删除指定位置的元素：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![1, 3];
+
+nums.insert(1, 2);
+assert_eq!(nums, vec![1, 2, 3]);
+
+let x = nums.remove(1);
+assert_eq!(x, 2);
+assert_eq!(nums, vec![1, 3]);
+<span class="boring">}</span></code></pre>
+<p>需要注意，<code>insert</code> 和 <code>remove</code> 会移动后面的元素，时间复杂度是 <code>O(n)</code>。</p>
+<p>如果不关心元素顺序，可以使用 <code>swap_remove</code>，它会把最后一个元素换到被删除的位置，因此更快：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![10, 20, 30, 40];
+
+let x = nums.swap_remove(1);
+
+assert_eq!(x, 20);
+assert_eq!(nums, vec![10, 40, 30]);
+<span class="boring">}</span></code></pre>
+<h2 id="访问元素"><a class="header" href="#访问元素">访问元素</a></h2>
+<p>使用下标访问时，如果越界会 panic：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3];
+
+let x = nums[0];
+<span class="boring">}</span></code></pre>
+<p>如果不确定下标是否合法，使用 <code>get</code> 更安全：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3];
+
+if let Some(x) = nums.get(10) {
+    println!("{}", x);
+}
+<span class="boring">}</span></code></pre>
+<p>常用的首尾访问方法：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3];
+
+assert_eq!(nums.first(), Some(&amp;1));
+assert_eq!(nums.last(), Some(&amp;3));
+<span class="boring">}</span></code></pre>
+<p>如果需要修改元素，可以使用 <code>get_mut</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![1, 2, 3];
+
+if let Some(x) = nums.get_mut(0) {
+    *x = 10;
+}
+
+assert_eq!(nums, vec![10, 2, 3]);
+<span class="boring">}</span></code></pre>
+<h2 id="排序"><a class="header" href="#排序">排序</a></h2>
+<p><code>sort</code> 默认升序排序：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![3, 1, 2];
+
+nums.sort();
+
+assert_eq!(nums, vec![1, 2, 3]);
+<span class="boring">}</span></code></pre>
+<p>降序可以使用 <code>sort_by</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![3, 1, 2];
+
+nums.sort_by(|a, b| b.cmp(a));
+
+assert_eq!(nums, vec![3, 2, 1]);
+<span class="boring">}</span></code></pre>
+<p>如果按某个字段或计算结果排序，使用 <code>sort_by_key</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut words = vec!["aaa", "b", "cc"];
+
+words.sort_by_key(|s| s.len());
+
+assert_eq!(words, vec!["b", "cc", "aaa"]);
+<span class="boring">}</span></code></pre>
+<p><code>reverse</code> 会直接翻转整个 <code>Vec</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![1, 2, 3];
+
+nums.reverse();
+
+assert_eq!(nums, vec![3, 2, 1]);
+<span class="boring">}</span></code></pre>
+<h2 id="去重"><a class="header" href="#去重">去重</a></h2>
+<p><code>dedup</code> 只会删除相邻重复元素，所以常见用法是先排序，再去重：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![3, 1, 2, 3, 2];
+
+nums.sort();
+nums.dedup();
+
+assert_eq!(nums, vec![1, 2, 3]);
+<span class="boring">}</span></code></pre>
+<p>如果原本就只需要删除连续重复元素，可以直接使用 <code>dedup</code>。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![1, 1, 2, 2, 1];
+
+nums.dedup();
+
+assert_eq!(nums, vec![1, 2, 1]);
+<span class="boring">}</span></code></pre>
+<h2 id="原地过滤-retain"><a class="header" href="#原地过滤-retain">原地过滤 retain</a></h2>
+<p><code>retain</code> 会保留满足条件的元素，相当于原地过滤：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut nums = vec![1, 2, 3, 4, 5];
+
+nums.retain(|x| *x % 2 == 1);
+
+assert_eq!(nums, vec![1, 3, 5]);
+<span class="boring">}</span></code></pre>
+<p>它和迭代器里的 <code>filter().collect()</code> 很像，不过 <code>retain</code> 是直接修改原来的 <code>Vec</code>。</p>
+<h2 id="查找"><a class="header" href="#查找">查找</a></h2>
+<p><code>contains</code> 用于判断元素是否存在：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3];
+
+assert!(nums.contains(&amp;2));
+<span class="boring">}</span></code></pre>
+<p>如果 <code>Vec</code> 已经有序，可以使用 <code>binary_search</code> 二分查找：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 3, 5, 7];
+
+assert_eq!(nums.binary_search(&amp;5), Ok(2));
+assert_eq!(nums.binary_search(&amp;4), Err(2));
+<span class="boring">}</span></code></pre>
+<p><code>Ok(index)</code> 表示找到了元素，<code>Err(index)</code> 表示没找到，并给出可以插入的位置。</p>
+<h2 id="切片相关方法"><a class="header" href="#切片相关方法">切片相关方法</a></h2>
+<p>很多 <code>Vec</code> 方法其实来自切片 <code>[T]</code>，所以数组、切片、<code>Vec</code> 都能用。</p>
+<p><code>windows</code> 用于生成固定长度的滑动窗口：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3, 4];
+
+for w in nums.windows(2) {
+    println!("{:?}", w);
+}
+<span class="boring">}</span></code></pre>
+<p>输出的窗口依次是 <code>[1, 2]</code>、<code>[2, 3]</code>、<code>[3, 4]</code>。</p>
+<p><code>chunks</code> 用于按固定大小分组：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3, 4, 5];
+
+for chunk in nums.chunks(2) {
+    println!("{:?}", chunk);
+}
+<span class="boring">}</span></code></pre>
+<p>输出的分组是 <code>[1, 2]</code>、<code>[3, 4]</code>、<code>[5]</code>。</p>
+<p><code>split_at</code> 可以把切片从某个位置分成两段：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let nums = vec![1, 2, 3, 4];
+
+let (left, right) = nums.split_at(2);
+
+assert_eq!(left, &amp;[1, 2]);
+assert_eq!(right, &amp;[3, 4]);
+<span class="boring">}</span></code></pre>
+<h2 id="二维数组和方向数组"><a class="header" href="#二维数组和方向数组">二维数组和方向数组</a></h2>
+<p>刷题中常用 <code>Vec&lt;Vec&lt;T&gt;&gt;</code> 表示二维矩阵：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let grid = vec![
+    vec![1, 2, 3],
+    vec![4, 5, 6],
+];
+
+let m = grid.len();
+let n = grid[0].len();
+<span class="boring">}</span></code></pre>
+<p>遍历上下左右方向时，可以使用方向数组：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let dirs = [-1, 0, 1, 0, -1];
+
+for i in 0..m {
+    for j in 0..n {
+        for d in dirs.windows(2) {
+            if let (Some(r), Some(c)) = (
+                i.checked_add_signed(d[0]),
+                j.checked_add_signed(d[1]),
+            ) {
+                if r &lt; m &amp;&amp; c &lt; n {
+                    println!("{}", grid[r][c]);
+                }
+            }
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>这里使用 <code>checked_add_signed</code> 是为了避免 <code>usize</code> 在做 <code>i - 1</code> 时发生下溢。</p>
+<h2 id="常用速查"><a class="header" href="#常用速查">常用速查</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>push</code></td><td>尾部添加元素</td></tr>
+<tr><td><code>pop</code></td><td>尾部弹出元素</td></tr>
+<tr><td><code>insert</code></td><td>指定位置插入</td></tr>
+<tr><td><code>remove</code></td><td>指定位置删除，保持顺序</td></tr>
+<tr><td><code>swap_remove</code></td><td>指定位置删除，不保持顺序</td></tr>
+<tr><td><code>sort</code></td><td>升序排序</td></tr>
+<tr><td><code>sort_by</code></td><td>自定义排序</td></tr>
+<tr><td><code>sort_by_key</code></td><td>按 key 排序</td></tr>
+<tr><td><code>reverse</code></td><td>翻转</td></tr>
+<tr><td><code>dedup</code></td><td>删除相邻重复元素</td></tr>
+<tr><td><code>retain</code></td><td>原地过滤</td></tr>
+<tr><td><code>contains</code></td><td>判断是否包含元素</td></tr>
+<tr><td><code>binary_search</code></td><td>有序数组二分查找</td></tr>
+<tr><td><code>windows</code></td><td>滑动窗口</td></tr>
+<tr><td><code>chunks</code></td><td>分块遍历</td></tr>
+<tr><td><code>split_at</code></td><td>切分切片</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="hashmap与hashset"><a class="header" href="#hashmap与hashset">HashMap与HashSet</a></h1>
+<p><code>HashMap</code> 和 <code>HashSet</code> 都来自 <code>std::collections</code>。它们的底层都是哈希表，特点是查询、插入、删除的平均时间复杂度都是 <code>O(1)</code>。</p>
+<p>刷题时，<code>HashMap</code> 常用于计数、记录位置、建立映射；<code>HashSet</code> 常用于判重、去重、判断元素是否出现过。</p>
+<p>使用前需要引入：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::{HashMap, HashSet};
+<span class="boring">}</span></code></pre>
+<p>如果是为了查阅相关方法，可以直接跳转：</p>
+<ul>
+<li><a href="#常用速查-1">常用方法速查</a></li>
+</ul>
+<h1 id="hashmap"><a class="header" href="#hashmap">HashMap</a></h1>
+<p><code>HashMap&lt;K, V&gt;</code> 用于存储键值对，通过 key 查找 value。</p>
+<h2 id="创建和插入"><a class="header" href="#创建和插入">创建和插入</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashMap;
+
+let mut map = HashMap::new();
+
+map.insert("apple", 3);
+map.insert("banana", 2);
+<span class="boring">}</span></code></pre>
+<p>如果插入已经存在的 key，新值会覆盖旧值，并返回旧值：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map = HashMap::new();
+
+assert_eq!(map.insert("apple", 3), None);
+assert_eq!(map.insert("apple", 5), Some(3));
+assert_eq!(map.get("apple"), Some(&amp;5));
+<span class="boring">}</span></code></pre>
+<h2 id="查询和删除"><a class="header" href="#查询和删除">查询和删除</a></h2>
+<p><code>get</code> 返回 <code>Option&lt;&amp;V&gt;</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map = HashMap::new();
+map.insert("apple", 3);
+
+if let Some(count) = map.get("apple") {
+    println!("{}", count);
+}
+<span class="boring">}</span></code></pre>
+<p>如果需要修改 value，使用 <code>get_mut</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map = HashMap::new();
+map.insert("apple", 3);
+
+if let Some(count) = map.get_mut("apple") {
+    *count += 1;
+}
+
+assert_eq!(map.get("apple"), Some(&amp;4));
+<span class="boring">}</span></code></pre>
+<p>判断 key 是否存在：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>assert!(map.contains_key("apple"));
+<span class="boring">}</span></code></pre>
+<p>删除 key：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let old = map.remove("apple");
+
+assert_eq!(old, Some(4));
+<span class="boring">}</span></code></pre>
+<h2 id="entry-和-or_insert"><a class="header" href="#entry-和-or_insert">entry 和 or_insert</a></h2>
+<p><code>entry</code> 是刷题里非常常用的方法，尤其适合计数。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map = HashMap::new();
+
+*map.entry("banana").or_insert(0) += 1;
+*map.entry("banana").or_insert(0) += 1;
+
+assert_eq!(map.get("banana"), Some(&amp;2));
+<span class="boring">}</span></code></pre>
+<p>可以这样理解：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>map.entry(key).or_insert(default_value)
+<span class="boring">}</span></code></pre>
+<p>如果 key 存在，返回原来 value 的可变引用；如果 key 不存在，先插入默认值，再返回这个新值的可变引用。</p>
+<p>如果默认值的构造比较重，可以使用 <code>or_insert_with</code>，它只会在 key 不存在时执行闭包：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map: HashMap&lt;&amp;str, Vec&lt;i32&gt;&gt; = HashMap::new();
+
+map.entry("odd").or_insert_with(Vec::new).push(1);
+map.entry("odd").or_insert_with(Vec::new).push(3);
+
+assert_eq!(map.get("odd"), Some(&amp;vec![1, 3]));
+<span class="boring">}</span></code></pre>
+<h2 id="遍历"><a class="header" href="#遍历">遍历</a></h2>
+<p>遍历键值对：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for (key, value) in &amp;map {
+    println!("{} {}", key, value);
+}
+<span class="boring">}</span></code></pre>
+<p>只遍历 key：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for key in map.keys() {
+    println!("{}", key);
+}
+<span class="boring">}</span></code></pre>
+<p>只遍历 value：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for value in map.values() {
+    println!("{}", value);
+}
+<span class="boring">}</span></code></pre>
+<p>如果要拿走所有 value，可以使用 <code>into_values</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let values: Vec&lt;_&gt; = map.into_values().collect();
+<span class="boring">}</span></code></pre>
+<p>需要注意，<code>HashMap</code> 的遍历顺序是不固定的，不能依赖它的输出顺序。</p>
+<h2 id="常用模板"><a class="header" href="#常用模板">常用模板</a></h2>
+<p>统计元素出现次数：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashMap;
+
+let nums = vec![1, 2, 1, 3, 2, 1];
+let mut count = HashMap::new();
+
+for x in nums {
+    *count.entry(x).or_insert(0) += 1;
+}
+
+assert_eq!(count.get(&amp;1), Some(&amp;3));
+<span class="boring">}</span></code></pre>
+<p>记录元素下标：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashMap;
+
+let nums = vec![2, 7, 11, 15];
+let mut pos = HashMap::new();
+
+for (i, x) in nums.iter().enumerate() {
+    pos.insert(*x, i);
+}
+
+assert_eq!(pos.get(&amp;7), Some(&amp;1));
+<span class="boring">}</span></code></pre>
+<h1 id="hashset"><a class="header" href="#hashset">HashSet</a></h1>
+<p><code>HashSet&lt;T&gt;</code> 用于存储不重复的元素。它可以理解成只有 key、没有 value 的 <code>HashMap</code>。</p>
+<h2 id="基本使用"><a class="header" href="#基本使用">基本使用</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashSet;
+
+let mut set = HashSet::new();
+
+set.insert(1);
+set.insert(2);
+set.insert(2);
+
+assert_eq!(set.len(), 2);
+assert!(set.contains(&amp;1));
+<span class="boring">}</span></code></pre>
+<p><code>insert</code> 会返回一个 bool，表示这个元素之前是否不存在：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut set = HashSet::new();
+
+assert_eq!(set.insert(1), true);
+assert_eq!(set.insert(1), false);
+<span class="boring">}</span></code></pre>
+<p>删除元素：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>set.remove(&amp;1);
+<span class="boring">}</span></code></pre>
+<h2 id="从迭代器生成-hashset"><a class="header" href="#从迭代器生成-hashset">从迭代器生成 HashSet</a></h2>
+<p>常用于去重或判重：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashSet;
+
+let nums = vec![1, 2, 2, 3];
+let set: HashSet&lt;_&gt; = nums.into_iter().collect();
+
+assert_eq!(set.len(), 3);
+<span class="boring">}</span></code></pre>
+<p>判断是否有重复元素：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashSet;
+
+let nums = vec![1, 2, 3, 2];
+let mut seen = HashSet::new();
+
+for x in nums {
+    if !seen.insert(x) {
+        println!("重复元素: {}", x);
+    }
+}
+<span class="boring">}</span></code></pre>
+<h2 id="集合运算"><a class="header" href="#集合运算">集合运算</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashSet;
+
+let a: HashSet&lt;_&gt; = [1, 2, 3].into_iter().collect();
+let b: HashSet&lt;_&gt; = [3, 4, 5].into_iter().collect();
+
+let inter: Vec&lt;_&gt; = a.intersection(&amp;b).copied().collect();
+let union: Vec&lt;_&gt; = a.union(&amp;b).copied().collect();
+let diff: Vec&lt;_&gt; = a.difference(&amp;b).copied().collect();
+
+assert_eq!(inter, vec![3]);
+assert!(union.contains(&amp;1) &amp;&amp; union.contains(&amp;5));
+assert!(diff.contains(&amp;1) &amp;&amp; diff.contains(&amp;2));
+<span class="boring">}</span></code></pre>
+<p>由于 <code>HashSet</code> 本身无序，所以如果题目要求有序输出，需要再排序。</p>
+<h2 id="常用速查-1"><a class="header" href="#常用速查-1">常用速查</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>类型</th><th>方法</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>HashMap</code></td><td><code>insert</code></td><td>插入或覆盖键值对</td></tr>
+<tr><td><code>HashMap</code></td><td><code>get</code> / <code>get_mut</code></td><td>查询或可变查询</td></tr>
+<tr><td><code>HashMap</code></td><td><code>remove</code></td><td>删除 key</td></tr>
+<tr><td><code>HashMap</code></td><td><code>contains_key</code></td><td>判断 key 是否存在</td></tr>
+<tr><td><code>HashMap</code></td><td><code>entry().or_insert()</code></td><td>不存在则插入，常用于计数</td></tr>
+<tr><td><code>HashMap</code></td><td><code>keys</code> / <code>values</code> / <code>iter</code></td><td>遍历</td></tr>
+<tr><td><code>HashSet</code></td><td><code>insert</code></td><td>插入并返回是否为新元素</td></tr>
+<tr><td><code>HashSet</code></td><td><code>contains</code></td><td>判断是否存在</td></tr>
+<tr><td><code>HashSet</code></td><td><code>remove</code></td><td>删除元素</td></tr>
+<tr><td><code>HashSet</code></td><td><code>intersection</code></td><td>交集</td></tr>
+<tr><td><code>HashSet</code></td><td><code>union</code></td><td>并集</td></tr>
+<tr><td><code>HashSet</code></td><td><code>difference</code></td><td>差集</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="binaryheap"><a class="header" href="#binaryheap">BinaryHeap</a></h1>
+<p><code>BinaryHeap&lt;T&gt;</code> 是 Rust 标准库中的二叉堆，可以当作优先队列使用。它默认是<strong>大顶堆</strong>，也就是说每次 <code>pop</code> 都会弹出当前最大的元素。</p>
+<p>使用前需要引入：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BinaryHeap;
+<span class="boring">}</span></code></pre>
+<h2 id="大顶堆"><a class="header" href="#大顶堆">大顶堆</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BinaryHeap;
+
+let mut heap = BinaryHeap::new();
+
+heap.push(5);
+heap.push(2);
+heap.push(8);
+
+assert_eq!(heap.peek(), Some(&amp;8));
+assert_eq!(heap.pop(), Some(8));
+assert_eq!(heap.pop(), Some(5));
+assert_eq!(heap.pop(), Some(2));
+assert_eq!(heap.pop(), None);
+<span class="boring">}</span></code></pre>
+<p>常用方法：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>push</code></td><td>插入元素</td></tr>
+<tr><td><code>pop</code></td><td>弹出最大元素</td></tr>
+<tr><td><code>peek</code></td><td>查看最大元素但不弹出</td></tr>
+<tr><td><code>len</code></td><td>元素个数</td></tr>
+<tr><td><code>is_empty</code></td><td>是否为空</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="小顶堆-reverse"><a class="header" href="#小顶堆-reverse">小顶堆 Reverse</a></h2>
+<p>很多题目需要每次取最小值，这时可以使用 <code>std::cmp::Reverse</code> 把排序规则反过来：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::cmp::Reverse;
+use std::collections::BinaryHeap;
+
+let mut heap = BinaryHeap::new();
+
+heap.push(Reverse(5));
+heap.push(Reverse(2));
+heap.push(Reverse(8));
+
+assert_eq!(heap.pop(), Some(Reverse(2)));
+assert_eq!(heap.pop(), Some(Reverse(5)));
+assert_eq!(heap.pop(), Some(Reverse(8)));
+<span class="boring">}</span></code></pre>
+<p>弹出时可以直接模式匹配：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>while let Some(Reverse(x)) = heap.pop() {
+    println!("{}", x);
+}
+<span class="boring">}</span></code></pre>
+<h2 id="存储元组"><a class="header" href="#存储元组">存储元组</a></h2>
+<p><code>BinaryHeap</code> 中可以放元组，元组会按照字典序比较：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BinaryHeap;
+
+let mut heap = BinaryHeap::new();
+
+heap.push((3, "a"));
+heap.push((1, "b"));
+heap.push((3, "c"));
+
+assert_eq!(heap.pop(), Some((3, "c")));
+assert_eq!(heap.pop(), Some((3, "a")));
+assert_eq!(heap.pop(), Some((1, "b")));
+<span class="boring">}</span></code></pre>
+<p>比较时先看第一个元素，第一个相同再看第二个元素。</p>
+<p>如果想用小顶堆存元组，可以套 <code>Reverse</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::cmp::Reverse;
+use std::collections::BinaryHeap;
+
+let mut heap = BinaryHeap::new();
+
+heap.push(Reverse((3, "a")));
+heap.push(Reverse((1, "b")));
+heap.push(Reverse((3, "c")));
+
+assert_eq!(heap.pop(), Some(Reverse((1, "b"))));
+<span class="boring">}</span></code></pre>
+<h2 id="top-k-模板"><a class="header" href="#top-k-模板">Top K 模板</a></h2>
+<p>如果要找最大的 k 个元素，可以直接用大顶堆全部加入后弹出 k 次。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BinaryHeap;
+
+let nums = vec![3, 1, 5, 2, 4];
+let mut heap = BinaryHeap::from(nums);
+
+let mut ans = Vec::new();
+for _ in 0..3 {
+    if let Some(x) = heap.pop() {
+        ans.push(x);
+    }
+}
+
+assert_eq!(ans, vec![5, 4, 3]);
+<span class="boring">}</span></code></pre>
+<p>如果数据很多，只想维护最大的 k 个元素，也可以用小顶堆。堆中只保留 k 个元素，堆顶就是当前 top k 中最小的那个：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::cmp::Reverse;
+use std::collections::BinaryHeap;
+
+let nums = vec![3, 1, 5, 2, 4];
+let k = 3;
+let mut heap = BinaryHeap::new();
+
+for x in nums {
+    heap.push(Reverse(x));
+    if heap.len() &gt; k {
+        heap.pop();
+    }
+}
+
+let mut ans: Vec&lt;_&gt; = heap.into_iter().map(|Reverse(x)| x).collect();
+ans.sort();
+
+assert_eq!(ans, vec![3, 4, 5]);
+<span class="boring">}</span></code></pre>
+<h2 id="注意事项"><a class="header" href="#注意事项">注意事项</a></h2>
+<p><code>BinaryHeap</code> 只能保证堆顶是最大值，并不保证整体有序。</p>
+<p>如果想得到有序结果，需要不断 <code>pop</code>，或者最后再排序：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BinaryHeap;
+
+let heap = BinaryHeap::from(vec![3, 1, 2]);
+let sorted = heap.into_sorted_vec();
+
+assert_eq!(sorted, vec![1, 2, 3]);
+<span class="boring">}</span></code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vecdeque"><a class="header" href="#vecdeque">VecDeque</a></h1>
+<p><code>VecDeque&lt;T&gt;</code> 是双端队列，可以在队头和队尾高效地添加、删除元素。刷题中最常见的用途是 BFS 队列，也可以用于滑动窗口。</p>
+<p>使用前需要引入：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::VecDeque;
+<span class="boring">}</span></code></pre>
+<p>如果是为了查阅相关方法，可以直接跳转：</p>
+<ul>
+<li><a href="#作为双端队列使用">常用方法速查</a></li>
+</ul>
+<h2 id="作为队列使用"><a class="header" href="#作为队列使用">作为队列使用</a></h2>
+<p>普通队列是先进先出，通常从队尾加入，从队头弹出：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::VecDeque;
+
+let mut queue = VecDeque::new();
+
+queue.push_back(1);
+queue.push_back(2);
+queue.push_back(3);
+
+assert_eq!(queue.pop_front(), Some(1));
+assert_eq!(queue.pop_front(), Some(2));
+assert_eq!(queue.pop_front(), Some(3));
+assert_eq!(queue.pop_front(), None);
+<span class="boring">}</span></code></pre>
+<p>BFS 中经常这样写：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::VecDeque;
+
+let mut queue = VecDeque::new();
+
+queue.push_back((0, 0));
+
+while let Some((r, c)) = queue.pop_front() {
+    println!("{} {}", r, c);
+}
+<span class="boring">}</span></code></pre>
+<h2 id="作为双端队列使用"><a class="header" href="#作为双端队列使用">作为双端队列使用</a></h2>
+<p><code>VecDeque</code> 两端都可以操作：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::VecDeque;
+
+let mut deque = VecDeque::new();
+
+deque.push_front(1);
+deque.push_back(2);
+
+assert_eq!(deque.front(), Some(&amp;1));
+assert_eq!(deque.back(), Some(&amp;2));
+
+assert_eq!(deque.pop_back(), Some(2));
+assert_eq!(deque.pop_front(), Some(1));
+<span class="boring">}</span></code></pre>
+<p>常用方法：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>push_back</code></td><td>队尾加入</td></tr>
+<tr><td><code>pop_front</code></td><td>队头弹出</td></tr>
+<tr><td><code>push_front</code></td><td>队头加入</td></tr>
+<tr><td><code>pop_back</code></td><td>队尾弹出</td></tr>
+<tr><td><code>front</code></td><td>查看队头</td></tr>
+<tr><td><code>back</code></td><td>查看队尾</td></tr>
+<tr><td><code>len</code></td><td>元素个数</td></tr>
+<tr><td><code>is_empty</code></td><td>是否为空</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="单调队列"><a class="header" href="#单调队列">单调队列</a></h2>
+<p>滑动窗口最大值这类题，经常会使用单调队列。队列里存下标，并让对应的值保持单调。</p>
+<p>下面是维护窗口最大值的常见写法：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::VecDeque;
+
+let nums = vec![1, 3, -1, -3, 5, 3, 6, 7];
+let k = 3;
+let mut deque: VecDeque&lt;usize&gt; = VecDeque::new();
+let mut ans = Vec::new();
+
+for i in 0..nums.len() {
+    while let Some(&amp;j) = deque.back() {
+        if nums[j] &lt;= nums[i] {
+            deque.pop_back();
+        } else {
+            break;
+        }
+    }
+
+    deque.push_back(i);
+
+    if let Some(&amp;j) = deque.front() {
+        if j + k &lt;= i {
+            deque.pop_front();
+        }
+    }
+
+    if i + 1 &gt;= k {
+        ans.push(nums[*deque.front().unwrap()]);
+    }
+}
+
+assert_eq!(ans, vec![3, 3, 5, 5, 6, 7]);
+<span class="boring">}</span></code></pre>
+<p>这里的核心思想是：队头始终保存当前窗口最大值的下标。</p>
+<h2 id="vec-和-vecdeque-的区别"><a class="header" href="#vec-和-vecdeque-的区别">Vec 和 VecDeque 的区别</a></h2>
+<p><code>Vec</code> 适合在尾部 <code>push</code> / <code>pop</code>，也适合随机访问。</p>
+<p><code>VecDeque</code> 适合频繁从队头 <code>pop_front</code>。如果用 <code>Vec::remove(0)</code> 模拟出队，每次都要移动后面的元素，复杂度是 <code>O(n)</code>。</p>
+<p>所以 BFS 这类场景应该优先使用 <code>VecDeque</code>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="btreemap与btreeset"><a class="header" href="#btreemap与btreeset">BTreeMap与BTreeSet</a></h1>
+<p><code>BTreeMap</code> 和 <code>BTreeSet</code> 是有序版本的映射和集合。它们来自 <code>std::collections</code>，底层是 B 树，元素会按照 key 的顺序存储。</p>
+<p>和 <code>HashMap</code> / <code>HashSet</code> 相比，它们的单次操作通常是 <code>O(log n)</code>，但优势是有序，并且支持范围查询。</p>
+<p>使用前需要引入：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::{BTreeMap, BTreeSet};
+<span class="boring">}</span></code></pre>
+<p>如果是为了查阅相关方法，可以直接跳转：</p>
+<ul>
+<li><a href="#常用速查-2">常用方法速查</a></li>
+</ul>
+<h1 id="btreemap"><a class="header" href="#btreemap">BTreeMap</a></h1>
+<p><code>BTreeMap&lt;K, V&gt;</code> 可以看作有序的 <code>HashMap</code>。如果题目需要按照 key 的顺序遍历，或者需要找某个范围内的 key，就可以考虑它。</p>
+<h2 id="基本使用-1"><a class="header" href="#基本使用-1">基本使用</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeMap;
+
+let mut map = BTreeMap::new();
+
+map.insert(3, "c");
+map.insert(1, "a");
+map.insert(2, "b");
+
+assert_eq!(map.get(&amp;1), Some(&amp;"a"));
+<span class="boring">}</span></code></pre>
+<p>遍历时会按照 key 从小到大：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for (key, value) in &amp;map {
+    println!("{} {}", key, value);
+}
+<span class="boring">}</span></code></pre>
+<p>输出顺序是 <code>1, 2, 3</code>。</p>
+<h2 id="首尾元素"><a class="header" href="#首尾元素">首尾元素</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeMap;
+
+let mut map = BTreeMap::new();
+
+map.insert(3, "c");
+map.insert(1, "a");
+map.insert(2, "b");
+
+assert_eq!(map.first_key_value(), Some((&amp;1, &amp;"a")));
+assert_eq!(map.last_key_value(), Some((&amp;3, &amp;"c")));
+<span class="boring">}</span></code></pre>
+<p>如果要弹出最小或最大的键值对：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>assert_eq!(map.pop_first(), Some((1, "a")));
+assert_eq!(map.pop_last(), Some((3, "c")));
+<span class="boring">}</span></code></pre>
+<h2 id="范围查询-range"><a class="header" href="#范围查询-range">范围查询 range</a></h2>
+<p><code>range</code> 可以遍历某个 key 范围内的元素：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeMap;
+
+let mut map = BTreeMap::new();
+
+map.insert(1, "a");
+map.insert(2, "b");
+map.insert(3, "c");
+map.insert(4, "d");
+
+for (key, value) in map.range(2..=3) {
+    println!("{} {}", key, value);
+}
+<span class="boring">}</span></code></pre>
+<p>这里会遍历 key 为 <code>2</code> 和 <code>3</code> 的元素。</p>
+<p>常见范围写法：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>map.range(2..);    // key &gt;= 2
+map.range(..=3);   // key &lt;= 3
+map.range(2..=5);  // 2 &lt;= key &lt;= 5
+<span class="boring">}</span></code></pre>
+<h2 id="entry"><a class="header" href="#entry">entry</a></h2>
+<p><code>BTreeMap</code> 也有 <code>entry</code>，用法和 <code>HashMap</code> 类似：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeMap;
+
+let mut map = BTreeMap::new();
+
+*map.entry("apple").or_insert(0) += 1;
+*map.entry("apple").or_insert(0) += 1;
+
+assert_eq!(map.get("apple"), Some(&amp;2));
+<span class="boring">}</span></code></pre>
+<h1 id="btreeset"><a class="header" href="#btreeset">BTreeSet</a></h1>
+<p><code>BTreeSet&lt;T&gt;</code> 可以看作有序的 <code>HashSet</code>，常用于需要自动排序、去重、范围查询的场景。</p>
+<h2 id="基本使用-1-1"><a class="header" href="#基本使用-1-1">基本使用</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeSet;
+
+let mut set = BTreeSet::new();
+
+set.insert(3);
+set.insert(1);
+set.insert(2);
+
+assert!(set.contains(&amp;2));
+<span class="boring">}</span></code></pre>
+<p>遍历时会从小到大：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for x in &amp;set {
+    println!("{}", x);
+}
+<span class="boring">}</span></code></pre>
+<h2 id="首尾元素和范围查询"><a class="header" href="#首尾元素和范围查询">首尾元素和范围查询</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::BTreeSet;
+
+let set: BTreeSet&lt;_&gt; = [1, 2, 3, 4, 5].into_iter().collect();
+
+assert_eq!(set.first(), Some(&amp;1));
+assert_eq!(set.last(), Some(&amp;5));
+
+let mid: Vec&lt;_&gt; = set.range(2..=4).copied().collect();
+
+assert_eq!(mid, vec![2, 3, 4]);
+<span class="boring">}</span></code></pre>
+<h2 id="和-hashmap--hashset-的选择"><a class="header" href="#和-hashmap--hashset-的选择">和 HashMap / HashSet 的选择</a></h2>
+<p>如果只需要快速查询，通常使用 <code>HashMap</code> / <code>HashSet</code>。</p>
+<p>如果需要有序遍历、范围查询、取最小最大值，使用 <code>BTreeMap</code> / <code>BTreeSet</code>。</p>
+<h2 id="常用速查-2"><a class="header" href="#常用速查-2">常用速查</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>类型</th><th>方法</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>BTreeMap</code></td><td><code>insert</code></td><td>插入键值对</td></tr>
+<tr><td><code>BTreeMap</code></td><td><code>get</code> / <code>get_mut</code></td><td>查询或修改</td></tr>
+<tr><td><code>BTreeMap</code></td><td><code>range</code></td><td>范围查询</td></tr>
+<tr><td><code>BTreeMap</code></td><td><code>first_key_value</code></td><td>查看最小 key</td></tr>
+<tr><td><code>BTreeMap</code></td><td><code>last_key_value</code></td><td>查看最大 key</td></tr>
+<tr><td><code>BTreeMap</code></td><td><code>pop_first</code></td><td>弹出最小 key</td></tr>
+<tr><td><code>BTreeMap</code></td><td><code>pop_last</code></td><td>弹出最大 key</td></tr>
+<tr><td><code>BTreeSet</code></td><td><code>insert</code></td><td>插入元素</td></tr>
+<tr><td><code>BTreeSet</code></td><td><code>contains</code></td><td>判断是否存在</td></tr>
+<tr><td><code>BTreeSet</code></td><td><code>range</code></td><td>范围查询</td></tr>
+<tr><td><code>BTreeSet</code></td><td><code>first</code> / <code>last</code></td><td>查看最小或最大元素</td></tr>
+</tbody>
+</table>
+</div>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="这里记录模式匹配的一些零碎知识点"><a class="header" href="#这里记录模式匹配的一些零碎知识点">这里记录模式匹配的一些零碎知识点</a></h1>
 <ul>
@@ -1023,6 +1908,20 @@ impl&lt;T&gt; std::ops::Deref for MyBox&lt;T&gt; {
 <li><code>ToOwned</code> 是 <code>Clone</code> 的泛用版本，提供了 <code>to_owned()</code> 方法，可以从一个引用类型直接创建一个拥有所有权的类型，例如 <code>str</code> 的 <code>to_owned()</code> 会返回一个 <code>String</code>。</li>
 <li><code>Cow&lt;'a,T&gt;</code>（Clone on Write, 写时克隆）是一个智能指针, 在需要写时（比如调用 to_mut()）就会用 <code>to_owned()</code> 克隆出一个拥有所有权的类型，否则保持对原始数据的引用。</li>
 </ul>
+<h2 id="intoiterator-和-iterator"><a class="header" href="#intoiterator-和-iterator"><code>IntoIterator</code> 和 <code>Iterator</code></a></h2>
+<ul>
+<li><code>IntoIterator</code> 定义了如何将一个类型转换为一个迭代器，需实现 <code>into_iter()</code> 方法来返回一个迭代器，附赠了 <code>for</code> 循环的语法糖支持：</li>
+</ul>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for item in collection {
+    // 这里的 collection 会被自动调用 into_iter() 转换为迭代器
+}
+<span class="boring">}</span></code></pre>
+<ul>
+<li><code>Iterator</code>：得到迭代器后，迭代器本身的行为就是由 <code>Iterator</code> trait 定义的了。为一个类型T实现Iterator,必须实现 <code>next()</code> 方法来返回迭代器中的下一个元素，返回值是Option<t></t></li>
+</ul>
+<p>想要了解更多迭代器相关的知识，可以参考<a href="#迭代器及相关内容">迭代器</a>一章。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="生命周期"><a class="header" href="#生命周期">生命周期</a></h1>
 <pre><code>生命周期与其叫做生命周期，不如叫做失效点，它描述一个引用失效的时刻
@@ -1620,7 +2519,7 @@ let another_ref = Rc::clone(&amp;node);
 println!("引用计数: {}", Rc::strong_count(&amp;node));  // 2
 <span class="boring">}</span></code></pre>
 <hr>
-<h2 id="注意事项"><a class="header" href="#注意事项">注意事项</a></h2>
+<h2 id="注意事项-1"><a class="header" href="#注意事项-1">注意事项</a></h2>
 <h3 id="1-运行时借用检查会-panic"><a class="header" href="#1-运行时借用检查会-panic">1. 运行时借用检查会 panic</a></h3>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -2036,6 +2935,145 @@ macro_rules! max {
 <li><a href="https://doc.rust-lang.org/reference/macros.html">Rust Reference - Macros</a></li>
 <li><a href="https://veykril.github.io/tlborm/">The Little Book of Rust Macros</a></li>
 </ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="迭代器及相关内容"><a class="header" href="#迭代器及相关内容">迭代器及相关内容</a></h1>
+<p>作为函数式风格语言，rust提供了非常强大的迭代器功能，也是rust中极其优雅的处理方式之一；迭代器往往作用于Vec、HashMap等集合类型上，能够让我们以一种非常简洁的方式对集合进行各种操作，如转换、过滤、累积等。</p>
+<h2 id="迭代器的两个重要-trait-iterator-和-intoiterator"><a class="header" href="#迭代器的两个重要-trait-iterator-和-intoiterator">迭代器的两个重要 trait ：<code>Iterator</code> 和 <code>IntoIterator</code></a></h2>
+<p>若需要为<em>某个类型</em>实现迭代器，需要实现 <code>Iterator</code> trait ，其必要方法是 <code>next()</code> ，用于获取迭代器中的下一个元素，如果迭代器中还有元素，则返回Some(元素)，否则返回None。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>trait Iterator {
+    type Item;
+    fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt;;
+}
+<span class="boring">}</span></code></pre>
+<p>如需将<em>某个集合</em>转换为迭代器，则需要实现 <code>IntoIterator</code> trait，必要方法为 <code>into_iter()</code> ，它返回一个生成的迭代器。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>trait IntoIterator {
+    type Item;
+    type IntoIter: Iterator&lt;Item = Self::Item&gt;;
+    fn into_iter(self) -&gt; Self::IntoIter;
+}
+<span class="boring">}</span></code></pre>
+<h1 id="从集合生成迭代器"><a class="header" href="#从集合生成迭代器">从集合生成迭代器</a></h1>
+<p>迭代器只用于迭代，而数据一般存储在集合中，所以首先需要从集合生成迭代器（对应于 <code>IntoIterator</code> trait），下面是一些常见的从集合生成迭代器的方法：</p>
+<h2 id="vec---迭代器"><a class="header" href="#vec---迭代器">Vec -&gt; 迭代器</a></h2>
+<h3 id="iter--iter_mut-和-into_iter"><a class="header" href="#iter--iter_mut-和-into_iter"><code>iter</code> , <code>iter_mut</code> 和 <code>into_iter</code></a></h3>
+<p><strong>iter</strong> 方法返回对集合的不可变引用的迭代器</p>
+<p><strong>iter_mut</strong> 方法返回对集合的可变引用的迭代器，使用iter_mut后，可以修改集合中的元素，但原来的集合仍然可用</p>
+<p><strong>into_iter</strong> 方法则返回集合的所有权的迭代器，使用into_iter后，原来的集合将<strong>不再可用</strong></p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>Item类型</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td>iter</td><td>&amp;T</td><td>只读遍历</td></tr>
+<tr><td>iter_mut</td><td>&amp;mut T</td><td>原地修改集合元素</td></tr>
+<tr><td>into_iter</td><td>T</td><td>消费集合，拿到所有权</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="字符串---迭代器"><a class="header" href="#字符串---迭代器">字符串 -&gt; 迭代器</a></h2>
+<p>字符串 String 是一个特殊的存在，它的迭代方式很不同而且非常丰富</p>
+<h3 id="chars-和-bytes-从字符串生成的字符迭代器"><a class="header" href="#chars-和-bytes-从字符串生成的字符迭代器"><code>chars</code> 和 <code>bytes</code>: 从字符串生成的字符迭代器</a></h3>
+<p>字符串的迭代与集合有所不同，它不拿到字符串的引用作为元素，而是直接迭代字符串中的字符或字节</p>
+<p><strong>chars</strong> 按照 utf-8 编码返回每个字符的迭代器</p>
+<p><strong>bytes</strong> 直接按字节返回迭代器。有趣的是, <code>as_bytes</code> 返回字符串的字节切片，想要迭代器的话可以使用as_bytes().iter()</p>
+<p>rust中的字符串是UTF-8编码的，所以一个字符可能由多个字节组成, <code>chars</code> 方法会正确处理这些字符，而 <code>bytes</code> 方法只返回每个字节的迭代器。</p>
+<h3 id="lines-和-split-从字符串生成元素为字符串迭代器"><a class="header" href="#lines-和-split-从字符串生成元素为字符串迭代器"><code>lines</code> 和 <code>split</code>: 从字符串生成元素为字符串迭代器</a></h3>
+<p><strong>lines</strong> 将字符串按行分割，返回一个迭代器，每个元素是字符串的一行</p>
+<p><strong>split</strong> 根据指定分隔字符串将字符串分割，返回一个迭代器，每个元素是分割后的字符串片段，此外还有 <code>split_whitespace</code>, <code>split_inclusive</code> 等变体</p>
+<h3 id="matches-从字符串生成匹配模式迭代器"><a class="header" href="#matches-从字符串生成匹配模式迭代器"><code>matches</code>: 从字符串生成匹配模式迭代器</a></h3>
+<p><strong>matches</strong> 方法传入一个pattern（字符串、正则表达式等），返回一个迭代器，包含字符串中所有匹配指定模式(如果只找第一个，可以使用find或position方法，尽管他俩传入的参数应该是一个返回值为bool的闭包)的子串。</p>
+<h3 id="chars_indices--bytes_indices-和-match_indices-从字符串生成带索引的迭代器"><a class="header" href="#chars_indices--bytes_indices-和-match_indices-从字符串生成带索引的迭代器"><code>chars_indices</code> , <code>bytes_indices</code> 和 <code>match_indices</code>: 从字符串生成带索引的迭代器</a></h3>
+<p>这几个相当于上面几个方法的带索引版本，返回的迭代器中的元素是一个元组，包含元素的索引和元素本身。</p>
+<h2 id="hashmaphashset---迭代器"><a class="header" href="#hashmaphashset---迭代器">HashMap/HashSet -&gt; 迭代器</a></h2>
+<h3 id="iter-和-into_iter-从hashmap生成键值对的迭代器"><a class="header" href="#iter-和-into_iter-从hashmap生成键值对的迭代器"><code>iter</code> 和 <code>into_iter</code>: 从HashMap生成键值对的迭代器</a></h3>
+<p>它们也可以用于HashMap和HashSet，和Vec的实际上一样，区别只在于HashMap返回键值对元组</p>
+<h3 id="keys-和-values-从hashmap生成键和值的迭代器"><a class="header" href="#keys-和-values-从hashmap生成键和值的迭代器"><code>keys</code> 和 <code>values</code>: 从HashMap生成键和值的迭代器</a></h3>
+<p><strong>keys</strong> 返回一个包含HashMap中的所有键的引用的迭代器<br><strong>values</strong> 返回一个包含HashMap中的所有值的引用的迭代器</p>
+<h1 id="迭代器上的常用方法"><a class="header" href="#迭代器上的常用方法">迭代器上的常用方法</a></h1>
+<p>迭代器上的方法往往有两类，分别是适配器和消费器，适配器构造新迭代器，消费器则调用 next 推动迭代器运行（对应于 <code>Iterator</code> trait），得到一个最终结果。</p>
+<h2 id="迭代器---迭代器迭代器适配器"><a class="header" href="#迭代器---迭代器迭代器适配器">迭代器 -&gt; 迭代器（迭代器适配器）</a></h2>
+<p>迭代器适配器通常是惰性的，只是描述了一串转换过程，只有遇到消费器时才会真正执行<br>以下这些方法可以通过一个迭代器返回新的迭代器，用来实现各种转换</p>
+<h3 id="map--filter-和-filter_map"><a class="header" href="#map--filter-和-filter_map"><code>map</code> ， <code>filter</code> 和 <code>filter_map</code></a></h3>
+<p><strong>map</strong> 用于对迭代器中的每个元素进行转换，返回<strong>一个新的迭代器</strong></p>
+<p><strong>filter</strong> 则用于过滤迭代器中的元素，返回<strong>一个新的迭代器</strong>，只包含满足条件的元素</p>
+<p><strong>filter_map</strong> 则是map和filter的结合体，能够过滤的同时进行转换</p>
+<p><em>注意：map和filter方法返回的都是<strong>新的迭代器</strong>，原来的迭代器并没有被修改</em></p>
+<h3 id="rev-翻转操作无需多言"><a class="header" href="#rev-翻转操作无需多言"><code>rev</code>: 翻转操作，无需多言</a></h3>
+<h3 id="zip-和-unzip"><a class="header" href="#zip-和-unzip"><code>zip</code> 和 <code>unzip</code></a></h3>
+<p><strong>zip</strong> 用于将两个迭代器进行配对，返回一个新的迭代器，包含两个迭代器中对应位置的元素组成的元组，如：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let zipped = iterator1.iter().zip(iterator2.iter());
+<span class="boring">}</span></code></pre>
+<p><strong>unzip</strong> 作用于元素为二元组的迭代器，拆分成两个迭代器，并包裹成一个元组返回。</p>
+<h3 id="enumerate"><a class="header" href="#enumerate"><code>enumerate</code></a></h3>
+<p><strong>enumerate</strong> 用于将迭代器中的元素进行枚举，返回一个新的迭代器，包含元素的索引和元素本身组成的元组，如：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for (index, value) in iterator.iter().enumerate() {
+    println!("Index: {}, Value: {}", index, value);
+}
+<span class="boring">}</span></code></pre>
+<h3 id="chain"><a class="header" href="#chain"><code>chain</code></a></h3>
+<p><strong>chain</strong> 用于将两个迭代器连接起来，返回一个新的迭代器，包含两个迭代器中的所有元素，如：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let chained = iterator1.iter().chain(iterator2.iter());
+<span class="boring">}</span></code></pre>
+<h3 id="scan"><a class="header" href="#scan"><code>scan</code></a></h3>
+<p><strong>scan</strong> 用于对迭代器中的元素进行累积操作，返回一个新的迭代器，包含每次累积的结果，如：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let scan_result:Vec&lt;_&gt; = iterator.iter().scan(0, |acc, &amp;x| {
+    *acc += x;
+    Some(*acc)
+})
+.collect();
+<span class="boring">}</span></code></pre>
+<p>scan接受的两个参数中，第一个是积累值的初始值，第二个是一个返回值为Option类型的闭包，闭包又接受两个参数，第一个是积累值的可变引用，第二个是迭代器中的元素；<br>迭代到某一步时，若返回Some(值)，则将该值作为新的迭代器中的元素；若返回None，则迭代直接结束。</p>
+<h3 id="take-和-skip"><a class="header" href="#take-和-skip"><code>take</code> 和 <code>skip</code></a></h3>
+<p><strong>take</strong> 取前n个元素作为一个新的迭代器返回
+<strong>skip</strong> 则跳过前n个元素，取剩下的元素作为迭代器返回</p>
+<h3 id="step_by"><a class="header" href="#step_by"><code>step_by</code></a></h3>
+<p><strong>step_by</strong> 指定迭代器的步长，从而得到一个跳过一些元素的新迭代器</p>
+<h3 id="cloned-和-copied"><a class="header" href="#cloned-和-copied"><code>cloned</code> 和 <code>copied</code></a></h3>
+<p>他俩主要是为了把原来迭代器引用的元素拿出来转成值的元素，形成一个新迭代器</p>
+<h2 id="迭代器---其它-迭代器消费器"><a class="header" href="#迭代器---其它-迭代器消费器">迭代器 -&gt; 其它 （迭代器消费器）</a></h2>
+<p>消费器会真正推动迭代器运行，可能消费部分元素，也可能消费完整个迭代器，它们常常通过能够通过迭代器得到一个最终结果</p>
+<h2 id="collect"><a class="header" href="#collect"><code>collect</code></a></h2>
+<p><strong>collect</strong> 是rust中最强大的迭代器方法之一，用于将迭代器中的元素收集到一个其它存储结构中。它可以将迭代器中的元素收集到一个Vec、HashMap、HashSet等集合类型中，也可以收集到一个字符串中，甚至可以收集到一个自定义的结构体中。使用collect方法时，需要指定要收集到的目标类型。</p>
+<h2 id="nth"><a class="header" href="#nth"><code>nth</code></a></h2>
+<p><strong>nth</strong> 用于获取迭代器中第n个元素，返回一个Option类型的值，如果迭代器中有第n个元素，则返回Some(元素)，否则返回None。</p>
+<h2 id="find-和-position"><a class="header" href="#find-和-position"><code>find</code> 和 <code>position</code></a></h2>
+<p><strong>find</strong> 在迭代器中查找满足条件的第一个元素，如果找到满足条件的元素，则返回Some(元素)，否则返回None。
+<strong>position</strong> 用迭代器中查找满足条件的第一个元素的位置，如果找到满足条件的元素，则返回Some(位置)，否则返回None。</p>
+<h2 id="any-和-all"><a class="header" href="#any-和-all"><code>any</code> 和 <code>all</code></a></h2>
+<p>显然，这两个方法是来判断迭代器中的元素是否存在或全都满足某个条件的，返回一个bool值。</p>
+<h2 id="fold-和-reduce"><a class="header" href="#fold-和-reduce"><code>fold</code> 和 <code>reduce</code></a></h2>
+<p><strong>fold</strong> 用于将迭代器中的元素进行累积，返回 <strong>一个最终的结果</strong></p>
+<p><strong>reduce</strong> 同样也是累积，与fold方法不同的是，reduce方法没有初始值，而是将迭代器中的第一个元素作为初始值,并且它的返回值是Option类型，None用来应对空迭代器的情况。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 将vec中的元素进行累积，最终得到sum的值为6。
+// fold 实现
+let sum1 = vec![1, 2, 3].into_iter().fold(0, |acc, x| acc + x); // sum1 == 6
+// reduce 实现
+let sum2 = vec![1, 2, 3].into_iter().reduce(|acc, x| acc + x); // sum2 == Some(6)
+<span class="boring">}</span></code></pre>
+<h2 id="for-循环"><a class="header" href="#for-循环">for 循环</a></h2>
+<p>for 循环也是一种消费迭代器的方式，能够对迭代器中的每个元素执行某些操作，如打印、修改等。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for element in &amp;mut iterator {
+    element.do_something();
+}
+<span class="boring">}</span></code></pre>
+<p>除了上面提到的方法外，还有很多其他的迭代器方法，如 <code>max</code> 、 <code>min</code> 、 <code>sum</code> 、 <code>count</code> 、 <code>eq</code> 、<code>cmp</code>、<code>is_sorted</code>、<code>product</code>(累乘) 等等，通过名称可以轻易推断它们的功能，也就不多赘述了。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <p><a href="tokio/rust/异步.html">rust 异步</a> 中介绍了 Rust 的异步编程模型和 Future 的概念，这里主要是对 Tokio 的介绍</p>
 <h1 id="tokio"><a class="header" href="#tokio">tokio</a></h1>

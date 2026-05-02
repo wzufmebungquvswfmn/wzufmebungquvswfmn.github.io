@@ -28,7 +28,7 @@
         <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../../src/theme/custom-93cefb21.css">
+        <link rel="stylesheet" href="../../src/theme/custom-5829cf29.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-512d7026.js";
+            window.path_to_searchindex_js = "../../searchindex-4e47de78.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-e2c684f2.js"></script>
+        <script src="../../toc-c4128f91.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -195,6 +195,11 @@
 <li>
 <p><code>String::from_utf8_unchecked(vec: [u8])</code>:<br>· 会夺走vec的所有权，<br>· 无条件转换，返回 <code>String</code><br>· 无错误处理，若存在无效字符，会导致程序崩溃，但是很快</p>
 </li>
+</ul>
+<p>以上[u8]均可替换为Vec<u8>或&amp;[u8]，根据方法的参数类型而定</u8></p>
+<h1 id="从-string-到-u8-的转换"><a class="header" href="#从-string-到-u8-的转换">从 String 到 <code>&amp;[u8]</code> 的转换</a></h1>
+<ul>
+<li><code>as_bytes</code> 方法返回字符串的字节切片 <code>&amp;[u8]</code>，这是一个安全的操作，因为字符串在 Rust 中是 UTF-8 编码的，每个字符都由一个或多个字节组成，所以直接获取字节切片是没有问题的。</li>
 </ul>
 
                     </main>

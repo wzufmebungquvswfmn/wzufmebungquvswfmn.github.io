@@ -8,7 +8,6 @@
 - [琐碎](notes/misc/README.md)
   - [utf8](notes/misc/utf8.md)
   - [位运算](notes/misc/bit.md)
-  - [刷题常用](notes/misc/leetcode.md)
 
 
 - [Rust](rust/README.md)
@@ -19,6 +18,12 @@
     - [字符串与切片转换](rust/字符串/字符串与切片转换.md)
     - [字符串相关转换](rust/字符串/字符串相关转换.md)
     - [字符串输入stdin](rust/字符串/stdin.md)
+  - [集合数据结构](rust/集合数据结构.md)
+     - [Vec](rust/集合数据结构/vec.md)
+     - [HashMap与HashSet](rust/集合数据结构/hash.md)
+     - [BinaryHeap](rust/集合数据结构/binaryheap.md)
+     - [VecDeque](rust/集合数据结构/vecdeque.md)
+     - [BTreeMap/BTreeSet](rust/集合数据结构/btreemap.md)
   - [模式匹配](rust/模式匹配.md)
     - [全模式列表](rust/模式匹配/全模式列表.md)
   - [泛型和特征](rust/泛型和特征.md)
@@ -28,6 +33,8 @@
   - [多线程并发](rust/多线程.md)
   - [异步](rust/异步.md)
   - [宏](rust/宏.md)
+  - [迭代器](rust/迭代器.md)
+  
 
 - [tokio](tokio/README.md)
 

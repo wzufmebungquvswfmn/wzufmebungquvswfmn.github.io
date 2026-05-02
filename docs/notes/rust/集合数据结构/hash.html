@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>结构体 - rust_tour</title>
+        <title>HashMap与HashSet - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -12,34 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
-        <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-2459343d.css">
-        <link rel="stylesheet" href="../css/chrome-ae938929.css">
-        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-2459343d.css">
+        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../src/theme/custom-5829cf29.css">
+        <link rel="stylesheet" href="../../src/theme/custom-5829cf29.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "../";
+            const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-4e47de78.js";
+            window.path_to_searchindex_js = "../../searchindex-4e47de78.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-c4128f91.js"></script>
+        <script src="../../toc-c4128f91.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -106,7 +106,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -141,7 +141,7 @@
                     <h1 class="menu-title">rust_tour</h1>
 
                     <div class="right-buttons">
-                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
 
@@ -175,130 +175,261 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="rust-结构体"><a class="header" href="#rust-结构体">Rust 结构体</a></h1>
-<p>Rust 常见有三种结构体：普通结构体、元组结构体、单元结构体。下面依次补全定义、创建实例和常用操作。
-Rust 为结构体实现了自动解引用，当一个结构体被引用时，为了访问它的成员或方法，无需像C语言那样 p-&gt;member,只需使用p.member，它等价于(*p).member</p>
-<h2 id="1-普通结构体regular-struct"><a class="header" href="#1-普通结构体regular-struct">1. 普通结构体（Regular Struct）</a></h2>
-<h3 id="定义"><a class="header" href="#定义">定义</a></h3>
+                        <h1 id="hashmap与hashset"><a class="header" href="#hashmap与hashset">HashMap与HashSet</a></h1>
+<p><code>HashMap</code> 和 <code>HashSet</code> 都来自 <code>std::collections</code>。它们的底层都是哈希表，特点是查询、插入、删除的平均时间复杂度都是 <code>O(1)</code>。</p>
+<p>刷题时，<code>HashMap</code> 常用于计数、记录位置、建立映射；<code>HashSet</code> 常用于判重、去重、判断元素是否出现过。</p>
+<p>使用前需要引入：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>struct ColorRegularStruct {
-    red: u8,
-    green: u8,
-    blue: u8,
-}
+</span>use std::collections::{HashMap, HashSet};
 <span class="boring">}</span></code></pre>
-<h3 id="创建实例"><a class="header" href="#创建实例">创建实例</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let green = ColorRegularStruct {
-    red: 0,
-    green: 255,
-    blue: 0,
-};
-<span class="boring">}</span></code></pre>
-<h3 id="访问字段"><a class="header" href="#访问字段">访问字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let g = green.green;
-<span class="boring">}</span></code></pre>
-<h3 id="可变实例与修改字段"><a class="header" href="#可变实例与修改字段">可变实例与修改字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let mut color = ColorRegularStruct {
-    red: 255,
-    green: 255,
-    blue: 255,
-};
-color.red = 0;
-<span class="boring">}</span></code></pre>
-<h3 id="结构体更新语法"><a class="header" href="#结构体更新语法">结构体更新语法</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let base = ColorRegularStruct {
-    red: 10,
-    green: 20,
-    blue: 30,
-};
-
-let another = ColorRegularStruct {
-    red: 0,
-    ..base
-};
-<span class="boring">}</span></code></pre>
-<blockquote>
-<p>注意：使用 <code>..base</code> 之后，<code>base</code> 中被“移动”的字段将不可再用（取决于字段类型是否实现 <code>Copy</code>）。</p>
-</blockquote>
-<hr>
-<h2 id="2-元组结构体tuple-struct"><a class="header" href="#2-元组结构体tuple-struct">2. 元组结构体（Tuple Struct）</a></h2>
-<h3 id="定义-1"><a class="header" href="#定义-1">定义</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct ColorTupleStruct(u8, u8, u8);
-<span class="boring">}</span></code></pre>
-<h3 id="创建实例-1"><a class="header" href="#创建实例-1">创建实例</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let green = ColorTupleStruct(0, 255, 0);
-<span class="boring">}</span></code></pre>
-<h3 id="访问字段-1"><a class="header" href="#访问字段-1">访问字段</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let g = green.1;
-<span class="boring">}</span></code></pre>
-<hr>
-<h2 id="3-单元结构体unit-struct--空结构体"><a class="header" href="#3-单元结构体unit-struct--空结构体">3. 单元结构体（Unit Struct / 空结构体）</a></h2>
-<h3 id="定义-2"><a class="header" href="#定义-2">定义</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct UnitStruct;
-<span class="boring">}</span></code></pre>
-<h3 id="创建实例-2"><a class="header" href="#创建实例-2">创建实例</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let unit = UnitStruct;
-<span class="boring">}</span></code></pre>
-<h3 id="常见用途"><a class="header" href="#常见用途">常见用途</a></h3>
+<p>如果是为了查阅相关方法，可以直接跳转：</p>
 <ul>
-<li>作为“类型标记”（type marker）</li>
-<li>实现 trait 而不需要存储数据</li>
+<li><a href="#常用速查">常用方法速查</a></li>
 </ul>
-<hr>
-<h2 id="4-结构体方法与关联函数补充"><a class="header" href="#4-结构体方法与关联函数补充">4. 结构体方法与关联函数（补充）</a></h2>
-<h3 id="定义方法"><a class="header" href="#定义方法">定义方法</a></h3>
+<h1 id="hashmap"><a class="header" href="#hashmap">HashMap</a></h1>
+<p><code>HashMap&lt;K, V&gt;</code> 用于存储键值对，通过 key 查找 value。</p>
+<h2 id="创建和插入"><a class="header" href="#创建和插入">创建和插入</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>impl ColorRegularStruct {
-    fn is_green(&amp;self) -&gt; bool {
-        self.red == 0 &amp;&amp; self.green == 255 &amp;&amp; self.blue == 0
+</span>use std::collections::HashMap;
+
+let mut map = HashMap::new();
+
+map.insert("apple", 3);
+map.insert("banana", 2);
+<span class="boring">}</span></code></pre>
+<p>如果插入已经存在的 key，新值会覆盖旧值，并返回旧值：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map = HashMap::new();
+
+assert_eq!(map.insert("apple", 3), None);
+assert_eq!(map.insert("apple", 5), Some(3));
+assert_eq!(map.get("apple"), Some(&amp;5));
+<span class="boring">}</span></code></pre>
+<h2 id="查询和删除"><a class="header" href="#查询和删除">查询和删除</a></h2>
+<p><code>get</code> 返回 <code>Option&lt;&amp;V&gt;</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map = HashMap::new();
+map.insert("apple", 3);
+
+if let Some(count) = map.get("apple") {
+    println!("{}", count);
+}
+<span class="boring">}</span></code></pre>
+<p>如果需要修改 value，使用 <code>get_mut</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map = HashMap::new();
+map.insert("apple", 3);
+
+if let Some(count) = map.get_mut("apple") {
+    *count += 1;
+}
+
+assert_eq!(map.get("apple"), Some(&amp;4));
+<span class="boring">}</span></code></pre>
+<p>判断 key 是否存在：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>assert!(map.contains_key("apple"));
+<span class="boring">}</span></code></pre>
+<p>删除 key：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let old = map.remove("apple");
+
+assert_eq!(old, Some(4));
+<span class="boring">}</span></code></pre>
+<h2 id="entry-和-or_insert"><a class="header" href="#entry-和-or_insert">entry 和 or_insert</a></h2>
+<p><code>entry</code> 是刷题里非常常用的方法，尤其适合计数。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map = HashMap::new();
+
+*map.entry("banana").or_insert(0) += 1;
+*map.entry("banana").or_insert(0) += 1;
+
+assert_eq!(map.get("banana"), Some(&amp;2));
+<span class="boring">}</span></code></pre>
+<p>可以这样理解：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>map.entry(key).or_insert(default_value)
+<span class="boring">}</span></code></pre>
+<p>如果 key 存在，返回原来 value 的可变引用；如果 key 不存在，先插入默认值，再返回这个新值的可变引用。</p>
+<p>如果默认值的构造比较重，可以使用 <code>or_insert_with</code>，它只会在 key 不存在时执行闭包：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut map: HashMap&lt;&amp;str, Vec&lt;i32&gt;&gt; = HashMap::new();
+
+map.entry("odd").or_insert_with(Vec::new).push(1);
+map.entry("odd").or_insert_with(Vec::new).push(3);
+
+assert_eq!(map.get("odd"), Some(&amp;vec![1, 3]));
+<span class="boring">}</span></code></pre>
+<h2 id="遍历"><a class="header" href="#遍历">遍历</a></h2>
+<p>遍历键值对：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for (key, value) in &amp;map {
+    println!("{} {}", key, value);
+}
+<span class="boring">}</span></code></pre>
+<p>只遍历 key：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for key in map.keys() {
+    println!("{}", key);
+}
+<span class="boring">}</span></code></pre>
+<p>只遍历 value：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>for value in map.values() {
+    println!("{}", value);
+}
+<span class="boring">}</span></code></pre>
+<p>如果要拿走所有 value，可以使用 <code>into_values</code>：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let values: Vec&lt;_&gt; = map.into_values().collect();
+<span class="boring">}</span></code></pre>
+<p>需要注意，<code>HashMap</code> 的遍历顺序是不固定的，不能依赖它的输出顺序。</p>
+<h2 id="常用模板"><a class="header" href="#常用模板">常用模板</a></h2>
+<p>统计元素出现次数：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashMap;
+
+let nums = vec![1, 2, 1, 3, 2, 1];
+let mut count = HashMap::new();
+
+for x in nums {
+    *count.entry(x).or_insert(0) += 1;
+}
+
+assert_eq!(count.get(&amp;1), Some(&amp;3));
+<span class="boring">}</span></code></pre>
+<p>记录元素下标：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashMap;
+
+let nums = vec![2, 7, 11, 15];
+let mut pos = HashMap::new();
+
+for (i, x) in nums.iter().enumerate() {
+    pos.insert(*x, i);
+}
+
+assert_eq!(pos.get(&amp;7), Some(&amp;1));
+<span class="boring">}</span></code></pre>
+<h1 id="hashset"><a class="header" href="#hashset">HashSet</a></h1>
+<p><code>HashSet&lt;T&gt;</code> 用于存储不重复的元素。它可以理解成只有 key、没有 value 的 <code>HashMap</code>。</p>
+<h2 id="基本使用"><a class="header" href="#基本使用">基本使用</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashSet;
+
+let mut set = HashSet::new();
+
+set.insert(1);
+set.insert(2);
+set.insert(2);
+
+assert_eq!(set.len(), 2);
+assert!(set.contains(&amp;1));
+<span class="boring">}</span></code></pre>
+<p><code>insert</code> 会返回一个 bool，表示这个元素之前是否不存在：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut set = HashSet::new();
+
+assert_eq!(set.insert(1), true);
+assert_eq!(set.insert(1), false);
+<span class="boring">}</span></code></pre>
+<p>删除元素：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>set.remove(&amp;1);
+<span class="boring">}</span></code></pre>
+<h2 id="从迭代器生成-hashset"><a class="header" href="#从迭代器生成-hashset">从迭代器生成 HashSet</a></h2>
+<p>常用于去重或判重：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashSet;
+
+let nums = vec![1, 2, 2, 3];
+let set: HashSet&lt;_&gt; = nums.into_iter().collect();
+
+assert_eq!(set.len(), 3);
+<span class="boring">}</span></code></pre>
+<p>判断是否有重复元素：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashSet;
+
+let nums = vec![1, 2, 3, 2];
+let mut seen = HashSet::new();
+
+for x in nums {
+    if !seen.insert(x) {
+        println!("重复元素: {}", x);
     }
 }
 <span class="boring">}</span></code></pre>
-<h3 id="关联函数类似静态方法"><a class="header" href="#关联函数类似静态方法">关联函数（类似静态方法）</a></h3>
+<h2 id="集合运算"><a class="header" href="#集合运算">集合运算</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>impl ColorRegularStruct {
-    fn green() -&gt; Self {
-        Self { red: 0, green: 255, blue: 0 }
-    }
-}
+</span>use std::collections::HashSet;
+
+let a: HashSet&lt;_&gt; = [1, 2, 3].into_iter().collect();
+let b: HashSet&lt;_&gt; = [3, 4, 5].into_iter().collect();
+
+let inter: Vec&lt;_&gt; = a.intersection(&amp;b).copied().collect();
+let union: Vec&lt;_&gt; = a.union(&amp;b).copied().collect();
+let diff: Vec&lt;_&gt; = a.difference(&amp;b).copied().collect();
+
+assert_eq!(inter, vec![3]);
+assert!(union.contains(&amp;1) &amp;&amp; union.contains(&amp;5));
+assert!(diff.contains(&amp;1) &amp;&amp; diff.contains(&amp;2));
 <span class="boring">}</span></code></pre>
-<h3 id="使用"><a class="header" href="#使用">使用</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let c = ColorRegularStruct::green();
-let ok = c.is_green();
-<span class="boring">}</span></code></pre>
+<p>由于 <code>HashSet</code> 本身无序，所以如果题目要求有序输出，需要再排序。</p>
+<h2 id="常用速查"><a class="header" href="#常用速查">常用速查</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>类型</th><th>方法</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>HashMap</code></td><td><code>insert</code></td><td>插入或覆盖键值对</td></tr>
+<tr><td><code>HashMap</code></td><td><code>get</code> / <code>get_mut</code></td><td>查询或可变查询</td></tr>
+<tr><td><code>HashMap</code></td><td><code>remove</code></td><td>删除 key</td></tr>
+<tr><td><code>HashMap</code></td><td><code>contains_key</code></td><td>判断 key 是否存在</td></tr>
+<tr><td><code>HashMap</code></td><td><code>entry().or_insert()</code></td><td>不存在则插入，常用于计数</td></tr>
+<tr><td><code>HashMap</code></td><td><code>keys</code> / <code>values</code> / <code>iter</code></td><td>遍历</td></tr>
+<tr><td><code>HashSet</code></td><td><code>insert</code></td><td>插入并返回是否为新元素</td></tr>
+<tr><td><code>HashSet</code></td><td><code>contains</code></td><td>判断是否存在</td></tr>
+<tr><td><code>HashSet</code></td><td><code>remove</code></td><td>删除元素</td></tr>
+<tr><td><code>HashSet</code></td><td><code>intersection</code></td><td>交集</td></tr>
+<tr><td><code>HashSet</code></td><td><code>union</code></td><td>并集</td></tr>
+<tr><td><code>HashSet</code></td><td><code>difference</code></td><td>差集</td></tr>
+</tbody>
+</table>
+</div>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../rust/所有权.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../rust/集合数据结构/vec.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../rust/字符串.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../rust/集合数据结构/binaryheap.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -308,11 +439,11 @@ let ok = c.is_green();
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../rust/所有权.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../rust/集合数据结构/vec.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../rust/字符串.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../rust/集合数据结构/binaryheap.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -332,17 +463,17 @@ let ok = c.is_green();
         </script>
 
 
-        <script src="../elasticlunr-ef4e11c1.min.js"></script>
-        <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-c2a407aa.js"></script>
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-c2a407aa.js"></script>
 
-        <script src="../clipboard-1626706a.min.js"></script>
-        <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-a0b12cfe.js"></script>
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../mermaid-35374ef1.min.js"></script>
-        <script src="../mermaid-init-12acb6c2.js"></script>
+        <script src="../../mermaid-35374ef1.min.js"></script>
+        <script src="../../mermaid-init-12acb6c2.js"></script>
 
 
 

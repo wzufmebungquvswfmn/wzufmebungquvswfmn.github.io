@@ -25,8 +25,8 @@ if ($Mode -eq "build") {
 }
 
 Write-Host "==> Starting preview services..."
-Write-Host "   - mdBook: http://127.0.0.1:3000"
-Write-Host "   - React : http://127.0.0.1:5173"
+Write-Host "   - mdBook: http://localhost:3000"
+Write-Host "   - React : http://localhost:5173"
 
 $bookCmd = "Set-Location '$RootDir'; mdbook serve"
 $webCmd = "Set-Location '$WebDir'; npm run dev"
