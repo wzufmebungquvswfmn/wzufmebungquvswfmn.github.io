@@ -36,7 +36,7 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-4e47de78.js";
+            window.path_to_searchindex_js = "../../searchindex-4490f064.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-c4128f91.js"></script>
@@ -175,21 +175,44 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="btreemap与btreeset"><a class="header" href="#btreemap与btreeset">BTreeMap与BTreeSet</a></h1>
+                        <h1 id="btreemap-与-btreeset"><a class="header" href="#btreemap-与-btreeset">BTreeMap 与 BTreeSet</a></h1>
 <p><code>BTreeMap</code> 和 <code>BTreeSet</code> 是有序版本的映射和集合。它们来自 <code>std::collections</code>，底层是 B 树，元素会按照 key 的顺序存储。</p>
 <p>和 <code>HashMap</code> / <code>HashSet</code> 相比，它们的单次操作通常是 <code>O(log n)</code>，但优势是有序，并且支持范围查询。</p>
-<p>使用前需要引入：</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::collections::{BTreeMap, BTreeSet};
-<span class="boring">}</span></code></pre>
-<p>如果是为了查阅相关方法，可以直接跳转：</p>
-<ul>
-<li><a href="#常用速查">常用方法速查</a></li>
-</ul>
+<h2 id="速览"><a class="header" href="#速览">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>BTreeMap 方法</th><th>作用</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>insert</code></td><td>插入键值对</td><td><a href="#创建和插入">创建和插入</a></td></tr>
+<tr><td><code>get</code> / <code>get_mut</code></td><td>查询或修改</td><td><a href="#访问和遍历">访问和遍历</a></td></tr>
+<tr><td><code>range</code></td><td>范围查询</td><td><a href="#范围查询-range">范围查询-range</a></td></tr>
+<tr><td><code>first_key_value</code> / <code>last_key_value</code></td><td>查看最小 / 最大 key</td><td><a href="#首尾元素">首尾元素</a></td></tr>
+<tr><td><code>pop_first</code> / <code>pop_last</code></td><td>弹出最小 / 最大键值对</td><td></td></tr>
+<tr><td><code>entry().or_insert()</code></td><td>插入访问</td><td><a href="#entry">entry</a></td></tr>
+<tr><td><code>iter</code> / <code>keys</code> / <code>values</code></td><td>迭代遍历</td><td><a href="#访问和遍历">迭代遍历</a></td></tr>
+<tr><td></td><td></td><td><a href="#btreeset">BTreeSet</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id=""><a class="header" href="#"></a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>BTreeSet 方法</th><th>作用</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>insert</code></td><td>插入元素</td><td><a href="#基本使用">基本使用</a></td></tr>
+<tr><td><code>contains</code></td><td>判断是否存在</td><td><a href="#基本使用">基本使用</a></td></tr>
+<tr><td><code>range</code></td><td>范围查询</td><td><a href="#首尾元素和范围查询">首尾元素和范围查询</a></td></tr>
+<tr><td><code>first</code> / <code>last</code></td><td>查看最小 / 最大元素</td><td><a href="#首尾元素和范围查询">首尾元素和范围查询</a></td></tr>
+</tbody>
+</table>
+</div>
 <h1 id="btreemap"><a class="header" href="#btreemap">BTreeMap</a></h1>
 <p><code>BTreeMap&lt;K, V&gt;</code> 可以看作有序的 <code>HashMap</code>。如果题目需要按照 key 的顺序遍历，或者需要找某个范围内的 key，就可以考虑它。</p>
-<h2 id="基本使用"><a class="header" href="#基本使用">基本使用</a></h2>
+<h2 id="创建和插入"><a class="header" href="#创建和插入">创建和插入</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use std::collections::BTreeMap;
@@ -202,6 +225,7 @@ map.insert(2, "b");
 
 assert_eq!(map.get(&amp;1), Some(&amp;"a"));
 <span class="boring">}</span></code></pre>
+<h2 id="访问和遍历"><a class="header" href="#访问和遍历">访问和遍历</a></h2>
 <p>遍历时会按照 key 从小到大：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -247,7 +271,6 @@ for (key, value) in map.range(2..=3) {
     println!("{} {}", key, value);
 }
 <span class="boring">}</span></code></pre>
-<p>这里会遍历 key 为 <code>2</code> 和 <code>3</code> 的元素。</p>
 <p>常见范围写法：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -270,7 +293,7 @@ assert_eq!(map.get("apple"), Some(&amp;2));
 <span class="boring">}</span></code></pre>
 <h1 id="btreeset"><a class="header" href="#btreeset">BTreeSet</a></h1>
 <p><code>BTreeSet&lt;T&gt;</code> 可以看作有序的 <code>HashSet</code>，常用于需要自动排序、去重、范围查询的场景。</p>
-<h2 id="基本使用-1"><a class="header" href="#基本使用-1">基本使用</a></h2>
+<h2 id="基本使用"><a class="header" href="#基本使用">基本使用</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use std::collections::BTreeSet;
@@ -307,27 +330,6 @@ assert_eq!(mid, vec![2, 3, 4]);
 <h2 id="和-hashmap--hashset-的选择"><a class="header" href="#和-hashmap--hashset-的选择">和 HashMap / HashSet 的选择</a></h2>
 <p>如果只需要快速查询，通常使用 <code>HashMap</code> / <code>HashSet</code>。</p>
 <p>如果需要有序遍历、范围查询、取最小最大值，使用 <code>BTreeMap</code> / <code>BTreeSet</code>。</p>
-<h2 id="常用速查"><a class="header" href="#常用速查">常用速查</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>类型</th><th>方法</th><th>作用</th></tr>
-</thead>
-<tbody>
-<tr><td><code>BTreeMap</code></td><td><code>insert</code></td><td>插入键值对</td></tr>
-<tr><td><code>BTreeMap</code></td><td><code>get</code> / <code>get_mut</code></td><td>查询或修改</td></tr>
-<tr><td><code>BTreeMap</code></td><td><code>range</code></td><td>范围查询</td></tr>
-<tr><td><code>BTreeMap</code></td><td><code>first_key_value</code></td><td>查看最小 key</td></tr>
-<tr><td><code>BTreeMap</code></td><td><code>last_key_value</code></td><td>查看最大 key</td></tr>
-<tr><td><code>BTreeMap</code></td><td><code>pop_first</code></td><td>弹出最小 key</td></tr>
-<tr><td><code>BTreeMap</code></td><td><code>pop_last</code></td><td>弹出最大 key</td></tr>
-<tr><td><code>BTreeSet</code></td><td><code>insert</code></td><td>插入元素</td></tr>
-<tr><td><code>BTreeSet</code></td><td><code>contains</code></td><td>判断是否存在</td></tr>
-<tr><td><code>BTreeSet</code></td><td><code>range</code></td><td>范围查询</td></tr>
-<tr><td><code>BTreeSet</code></td><td><code>first</code> / <code>last</code></td><td>查看最小或最大元素</td></tr>
-</tbody>
-</table>
-</div>
 
                     </main>
 
@@ -364,6 +366,22 @@ assert_eq!(mid, vec![2, 3, 4]);
         <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
         <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
 
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
 
 
         <script>
