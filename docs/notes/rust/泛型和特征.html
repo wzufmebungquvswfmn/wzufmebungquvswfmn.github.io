@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-a0c01507.js";
+            window.path_to_searchindex_js = "../searchindex-e5c1d767.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-c4128f91.js"></script>
@@ -198,6 +198,46 @@
 <li><code>fn func(arg: impl TraitName + TraitName2) &lt;==&gt; fn func&lt;T: TraitName + TraitName2&gt;(arg: T)</code> //多重约束</li>
 </ul>
 <h1 id="常用-trait-特征"><a class="header" href="#常用-trait-特征">常用 Trait 特征</a></h1>
+<h2 id="速查"><a class="header" href="#速查">速查</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Trait</th><th>作用</th><th>派生方式</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Copy</code></td><td>位拷贝，原变量仍然有效</td><td><code>#[derive(Copy, Clone)]</code></td></tr>
+<tr><td><code>Clone</code></td><td>深拷贝，原变量仍然有效</td><td><code>#[derive(Clone)]</code></td></tr>
+<tr><td><code>Sized</code></td><td>编译器已知大小固定的类型</td><td>默认满足 Sized 约束</td></tr>
+<tr><td><code>!Sized</code></td><td>类型大小在编译时未知</td><td>只能通过引用使用</td></tr>
+<tr><td><code>?Sized</code></td><td>类型可能是 Sized 也可能是 !Sized</td><td>只能通过引用使用</td></tr>
+<tr><td><code>Send</code></td><td>线程间安全的转移所有权</td><td>自动派生，手动实现需在 unsafe 块中</td></tr>
+<tr><td><code>Sync</code></td><td>线程间安全的共享引用</td><td>自动派生，手动实现需在 unsafe 块中</td></tr>
+<tr><td><code>Read</code></td><td>读者，提供读取数据的方法</td><td>手动实现</td></tr>
+<tr><td><code>Write</code></td><td>写者，提供写入数据的方法</td><td>手动实现</td></tr>
+<tr><td><code>BufRead</code></td><td>带缓冲区的读者，提供缓冲读取的方法</td><td>手动实现</td></tr>
+<tr><td><code>Seek</code></td><td>定位器，提供定位方法</td><td>手动实现</td></tr>
+<tr><td><code>Default</code></td><td>提供默认值的方法</td><td><code>#[derive(Default)]</code></td></tr>
+<tr><td><code>Debug</code></td><td>格式化输出的方法</td><td><code>#[derive(Debug)]</code></td></tr>
+<tr><td><code>Display</code></td><td>内容显示的方法</td><td>手动实现</td></tr>
+<tr><td><code>PartialEq</code></td><td>比较相等的方法</td><td><code>#[derive(PartialEq)]</code></td></tr>
+<tr><td><code>Eq</code></td><td>完全比较相等的方法</td><td><code>#[derive(Eq)]</code></td></tr>
+<tr><td><code>PartialOrd</code></td><td>比较大小的方法</td><td><code>#[derive(PartialOrd)]</code></td></tr>
+<tr><td><code>Ord</code></td><td>完全比较大小的方法</td><td><code>#[derive(Ord)]</code></td></tr>
+<tr><td><code>From</code></td><td>从其它类型创建自己的值的方法</td><td>手动实现</td></tr>
+<tr><td><code>Into</code></td><td>将自己类型转换为其它类型的方法</td><td>只需实现 From</td></tr>
+<tr><td><code>AsRef</code></td><td>不消耗所有权的转换方法</td><td>手动实现</td></tr>
+<tr><td><code>AsMut</code></td><td>不消耗所有权的转换方法</td><td>手动实现</td></tr>
+<tr><td><code>Deref</code></td><td>智能指针解引用的方法</td><td>手动实现</td></tr>
+<tr><td><code>DerefMut</code></td><td>智能指针解引用的方法</td><td>手动实现</td></tr>
+<tr><td><code>Hash</code></td><td>计算哈希值的方法</td><td><code>#[derive(Hash)]</code></td></tr>
+<tr><td><code>Borrow</code></td><td>扩展借用功能的方法</td><td>手动实现</td></tr>
+<tr><td><code>BorrowMut</code></td><td>扩展借用功能的方法</td><td>手动实现</td></tr>
+<tr><td><code>ToOwned</code></td><td>从引用类型创建拥有所有权的类型的方法</td><td>手动实现</td></tr>
+<tr><td><code>IntoIterator</code></td><td>将类型转换为迭代器的方法</td><td>手动实现</td></tr>
+<tr><td><code>Iterator</code></td><td>迭代器行为的方法</td><td>手动实现</td></tr>
+</tbody>
+</table>
+</div>
 <h2 id="movecopy-和-clone"><a class="header" href="#movecopy-和-clone"><code>Move</code>、<code>Copy</code> 和 <code>Clone</code></a></h2>
 <h3 id="简介"><a class="header" href="#简介">简介</a></h3>
 <ul>
