@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-e5c1d767.js";
+            window.path_to_searchindex_js = "searchindex-9f2915d6.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-c4128f91.js"></script>
@@ -1620,36 +1620,36 @@ fn main() {
 <tr><th>Trait</th><th>作用</th><th>派生方式</th></tr>
 </thead>
 <tbody>
-<tr><td><code>Copy</code></td><td>位拷贝，原变量仍然有效</td><td><code>#[derive(Copy, Clone)]</code></td></tr>
-<tr><td><code>Clone</code></td><td>深拷贝，原变量仍然有效</td><td><code>#[derive(Clone)]</code></td></tr>
-<tr><td><code>Sized</code></td><td>编译器已知大小固定的类型</td><td>默认满足 Sized 约束</td></tr>
-<tr><td><code>!Sized</code></td><td>类型大小在编译时未知</td><td>只能通过引用使用</td></tr>
-<tr><td><code>?Sized</code></td><td>类型可能是 Sized 也可能是 !Sized</td><td>只能通过引用使用</td></tr>
-<tr><td><code>Send</code></td><td>线程间安全的转移所有权</td><td>自动派生，手动实现需在 unsafe 块中</td></tr>
-<tr><td><code>Sync</code></td><td>线程间安全的共享引用</td><td>自动派生，手动实现需在 unsafe 块中</td></tr>
-<tr><td><code>Read</code></td><td>读者，提供读取数据的方法</td><td>手动实现</td></tr>
-<tr><td><code>Write</code></td><td>写者，提供写入数据的方法</td><td>手动实现</td></tr>
-<tr><td><code>BufRead</code></td><td>带缓冲区的读者，提供缓冲读取的方法</td><td>手动实现</td></tr>
-<tr><td><code>Seek</code></td><td>定位器，提供定位方法</td><td>手动实现</td></tr>
-<tr><td><code>Default</code></td><td>提供默认值的方法</td><td><code>#[derive(Default)]</code></td></tr>
-<tr><td><code>Debug</code></td><td>格式化输出的方法</td><td><code>#[derive(Debug)]</code></td></tr>
-<tr><td><code>Display</code></td><td>内容显示的方法</td><td>手动实现</td></tr>
-<tr><td><code>PartialEq</code></td><td>比较相等的方法</td><td><code>#[derive(PartialEq)]</code></td></tr>
-<tr><td><code>Eq</code></td><td>完全比较相等的方法</td><td><code>#[derive(Eq)]</code></td></tr>
-<tr><td><code>PartialOrd</code></td><td>比较大小的方法</td><td><code>#[derive(PartialOrd)]</code></td></tr>
-<tr><td><code>Ord</code></td><td>完全比较大小的方法</td><td><code>#[derive(Ord)]</code></td></tr>
-<tr><td><code>From</code></td><td>从其它类型创建自己的值的方法</td><td>手动实现</td></tr>
-<tr><td><code>Into</code></td><td>将自己类型转换为其它类型的方法</td><td>只需实现 From</td></tr>
-<tr><td><code>AsRef</code></td><td>不消耗所有权的转换方法</td><td>手动实现</td></tr>
-<tr><td><code>AsMut</code></td><td>不消耗所有权的转换方法</td><td>手动实现</td></tr>
-<tr><td><code>Deref</code></td><td>智能指针解引用的方法</td><td>手动实现</td></tr>
-<tr><td><code>DerefMut</code></td><td>智能指针解引用的方法</td><td>手动实现</td></tr>
-<tr><td><code>Hash</code></td><td>计算哈希值的方法</td><td><code>#[derive(Hash)]</code></td></tr>
-<tr><td><code>Borrow</code></td><td>扩展借用功能的方法</td><td>手动实现</td></tr>
-<tr><td><code>BorrowMut</code></td><td>扩展借用功能的方法</td><td>手动实现</td></tr>
-<tr><td><code>ToOwned</code></td><td>从引用类型创建拥有所有权的类型的方法</td><td>手动实现</td></tr>
-<tr><td><code>IntoIterator</code></td><td>将类型转换为迭代器的方法</td><td>手动实现</td></tr>
-<tr><td><code>Iterator</code></td><td>迭代器行为的方法</td><td>手动实现</td></tr>
+<tr><td><a href="#movecopy-和-clone"><code>Copy</code></a></td><td>位拷贝，原变量仍然有效</td><td><code>#[derive(Copy, Clone)]</code></td></tr>
+<tr><td><a href="#movecopy-和-clone"><code>Clone</code></a></td><td>深拷贝，原变量仍然有效</td><td><code>#[derive(Clone)]</code></td></tr>
+<tr><td><a href="#sized-!-sized-和-sized"><code>Sized</code></a></td><td>编译器已知大小固定的类型</td><td>默认满足 Sized 约束</td></tr>
+<tr><td><a href="#sized-!-sized-和-sized"><code>!Sized</code></a></td><td>编译器未知大小的类型</td><td>无</td></tr>
+<tr><td><a href="#sized-!-sized-和-sized"><code>?Sized</code></a></td><td>可能是 Sized 也可能是 !Sized 的类型</td><td>无</td></tr>
+<tr><td><a href="#send-和-sync"><code>Send</code></a></td><td>线程间安全的转移所有权</td><td>自动派生，手动实现需在 unsafe 块中</td></tr>
+<tr><td><a href="#send-和-sync"><code>Sync</code></a></td><td>线程间安全的共享引用</td><td>自动派生，手动实现需在 unsafe 块中</td></tr>
+<tr><td><a href="#stdio-的核心-read-和-write-以及-bufread-和-seek"><code>Read</code></a></td><td>读者，提供读取数据的方法</td><td>无</td></tr>
+<tr><td><a href="#stdio-的核心-read-和-write-以及-bufread-和-seek"><code>Write</code></a></td><td>写者，提供写入数据的方法</td><td>无</td></tr>
+<tr><td><a href="#stdio-的核心-read-和-write-以及-bufread-和-seek"><code>BufRead</code></a></td><td>带缓冲区的读者，提供缓冲读取的方法</td><td>无</td></tr>
+<tr><td><a href="#stdio-的核心-read-和-write-以及-bufread-和-seek"><code>Seek</code></a></td><td>定位器，对读者或写者进行定位</td><td>无</td></tr>
+<tr><td><a href="#default"><code>Default</code></a></td><td>便于初始化，提供默认值的方法</td><td><code>#[derive(Default)]</code></td></tr>
+<tr><td><a href="#debug-和-display"><code>Debug</code></a></td><td>格式化打印，提供调试信息的方法</td><td><code>#[derive(Debug)]</code></td></tr>
+<tr><td><a href="#debug-和-display"><code>Display</code></a></td><td>内容显示，提供格式化输出的方法</td><td>手动实现</td></tr>
+<tr><td><a href="#partialeq-和-eq"><code>PartialEq</code></a></td><td>比较两个值是否相等，提供 <code>==</code> 和 <code>!=</code> 操作符的实现</td><td><code>#[derive(PartialEq)]</code></td></tr>
+<tr><td><a href="#partialeq-和-eq"><code>Eq</code></a></td><td>表示类型的值可以完全比较相等，提供 <code>==</code> 和 <code>!=</code> 操作符的实现</td><td><code>#[derive(Eq)]</code></td></tr>
+<tr><td><a href="#partialord-和-ord"><code>PartialOrd</code></a></td><td>比较两个值的大小，提供 <code>&lt;</code>、<code>&lt;=</code>、<code>&gt;</code> 和 <code>&gt;=</code> 操作符的实现</td><td><code>#[derive(PartialOrd)]</code></td></tr>
+<tr><td><a href="#partialord-和-ord"><code>Ord</code></a></td><td>表示类型的值可以完全比较大小，提供 <code>&lt;</code>、<code>&lt;=</code>、<code>&gt;</code> 和 <code>&gt;=</code> 操作符的实现</td><td><code>#[derive(Ord)]</code></td></tr>
+<tr><td><a href="#from-和-into"><code>From</code></a></td><td>定义了如何从其它类型创建一个自己类型的值</td><td>无</td></tr>
+<tr><td><a href="#from-和-into"><code>Into</code></a></td><td>定义了如何将自己类型转换为其它类型的值</td><td>无</td></tr>
+<tr><td><a href="#asref-和-asmut"><code>AsRef</code></a></td><td>不消耗所有权的转换，提供 <code>as_ref()</code> 方法</td><td>无</td></tr>
+<tr><td><a href="#asref-和-asmut"><code>AsMut</code></a></td><td>不消耗所有权的转换，提供 <code>as_mut()</code> 方法</td><td>无</td></tr>
+<tr><td><a href="#deref-和-derefmut"><code>Deref</code></a></td><td>对智能指针解引用操作符 <code>*</code> 的重载，提供 <code>deref()</code> 方法</td><td>无</td></tr>
+<tr><td><a href="#deref-和-derefmut"><code>DerefMut</code></a></td><td>对智能指针解引用操作符 <code>*</code> 的重载，提供 <code>deref_mut()</code> 方法</td><td>无</td></tr>
+<tr><td><a href="#hash"><code>Hash</code></a></td><td>定义了如何将一个类型变成一个哈希值，提供 <code>hash()</code> 方法</td><td><code>#[derive(Hash)]</code></td></tr>
+<tr><td><a href="#borrow"><code>Borrow</code></a></td><td>使得一个类型的引用能转换成另一个类型的引用，提供 <code>borrow()</code> 方法</td><td>无</td></tr>
+<tr><td><a href="#borrow"><code>BorrowMut</code></a></td><td>使得一个类型的引用能转换成另一个类型的引用，提供 <code>borrow_mut()</code> 方法</td><td>无</td></tr>
+<tr><td><a href="#borrow"><code>ToOwned</code></a></td><td>从一个引用类型直接创建一个拥有所有权的类型，提供 <code>to_owned()</code> 方法</td><td>无</td></tr>
+<tr><td><a href="#intoitertor-和-iterator"><code>IntoIterator</code></a></td><td>定义了如何将一个类型转换为一个迭代器，提供 <code>into_iter()</code> 方法</td><td>无</td></tr>
+<tr><td><a href="#intoitertor-和-iterator"><code>Iterator</code></a></td><td>定义了迭代器的行为，提供 <code>next()</code> 方法</td><td>无</td></tr>
 </tbody>
 </table>
 </div>
