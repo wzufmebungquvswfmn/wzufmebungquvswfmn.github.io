@@ -11,21 +11,15 @@ cd web && npm run dev
 ## 目录结构
 
 - `book.toml`：mdBook 配置文件（站点标题、语言、输出设置等）
-- `src/`：所有 Markdown 内容所在目录
+- `src/`：所有 Markdown 内容所在目录，也就是编辑博客的地方
 - `src/SUMMARY.md`：站点目录树（左侧导航），按需添加/调整条目
 - `src/index.md`：首页
-- `src/blog/`：博客分区
-- `src/blog/README.md`：博客目录页
-- `src/blog/2026-02-05-hello.md`：示例文章
-- `src/notes/`：知识库分区
-- `src/notes/README.md`：知识库目录页
-- `src/notes/tooling.md`：示例笔记
 - `book/`：构建输出目录（自动生成，已在 `.gitignore` 里忽略）
 
 ## 写作流程（简要）
 
-1. 在 `src/` 下创建/编辑 Markdown 文件
-2. 同步在 `src/SUMMARY.md` 中添加对应条目
+1. 在 `src/SUMMAR.md` 中添加条目，在 `src/` 下便可自动/手动创建 Markdown 文件
+2. 对 Markdown 文件进行编辑
 3. 本地预览（自动刷新）：
 
 ```powershell
@@ -66,6 +60,7 @@ samp {
 - 强调：`**加粗**`、`*斜体*`、`~~删除线~~`
 - 列表：`-` 无序列表，`1.` 有序列表
 - 链接：`[标题](链接)`
+- 文件内链接： `[标题](#副标题名称)`
 - 图片：`![alt 文本](图片路径)`
 - 引用：`> 引用内容`
 - 行内代码：`` `code` ``
@@ -89,6 +84,4 @@ fn main() {
 
 ## 在本仓库里的写作习惯
 
-- 每新增页面，要同步在 `src/SUMMARY.md` 里加一条导航
 - 目录页用 `README.md`（比如 `src/blog/README.md`）
-- 文件名尽量用 `yyyy-mm-dd-title.md` 或 `kebab-case.md`
