@@ -36,10 +36,10 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-9f2915d6.js";
+            window.path_to_searchindex_js = "../../searchindex-94e55a80.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-c4128f91.js"></script>
+        <script src="../../toc-4d7222e8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -176,6 +176,625 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="网络编程"><a class="header" href="#网络编程">网络编程</a></h1>
+<p>网络编程的主线基本是：</p>
+<blockquote>
+<p>两个进程之间，如何通过网络互相发送数据。</p>
+</blockquote>
+<p>其中，不同层次分别负责：</p>
+<ol>
+<li>IP + Port 负责找到想要通信的进程。</li>
+<li>TCP/UDP 负责怎么传数据。</li>
+<li>HTTP 规定 Web 请求和响应的格式。</li>
+<li>Web 框架负责把 HTTP 请求映射到代码里的 handler。</li>
+</ol>
+<h2 id="速览"><a class="header" href="#速览">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>概念</th><th>作用</th><th>备注</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#ip-地址">IP</a></td><td>定位网络中的主机</td><td>IP 解决“发给哪台机器”的问题</td></tr>
+<tr><td><a href="#端口">端口</a></td><td>定位主机上的进程</td><td>端口解决“发给哪个程序”的问题</td></tr>
+<tr><td><a href="#socket">Socket</a></td><td>网络通信端点</td><td>Socket 通常由 IP、端口、协议组成</td></tr>
+<tr><td><a href="#tcp">TCP</a></td><td>可靠的字节流协议</td><td>保证顺序、可靠传输，适合 HTTP</td></tr>
+<tr><td><a href="#udp">UDP</a></td><td>不可靠的数据报协议</td><td>延迟低，但不保证到达和顺序</td></tr>
+<tr><td><a href="#dns">DNS</a></td><td>域名解析</td><td>把域名转换成 IP 地址</td></tr>
+<tr><td><a href="#http">HTTP</a></td><td>应用层协议</td><td>Web 客户端和服务端约定的请求/响应格式</td></tr>
+<tr><td><a href="#json">JSON</a></td><td>数据交换格式</td><td>Web API 最常见的结构化数据格式</td></tr>
+<tr><td><a href="#rest-api">REST</a></td><td>API 设计风格</td><td>用 URL 表示资源，用 HTTP 方法表示操作</td></tr>
+<tr><td><a href="#cookiesessiontoken">Cookie/Session/Token</a></td><td>用户身份识别</td><td>Cookie 是浏览器机制，Session 是服务端状态，Token 是客户端携带的认证凭证</td></tr>
+<tr><td><a href="#websocket">WebSocket</a></td><td>长连接双向通信</td><td>适合聊天、实时推送、协作编辑</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="ip-地址"><a class="header" href="#ip-地址">IP 地址</a></h2>
+<p>IP 地址用来标识网络中的一台主机。</p>
+<p>略</p>
+<hr>
+<h2 id="端口"><a class="header" href="#端口">端口</a></h2>
+<p>端口用来区分不同进程，常见端口：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>端口</th><th>常见用途</th></tr>
+</thead>
+<tbody>
+<tr><td>22</td><td>SSH</td></tr>
+<tr><td>53</td><td>DNS</td></tr>
+<tr><td>80</td><td>HTTP</td></tr>
+<tr><td>443</td><td>HTTPS</td></tr>
+<tr><td>3000</td><td>前端或后端开发服务常用</td></tr>
+<tr><td>5432</td><td>PostgreSQL</td></tr>
+<tr><td>6379</td><td>Redis</td></tr>
+<tr><td>8080</td><td>Web 服务开发常用</td></tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="socket"><a class="header" href="#socket">Socket</a></h2>
+<p>Socket 套接字是对网络链接的抽象，IP:Port 组成一个端点，Socket 基于两个端点抽象出连接。</p>
+<p>可以理解为：</p>
+<pre><code class="language-text">Socket = (ip1:port1 &lt;-&gt; ip2:port2)
+</code></pre>
+<h3 id="服务端基本流程"><a class="header" href="#服务端基本流程">服务端基本流程</a></h3>
+<p>服务端网络编程常见流程：</p>
+<ol>
+<li><code>bind</code>：绑定 IP 和端口。</li>
+<li><code>listen</code>：开始监听连接。</li>
+<li><code>accept</code>：接受客户端连接。</li>
+<li><code>read/write</code>：读写数据。</li>
+<li><code>close</code>：关闭连接。</li>
+</ol>
+<p>Rust 标准库里的 TCP 服务端大概长这样：</p>
+<pre class="playground"><code class="language-rust">use std::io::{Read, Write};
+use std::net::TcpListener;
+
+fn main() -&gt; std::io::Result&lt;()&gt; {
+    // 绑定、监听（这里绑定即监听）一个 TCP 端口
+    let listener = TcpListener::bind("127.0.0.1:3000")?;
+    // incoming 是一个返回一个阻塞迭代器，这意味着它会循环等待新连接，而迭代器里的元素是每个新连接的 TcpStream，准确来说是 Result&lt;TcpStream, Error&gt;
+    // TcpStream 就是一个套接字端点，用来表示一个连接,它实现了 Read 和 Write trait，核心能力就是读写数据
+    for stream in listener.incoming() {
+        let mut stream = stream?;
+
+        let mut buf = [0; 1024];
+        let n = stream.read(&amp;mut buf)?;
+
+        println!("收到 {} 字节", n);
+        stream.write_all(b"hello")?;
+    }
+
+    Ok(())
+}</code></pre>
+<h2 id="tcp"><a class="header" href="#tcp">TCP</a></h2>
+<p>TCP 是可靠的、面向连接的、基于字节流的传输层协议。</p>
+<p>它的特点：</p>
+<ul>
+<li>需要建立连接。</li>
+<li>保证数据可靠到达。</li>
+<li>保证数据顺序。</li>
+<li>有重传机制。</li>
+<li>有流量控制和拥塞控制。</li>
+<li>数据是字节流，没有天然消息边界。</li>
+</ul>
+<h3 id="连接三次握手"><a class="header" href="#连接三次握手">连接三次握手</a></h3>
+<p>TCP 建立连接要经过三次握手：</p>
+<ol>
+<li>客户端发送 <code>SYN</code>，表示想建立连接。</li>
+<li>服务端回复 <code>SYN + ACK</code>，表示同意连接。</li>
+<li>客户端回复 <code>ACK</code>，连接建立完成。</li>
+</ol>
+<p>可以简单理解成：</p>
+<pre><code class="language-text">客户端：我能连你吗（SYN）？
+服务端：可以（ACK），我也能连你吗（SYN）？
+客户端：可以（ACK），开始通信。
+</code></pre>
+<p><img src="image.png" alt="alt text"></p>
+<h3 id="结束四次挥手"><a class="header" href="#结束四次挥手">结束四次挥手</a></h3>
+<p>TCP 关闭连接通常需要四次挥手：</p>
+<ol>
+<li>一方发送 <code>FIN</code>，表示自己没有数据要发了。</li>
+<li>另一方回复 <code>ACK</code>。</li>
+<li>另一方也发送 <code>FIN</code>，表示自己也没有数据要发了。</li>
+<li>最初一方回复 <code>ACK</code>，连接关闭。</li>
+</ol>
+<p>为什么不是一次直接关？因为 TCP 是双向通信，一方不发了，不代表另一方也发完了。</p>
+<h2 id="流量控制和拥塞控制"><a class="header" href="#流量控制和拥塞控制">流量控制和拥塞控制</a></h2>
+<h3 id="流量控制"><a class="header" href="#流量控制">流量控制</a></h3>
+<p>流量控制解决的是：<strong>发送方发得太快，接收方来不及处理</strong> 的问题。</p>
+<p>TCP 通过<strong>滑动窗口</strong>来实现流量控制。接收方会告诉发送方自己当前还能接收多少数据，这个值叫做<strong>接收窗口</strong>。</p>
+<p>可以简单理解为：</p>
+<ul>
+<li>接收方缓存满了，就告诉发送方“先慢点发”。</li>
+<li>接收方缓存空出来了，再告诉发送方“可以多发一点”。</li>
+</ul>
+<p>这样可以避免发送方把接收方的缓冲区挤爆。</p>
+<h3 id="拥塞控制"><a class="header" href="#拥塞控制">拥塞控制</a></h3>
+<p>拥塞控制解决的是：<strong>网络太拥挤，大家都发得太多</strong> 的问题。</p>
+<p>即使接收方还能处理，如果网络中路由器、链路负载太高，也可能造成大量丢包和重传。TCP 通过拥塞控制来动态调整发送速率。</p>
+<p>常见的做法包括：</p>
+<ul>
+<li><strong>慢启动</strong>：一开始发送得少，之后逐步增加。</li>
+<li><strong>拥塞避免</strong>：当接近网络承载能力时，放慢增长速度。</li>
+<li><strong>快速重传</strong>：收到三次重复 ACK，认为某个包丢了，尽快重传。</li>
+<li><strong>快速恢复</strong>：丢包后不要一下子降得太狠，而是降为原先的一半，跳过慢启动，尽快恢复传输。</li>
+</ul>
+<p>TCP 会同时参考<strong>接收窗口</strong>和<strong>拥塞窗口</strong>：</p>
+<ul>
+<li>接收窗口：接收方能接多少。</li>
+<li>拥塞窗口：网络当前能承受多少。</li>
+</ul>
+<p>最终实际发送量取两者的较小值。</p>
+<h3 id="字节流"><a class="header" href="#字节流">字节流</a></h3>
+<p>TCP 是字节流，不保留消息边界。</p>
+<p>比如发送方连续发送：</p>
+<pre><code class="language-text">hello
+world
+</code></pre>
+<p>接收方可能一次读到：</p>
+<pre><code class="language-text">helloworld
+</code></pre>
+<p>也可能分多次读到：</p>
+<pre><code class="language-text">hel
+lowor
+ld
+</code></pre>
+<p>所以协议层需要自己规定消息边界。HTTP 通过 header、<code>Content-Length</code>、chunked 编码等方式解决这个问题。</p>
+<h2 id="udp"><a class="header" href="#udp">UDP</a></h2>
+<p>UDP 是不可靠的、无连接的、基于数据报的传输层协议。</p>
+<p>特点：</p>
+<ul>
+<li>不需要建立连接。</li>
+<li>不保证送达。</li>
+<li>不保证顺序。</li>
+<li>不保证不重复。</li>
+<li>开销小，延迟低。</li>
+<li>保留消息边界：</li>
+</ul>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 发送方发三条消息
+let soket = UdpSocket::bind("127.0.0.1:0")?;
+let addr = "127.0.0.1:3000";
+socket.send_to(b"hello", addr)?;
+socket.send_to(b"world", addr)?;
+socket.send_to(b"!"， addr)?;
+
+// 接收方必需要三次 recv_from 才能收到三条消息
+let mut socket = UdpSocket::bind("127.0.0.1:3000")?;
+let mut buf = [0; 1024];
+// 接受到的消息顺序不保证，但每条消息都必需是完整的
+let (n, addr) = socket.recv_from(&amp;mut buf)?;
+let (n, addr) = socket.recv_from(&amp;mut buf)?;
+let (n, addr) = socket.recv_from(&amp;mut buf)?;
+<span class="boring">}</span></code></pre>
+<p>TCP 和 UDP 对比：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>特性</th><th>TCP</th><th>UDP</th></tr>
+</thead>
+<tbody>
+<tr><td>是否连接</td><td>面向连接</td><td>无连接</td></tr>
+<tr><td>可靠性</td><td>可靠</td><td>不可靠</td></tr>
+<tr><td>顺序</td><td>保证顺序</td><td>不保证顺序</td></tr>
+<tr><td>边界</td><td>字节流，无消息边界</td><td>数据报，有消息边界</td></tr>
+<tr><td>延迟</td><td>相对高</td><td>相对低</td></tr>
+<tr><td>常见场景</td><td>HTTP、数据库连接</td><td>DNS、音视频、游戏</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="dns"><a class="header" href="#dns">DNS</a></h2>
+<p>DNS 用来把域名解析成 IP 地址：</p>
+<ol>
+<li>浏览器检查缓存。</li>
+<li>操作系统检查缓存。</li>
+<li>查询本地 DNS 服务器。</li>
+<li>本地 DNS 服务器递归查询又一级 DNS 服务器，或者本机迭代查询根 DNS、顶级域 DNS、权威 DNS。</li>
+<li>拿到 IP。</li>
+<li>根据 IP 建立 TCP 连接。</li>
+</ol>
+<h2 id="http"><a class="header" href="#http">HTTP</a></h2>
+<p>HTTP 是应用层协议，采用请求/响应模型。</p>
+<p>客户端发送 request，服务端返回 response：</p>
+<pre><code class="language-text">Client  -- HTTP Request  --&gt;  Server
+Client  &lt;-- HTTP Response --  Server
+</code></pre>
+<p>HTTP 通常运行在 TCP 之上。HTTPS 则是在 HTTP 和 TCP 之间加了一层 TLS 加密。</p>
+<h3 id="http-请求"><a class="header" href="#http-请求">HTTP 请求</a></h3>
+<p>一个 HTTP 请求大致包括：</p>
+<pre><code class="language-text">GET /users/1 HTTP/1.1
+Host: example.com
+User-Agent: curl/8.0
+Accept: application/json
+
+</code></pre>
+<p>如果是 POST JSON，请求可能是：</p>
+<pre><code class="language-text">POST /users HTTP/1.1
+Host: example.com
+Content-Type: application/json
+Content-Length: 31
+
+{"name":"Alice","age":18}
+</code></pre>
+<p>组成部分：</p>
+<ul>
+<li>请求方法：<code>GET</code>、<code>POST</code> 等。</li>
+<li>路径：<code>/users/1</code>。</li>
+<li>协议版本：<code>HTTP/1.1</code>。</li>
+<li>请求头：例如 <code>Content-Type</code>。</li>
+<li>请求体：例如 JSON 数据。</li>
+</ul>
+<h3 id="http-响应"><a class="header" href="#http-响应">HTTP 响应</a></h3>
+<p>一个 HTTP 响应大致包括：</p>
+<pre><code class="language-text">GET /users/1 HTTP/1.1
+Host: example.com
+User-Agent: curl/8.0
+Accept: application/json
+
+</code></pre>
+<p>如果是 POST JSON，请求可能是：</p>
+<pre><code class="language-text">POST /users HTTP/1.1
+Host: example.com
+Content-Type: application/json
+Content-Length: 25
+
+{"name":"Alice","age":18}
+Content-Type: application/json
+Content-Length: 23
+
+{"id":1,"name":"Alice"}
+</code></pre>
+<p>组成部分：</p>
+<ul>
+<li>状态码：<code>200</code>、<code>404</code>、<code>500</code> 等。</li>
+<li>响应头：例如 <code>Content-Type</code>。</li>
+<li>响应体：例如 JSON、HTML、图片等。</li>
+</ul>
+<h3 id="http-方法"><a class="header" href="#http-方法">HTTP 方法</a></h3>
+<p>常见方法：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>含义</th><th>示例</th></tr>
+</thead>
+<tbody>
+<tr><td>GET</td><td>获取资源</td><td><code>GET /users/1</code></td></tr>
+<tr><td>POST</td><td>创建资源或提交数据</td><td><code>POST /users</code></td></tr>
+<tr><td>PUT</td><td>整体更新资源</td><td><code>PUT /users/1</code></td></tr>
+<tr><td>PATCH</td><td>部分更新资源</td><td><code>PATCH /users/1</code></td></tr>
+<tr><td>DELETE</td><td>删除资源</td><td><code>DELETE /users/1</code></td></tr>
+<tr><td>OPTIONS</td><td>查询服务器支持的能力</td><td>CORS 预检请求常用</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="幂等性"><a class="header" href="#幂等性">幂等性</a></h4>
+<p>幂等表示同一个请求执行多次，结果和执行一次一样。</p>
+<p>常见理解：</p>
+<ul>
+<li><code>GET</code> 幂等：查一次和查多次不应该改变资源。</li>
+<li><code>PUT</code> 幂等：把用户改成同一份数据，多次执行结果一样。</li>
+<li><code>DELETE</code> 通常认为幂等：删一次和删多次，最终都是资源不存在。</li>
+<li><code>POST</code> 通常不幂等：重复提交可能创建多个资源。</li>
+</ul>
+<h3 id="http-状态码"><a class="header" href="#http-状态码">HTTP 状态码</a></h3>
+<p>状态码表示响应结果。</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>范围</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td>1xx</td><td>信息响应</td></tr>
+<tr><td>2xx</td><td>成功</td></tr>
+<tr><td>3xx</td><td>重定向</td></tr>
+<tr><td>4xx</td><td>客户端错误</td></tr>
+<tr><td>5xx</td><td>服务端错误</td></tr>
+</tbody>
+</table>
+</div>
+<p>常见状态码：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>状态码</th><th>含义</th><th>常见场景</th></tr>
+</thead>
+<tbody>
+<tr><td>200</td><td>OK</td><td>请求成功</td></tr>
+<tr><td>201</td><td>Created</td><td>创建资源成功</td></tr>
+<tr><td>204</td><td>No Content</td><td>成功但没有响应体</td></tr>
+<tr><td>301</td><td>Moved Permanently</td><td>永久重定向</td></tr>
+<tr><td>302</td><td>Found</td><td>临时重定向</td></tr>
+<tr><td>400</td><td>Bad Request</td><td>请求参数错误</td></tr>
+<tr><td>401</td><td>Unauthorized</td><td>未登录或 token 无效</td></tr>
+<tr><td>403</td><td>Forbidden</td><td>没有权限</td></tr>
+<tr><td>404</td><td>Not Found</td><td>资源不存在</td></tr>
+<tr><td>409</td><td>Conflict</td><td>资源冲突，例如重复创建</td></tr>
+<tr><td>422</td><td>Unprocessable Entity</td><td>参数格式对，但语义校验失败</td></tr>
+<tr><td>500</td><td>Internal Server Error</td><td>服务端内部错误</td></tr>
+<tr><td>502</td><td>Bad Gateway</td><td>网关收到上游错误</td></tr>
+<tr><td>503</td><td>Service Unavailable</td><td>服务暂时不可用</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="header"><a class="header" href="#header">Header</a></h3>
+<p>Header 用来传递请求或响应的元信息。</p>
+<p>常见请求头：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Header</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td>Host</td><td>目标主机</td></tr>
+<tr><td>User-Agent</td><td>客户端信息</td></tr>
+<tr><td>Accept</td><td>客户端希望接收的数据格式</td></tr>
+<tr><td>Content-Type</td><td>请求体格式</td></tr>
+<tr><td>Authorization</td><td>认证信息</td></tr>
+<tr><td>Cookie</td><td>浏览器携带的 cookie</td></tr>
+</tbody>
+</table>
+</div>
+<p>常见响应头：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Header</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td>Content-Type</td><td>响应体格式</td></tr>
+<tr><td>Content-Length</td><td>响应体长度</td></tr>
+<tr><td>Set-Cookie</td><td>服务端设置 cookie</td></tr>
+<tr><td>Location</td><td>重定向地址</td></tr>
+<tr><td>Cache-Control</td><td>缓存控制</td></tr>
+</tbody>
+</table>
+</div>
+<p>常见 <code>Content-Type</code>：</p>
+<pre><code class="language-text">application/json
+text/html
+text/plain
+application/x-www-form-urlencoded
+multipart/form-data
+</code></pre>
+<h3 id="body"><a class="header" href="#body">Body</a></h3>
+<p>Body 是请求或响应的主体数据。</p>
+<p>常见 body 类型：</p>
+<ul>
+<li>JSON。</li>
+<li>HTML。</li>
+<li>普通文本。</li>
+<li>表单。</li>
+<li>文件。</li>
+<li>二进制数据。</li>
+</ul>
+<p>GET 请求通常没有 body，参数常放在 query string：</p>
+<pre><code class="language-text">GET /users?page=1&amp;page_size=20
+</code></pre>
+<p>POST/PUT/PATCH 常用 body 传数据：</p>
+<pre><code class="language-json">{
+  "name": "Alice",
+  "age": 18
+}
+</code></pre>
+<p>面试时可以说：Header 描述 body，body 承载真正的数据内容。</p>
+<h2 id="rest-api"><a class="header" href="#rest-api">REST API</a></h2>
+<p>REST 是一种常见的 Web API 设计风格。核心思想是：</p>
+<blockquote>
+<p>用 URL 表示资源，用 HTTP 方法表示动作。</p>
+</blockquote>
+<p>例如用户资源：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>操作</th><th>API</th></tr>
+</thead>
+<tbody>
+<tr><td>查询用户列表</td><td><code>GET /users</code></td></tr>
+<tr><td>查询单个用户</td><td><code>GET /users/{id}</code></td></tr>
+<tr><td>创建用户</td><td><code>POST /users</code></td></tr>
+<tr><td>整体更新用户</td><td><code>PUT /users/{id}</code></td></tr>
+<tr><td>部分更新用户</td><td><code>PATCH /users/{id}</code></td></tr>
+<tr><td>删除用户</td><td><code>DELETE /users/{id}</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>不太推荐：</p>
+<pre><code class="language-text">GET /getUser?id=1
+POST /deleteUser
+</code></pre>
+<p>更推荐：</p>
+<pre><code class="language-text">GET /users/1
+DELETE /users/1
+</code></pre>
+<h2 id="json"><a class="header" href="#json">JSON</a></h2>
+<p>JSON 是 Web API 中最常用的数据交换格式。</p>
+<p>请求 JSON：</p>
+<pre><code class="language-json">{
+  "username": "alice",
+  "password": "secret"
+}
+</code></pre>
+<p>响应 JSON：</p>
+<pre><code class="language-json">{
+  "id": 1,
+  "username": "alice",
+  "created_at": "2026-05-05T12:00:00Z"
+}
+</code></pre>
+<p>Rust 中通常用 <code>serde</code> 和 <code>serde_json</code> 处理 JSON：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize)]
+struct CreateUserRequest {
+    username: String,
+    password: String,
+}
+
+#[derive(Debug, Serialize)]
+struct UserResponse {
+    id: u64,
+    username: String,
+}
+<span class="boring">}</span></code></pre>
+<h2 id="cookiesessiontoken"><a class="header" href="#cookiesessiontoken">Cookie、Session、Token</a></h2>
+<p>Web 里经常要识别“当前用户是谁”。</p>
+<h3 id="cookie"><a class="header" href="#cookie">Cookie</a></h3>
+<p>Cookie 是浏览器保存的小段数据，会在请求时自动带给同一个站点。</p>
+<p>服务端设置 cookie：</p>
+<pre><code class="language-text">Set-Cookie: session_id=abc123; HttpOnly; Secure
+</code></pre>
+<p>浏览器之后请求会带上：</p>
+<pre><code class="language-text">Cookie: session_id=abc123
+</code></pre>
+<h3 id="session"><a class="header" href="#session">Session</a></h3>
+<p>Session 通常是服务端保存的登录状态。浏览器只保存一个 <code>session_id</code>，真正的用户信息在服务端。</p>
+<p>流程：</p>
+<ol>
+<li>用户登录。</li>
+<li>服务端生成 <code>session_id</code>。</li>
+<li>服务端把 <code>session_id</code> 放进 cookie。</li>
+<li>浏览器后续请求自动带 cookie。</li>
+<li>服务端根据 <code>session_id</code> 找到用户状态。</li>
+</ol>
+<h3 id="token"><a class="header" href="#token">Token</a></h3>
+<p>Token 通常由客户端保存，然后放在请求头里：</p>
+<pre><code class="language-text">Authorization: Bearer &lt;token&gt;
+</code></pre>
+<p>JWT 是常见 token 格式之一。</p>
+<p>对比：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方式</th><th>状态保存在哪里</th><th>常见特点</th></tr>
+</thead>
+<tbody>
+<tr><td>Cookie + Session</td><td>服务端</td><td>易控制、可主动失效</td></tr>
+<tr><td>Token/JWT</td><td>客户端为主</td><td>适合前后端分离和多端，但失效控制更复杂</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="cors"><a class="header" href="#cors">CORS</a></h2>
+<p>CORS 是浏览器的跨域资源共享机制。它不是服务端之间的限制，而是浏览器为了安全加的一层限制。</p>
+<p>只要协议、域名、端口有一个不同，就算跨域：</p>
+<pre><code class="language-text">http://localhost:3000
+http://localhost:8080
+</code></pre>
+<p>这两个端口不同，所以跨域。</p>
+<p>常见 CORS 响应头：</p>
+<pre><code class="language-text">Access-Control-Allow-Origin: http://localhost:3000
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE
+Access-Control-Allow-Headers: Content-Type, Authorization
+</code></pre>
+<h3 id="预检请求"><a class="header" href="#预检请求">预检请求</a></h3>
+<p>浏览器在某些跨域请求前，会先发一个 <code>OPTIONS</code> 请求，确认服务端是否允许。</p>
+<p>例如前端想发：</p>
+<pre><code class="language-text">POST /users
+Content-Type: application/json
+Authorization: Bearer xxx
+</code></pre>
+<p>浏览器可能先发：</p>
+<pre><code class="language-text">OPTIONS /users
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: content-type, authorization
+</code></pre>
+<p>服务端允许后，浏览器才会发送真正的 POST 请求。</p>
+<h2 id="websocket"><a class="header" href="#websocket">WebSocket</a></h2>
+<p>HTTP 是请求/响应模型，客户端发一次请求，服务端回一次响应。</p>
+<p>WebSocket 是长连接双向通信。连接建立后，客户端和服务端都可以主动发送消息。</p>
+<p>适合场景：</p>
+<ul>
+<li>聊天室。</li>
+<li>实时通知。</li>
+<li>在线协作。</li>
+<li>实时游戏状态。</li>
+<li>股票价格推送。</li>
+</ul>
+<p>简单对比：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>特性</th><th>HTTP</th><th>WebSocket</th></tr>
+</thead>
+<tbody>
+<tr><td>通信模型</td><td>请求/响应</td><td>双向长连接</td></tr>
+<tr><td>服务端主动推送</td><td>不方便</td><td>适合</td></tr>
+<tr><td>常见场景</td><td>API、网页、文件</td><td>聊天、实时通知</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="https-和-tls"><a class="header" href="#https-和-tls">HTTPS 和 TLS</a></h2>
+<blockquote>
+<p>HTTPS = HTTP + TLS</p>
+</blockquote>
+<p>TLS 提供：</p>
+<ul>
+<li>加密：防止内容被窃听。</li>
+<li>完整性：防止内容被篡改。</li>
+<li>身份认证：通过证书确认服务器身份。</li>
+</ul>
+<p>为什么需要 HTTPS：</p>
+<ul>
+<li>登录密码不能明文传输。</li>
+<li>token、cookie 不能被轻易窃听。</li>
+<li>防止中间人攻击。</li>
+</ul>
+<h2 id="从-http-到-web-框架"><a class="header" href="#从-http-到-web-框架">从 HTTP 到 Web 框架</a></h2>
+<p>如果不用框架，写一个完整 HTTP 服务要处理很多事情：</p>
+<ul>
+<li>监听端口。</li>
+<li>接受 TCP 连接。</li>
+<li>解析 HTTP 请求行、header、body。</li>
+<li>根据 method 和 path 找到处理逻辑。</li>
+<li>解析 query、path 参数、JSON body。</li>
+<li>执行业务逻辑。</li>
+<li>构造 HTTP 响应。</li>
+<li>处理错误。</li>
+<li>记录日志。</li>
+<li>做鉴权、CORS、超时、限流等中间件。</li>
+</ul>
+<p>Web 框架就是把这些重复工作封装起来。</p>
+<p>以 axum 为例，概念大致对应：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>HTTP/网络概念</th><th>axum 里的概念</th></tr>
+</thead>
+<tbody>
+<tr><td>URL path</td><td><code>route("/users/:id", ...)</code></td></tr>
+<tr><td>HTTP method</td><td><code>get(...)</code>、<code>post(...)</code>、<code>delete(...)</code></td></tr>
+<tr><td>请求处理函数</td><td>handler</td></tr>
+<tr><td>JSON 请求体</td><td><code>Json&lt;T&gt;</code></td></tr>
+<tr><td>路径参数</td><td><code>Path&lt;T&gt;</code></td></tr>
+<tr><td>查询参数</td><td><code>Query&lt;T&gt;</code></td></tr>
+<tr><td>共享状态</td><td><code>State&lt;T&gt;</code></td></tr>
+<tr><td>请求处理链路</td><td>middleware / tower layer</td></tr>
+<tr><td>HTTP 响应</td><td><code>IntoResponse</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>所以学 axum 时不要只背 API，要知道它是在帮你处理 HTTP 服务端的常见流程。</p>
+<h2 id="一个请求的完整过程"><a class="header" href="#一个请求的完整过程">一个请求的完整过程</a></h2>
+<p>以浏览器访问接口为例：</p>
+<pre><code class="language-text">GET https://api.example.com/users/1
+</code></pre>
+<p>大致流程：</p>
+<ol>
+<li>浏览器解析 URL，知道协议是 HTTPS，域名是 <code>api.example.com</code>，路径是 <code>/users/1</code>。</li>
+<li>浏览器通过 DNS 查询域名对应的 IP。</li>
+<li>浏览器和服务端建立 TCP 连接。</li>
+<li>HTTPS 场景下进行 TLS 握手。</li>
+<li>浏览器发送 HTTP 请求。</li>
+<li>服务端接收请求，Web 框架解析 method、path、header、body。</li>
+<li>路由匹配到对应 handler。</li>
+<li>handler 执行业务逻辑，可能访问数据库。</li>
+<li>服务端构造 HTTP 响应。</li>
+<li>浏览器收到响应，根据状态码、header、body 继续处理。</li>
+</ol>
 
                     </main>
 

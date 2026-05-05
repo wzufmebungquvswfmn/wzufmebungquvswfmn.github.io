@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>工具链 - rust_tour</title>
+        <title>常用库 - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -175,18 +175,437 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="工具链"><a class="header" href="#工具链">工具链</a></h1>
-<p>这里记录常用工具与配置。</p>
+                        <h1 id="常用库"><a class="header" href="#常用库">常用库</a></h1>
+<p>Rust 项目里经常会用一些生态库来补齐标准库没有直接提供的能力，比如错误处理、序列化、HTTP 请求、命令行参数解析、日志追踪等。</p>
+<h2 id="速览"><a class="header" href="#速览">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>库或模块</th><th>主要用途</th><th>面试时一句话</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="#anyhow">anyhow</a></td><td>应用层错误处理</td><td>适合在二进制程序里快速传播各种错误</td></tr>
+<tr><td><a href="#thiserror">thiserror</a></td><td>自定义错误类型</td><td>适合在库代码或业务边界定义结构化错误</td></tr>
+<tr><td><a href="#serde">serde</a></td><td>序列化/反序列化框架</td><td>Rust 生态里最常用的数据转换框架</td></tr>
+<tr><td><a href="#serde_json">serde_json</a></td><td>JSON 读写</td><td>基于 serde，把结构体和 JSON 互转</td></tr>
+<tr><td><a href="#toml">toml</a></td><td>TOML 配置解析</td><td>常用于读取配置文件，例如 Cargo.toml 风格配置</td></tr>
+<tr><td><a href="#bytes">bytes</a></td><td>高效字节缓冲区</td><td>网络编程里常用，减少字节数据拷贝</td></tr>
+<tr><td><a href="#reqwest">reqwest</a></td><td>HTTP 客户端</td><td>用来发 HTTP 请求，支持 async、JSON、header 等</td></tr>
+<tr><td><a href="#clap">clap</a></td><td>命令行参数解析</td><td>用 derive 宏快速定义 CLI 参数</td></tr>
+<tr><td><a href="#tracing">tracing</a></td><td>结构化日志和链路追踪</td><td>比 println!/log 更适合异步和服务端项目</td></tr>
+<tr><td><a href="#tracing-subscriber">tracing-subscriber</a></td><td>日志收集和格式化</td><td>负责初始化 tracing 的输出格式和过滤级别</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="anyhow"><a class="header" href="#anyhow">anyhow</a></h2>
+<p><code>anyhow</code> 用来简化应用层错误处理。它的核心类型是 <code>anyhow::Result&lt;T&gt;</code>，本质上等价于 <code>Result&lt;T, anyhow::Error&gt;</code>。</p>
+<p>适合用在：</p>
+<ul>
+<li>CLI 工具。</li>
+<li>Web 服务的内部启动流程。</li>
+<li>demo、脚本、业务应用。</li>
+<li>不想为每一种错误都定义 enum 的地方。</li>
+</ul>
+<p>不太适合用在：</p>
+<ul>
+<li>公共库的 API 边界。</li>
+<li>需要让调用方精确匹配错误类型的地方。</li>
+</ul>
+<h3 id="基本用法"><a class="header" href="#基本用法">基本用法</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use anyhow::{Context, Result};
+
+fn read_config(path: &amp;str) -&gt; Result&lt;String&gt; {
+    let content = std::fs::read_to_string(path)
+        .with_context(|| format!("读取配置文件失败: {path}"))?;
+
+    Ok(content)
+}
+<span class="boring">}</span></code></pre>
+<p>关键点：</p>
+<ul>
+<li><code>?</code> 可以自动把不同错误转换成 <code>anyhow::Error</code>。</li>
+<li><code>Context</code> 可以给错误补充上下文。</li>
+<li>面试时可以说：<code>anyhow</code> 更偏应用层，重点是方便地传播和包装错误。</li>
+</ul>
+<h2 id="thiserror"><a class="header" href="#thiserror">thiserror</a></h2>
+<p><code>thiserror</code> 用来定义自己的错误类型。它通过 <code>#[derive(Error)]</code> 自动实现 <code>std::error::Error</code> 和 <code>Display</code>。</p>
+<p>适合用在：</p>
+<ul>
+<li>library crate。</li>
+<li>业务边界清晰的模块。</li>
+<li>希望调用方能 <code>match</code> 不同错误分支的场景。</li>
+</ul>
+<h3 id="基本用法-1"><a class="header" href="#基本用法-1">基本用法</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum ConfigError {
+    #[error("配置文件不存在: {0}")]
+    NotFound(String),
+
+    #[error("配置格式错误")]
+    InvalidFormat,
+
+    #[error("IO 错误")]
+    Io(#[from] std::io::Error),
+}
+
+pub type Result&lt;T&gt; = std::result::Result&lt;T, ConfigError&gt;;
+<span class="boring">}</span></code></pre>
+<p>关键点：</p>
+<ul>
+<li><code>#[error("...")]</code> 定义错误展示文本。</li>
+<li><code>#[from]</code> 会自动实现 <code>From</code>，方便 <code>?</code> 转换错误。</li>
+<li>面试时可以说：<code>thiserror</code> 负责“定义错误类型”，<code>anyhow</code> 负责“在应用层承接和传播错误”。</li>
+</ul>
+<h2 id="serde"><a class="header" href="#serde">serde</a></h2>
+<p><code>serde</code> 是 Rust 生态中最常用的序列化和反序列化框架。它本身提供通用 trait，具体格式由 <code>serde_json</code>、<code>toml</code>、<code>bincode</code> 等库实现。</p>
+<p>常用 derive：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+struct User {
+    id: u64,
+    name: String,
+}
+<span class="boring">}</span></code></pre>
+<p>常用属性：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Config {
+    #[serde(rename = "server_port")]
+    port: u16,
+
+    #[serde(default)]
+    debug: bool,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    token: Option&lt;String&gt;,
+}
+<span class="boring">}</span></code></pre>
+<p>关键点：</p>
+<ul>
+<li><code>Serialize</code> 表示 Rust 类型可以转成外部格式。</li>
+<li><code>Deserialize</code> 表示外部格式可以转回 Rust 类型。</li>
+<li><code>rename</code> 用来处理字段名不一致。</li>
+<li><code>default</code> 用来给缺失字段填默认值。</li>
+<li>面试时可以说：serde 的优势是类型安全、性能好、格式无关。</li>
+</ul>
+<h2 id="serde_json"><a class="header" href="#serde_json">serde_json</a></h2>
+<p><code>serde_json</code> 是 serde 的 JSON 格式实现，用来把 Rust 结构体和 JSON 字符串互转。</p>
+<h3 id="结构体转-json"><a class="header" href="#结构体转-json">结构体转 JSON</a></h3>
+<pre class="playground"><code class="language-rust">use serde::Serialize;
+
+#[derive(Serialize)]
+struct User {
+    id: u64,
+    name: String,
+}
+
+fn main() -&gt; serde_json::Result&lt;()&gt; {
+    let user = User {
+        id: 1,
+        name: "Alice".to_string(),
+    };
+
+    let json = serde_json::to_string(&amp;user)?;
+    println!("{json}");
+
+    Ok(())
+}</code></pre>
+<h3 id="json-转结构体"><a class="header" href="#json-转结构体">JSON 转结构体</a></h3>
+<pre class="playground"><code class="language-rust">use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct User {
+    id: u64,
+    name: String,
+}
+
+fn main() -&gt; serde_json::Result&lt;()&gt; {
+    let text = r#"{"id":1,"name":"Alice"}"#;
+    let user: User = serde_json::from_str(text)?;
+
+    println!("{user:?}");
+
+    Ok(())
+}</code></pre>
+<h3 id="动态-json"><a class="header" href="#动态-json">动态 JSON</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let value: serde_json::Value = serde_json::from_str(r#"{"name":"Alice"}"#)?;
+println!("{}", value["name"]);
+<span class="boring">}</span></code></pre>
+<p>关键点：</p>
+<ul>
+<li>能定义结构体时优先用结构体，不要到处用 <code>Value</code>。</li>
+<li><code>Value</code> 适合字段不固定、临时处理、调试。</li>
+<li>面试时可以说：<code>serde_json</code> 常用于 Web API 的请求体和响应体处理。</li>
+</ul>
+<h2 id="toml"><a class="header" href="#toml">toml</a></h2>
+<p><code>toml</code> 用来读取 TOML 格式配置文件。Rust 项目里的 <code>Cargo.toml</code> 就是 TOML 格式。</p>
+<p>示例配置：</p>
+<pre><code class="language-toml">[server]
+host = "127.0.0.1"
+port = 8080
+</code></pre>
+<p>解析代码：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct AppConfig {
+    server: ServerConfig,
+}
+
+#[derive(Debug, Deserialize)]
+struct ServerConfig {
+    host: String,
+    port: u16,
+}
+
+fn load_config(text: &amp;str) -&gt; toml::de::Result&lt;AppConfig&gt; {
+    toml::from_str(text)
+}
+<span class="boring">}</span></code></pre>
+<p>关键点：</p>
+<ul>
+<li>TOML 适合人手写配置。</li>
+<li>配合 <code>serde::Deserialize</code> 可以直接转成结构体。</li>
+<li>面试时可以说：配置文件解析一般会用 <code>std::fs</code> 读取文本，再用 <code>toml::from_str</code> 反序列化。</li>
+</ul>
+<h2 id="bytes"><a class="header" href="#bytes">bytes</a></h2>
+<p><code>bytes</code> 提供高效字节缓冲区，常见类型是 <code>Bytes</code> 和 <code>BytesMut</code>。</p>
+<p>它常出现在：</p>
+<ul>
+<li>网络协议处理。</li>
+<li>HTTP body。</li>
+<li>Tokio 生态。</li>
+<li>需要频繁切分、复制字节数据的地方。</li>
+</ul>
+<h3 id="bytes-1"><a class="header" href="#bytes-1">Bytes</a></h3>
+<p><code>Bytes</code> 是不可变字节缓冲区，可以便宜地 clone。clone 时通常共享底层内存，而不是立刻复制全部字节。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bytes::Bytes;
+
+let data = Bytes::from_static(b"hello");
+let cloned = data.clone();
+
+assert_eq!(&amp;data[..], b"hello");
+assert_eq!(&amp;cloned[..], b"hello");
+<span class="boring">}</span></code></pre>
+<h3 id="bytesmut"><a class="header" href="#bytesmut">BytesMut</a></h3>
+<p><code>BytesMut</code> 是可变缓冲区，适合一点点写入数据。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use bytes::{BufMut, BytesMut};
+
+let mut buf = BytesMut::with_capacity(64);
+buf.put_u8(1);
+buf.put_slice(b"hello");
+
+let frozen = buf.freeze();
+<span class="boring">}</span></code></pre>
+<p>关键点：</p>
+<ul>
+<li><code>Bytes</code> 偏只读共享。</li>
+<li><code>BytesMut</code> 偏可变构建。</li>
+<li><code>freeze()</code> 可以把 <code>BytesMut</code> 转成 <code>Bytes</code>。</li>
+<li>面试时可以说：<code>bytes</code> 常用于网络 I/O，核心价值是减少不必要的内存拷贝。</li>
+</ul>
+<h2 id="reqwest"><a class="header" href="#reqwest">reqwest</a></h2>
+<p><code>reqwest</code> 是 Rust 常用 HTTP 客户端，支持异步请求、JSON、header、timeout 等。</p>
+<h3 id="get-请求"><a class="header" href="#get-请求">GET 请求</a></h3>
+<pre class="playground"><code class="language-rust">use anyhow::Result;
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; {
+    let text = reqwest::get("https://example.com")
+        .await?
+        .text()
+        .await?;
+
+    println!("{text}");
+
+    Ok(())
+}</code></pre>
+<h3 id="post-json"><a class="header" href="#post-json">POST JSON</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use anyhow::Result;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct LoginRequest {
+    username: String,
+    password: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct LoginResponse {
+    token: String,
+}
+
+async fn login() -&gt; Result&lt;LoginResponse&gt; {
+    let client = reqwest::Client::new();
+
+    let response = client
+        .post("https://api.example.com/login")
+        .json(&amp;LoginRequest {
+            username: "alice".to_string(),
+            password: "secret".to_string(),
+        })
+        .send()
+        .await?
+        .error_for_status()?
+        .json::&lt;LoginResponse&gt;()
+        .await?;
+
+    Ok(response)
+}
+<span class="boring">}</span></code></pre>
+<p>关键点：</p>
+<ul>
+<li>简单请求可以用 <code>reqwest::get</code>。</li>
+<li>复杂请求建议复用 <code>reqwest::Client</code>。</li>
+<li><code>.json(&amp;value)</code> 依赖 <code>serde::Serialize</code>。</li>
+<li><code>.json::&lt;T&gt;()</code> 依赖 <code>serde::Deserialize</code>。</li>
+<li><code>.error_for_status()</code> 可以把 4xx/5xx 状态码转成错误。</li>
+</ul>
+<h2 id="clap"><a class="header" href="#clap">clap</a></h2>
+<p><code>clap</code> 用来解析命令行参数。现在最常用的是 derive 写法。</p>
+<pre class="playground"><code class="language-rust">use clap::Parser;
+
+#[derive(Debug, Parser)]
+#[command(name = "demo")]
+#[command(about = "一个命令行工具示例")]
+struct Args {
+    #[arg(short, long)]
+    config: Option&lt;String&gt;,
+
+    #[arg(short, long, default_value_t = 8080)]
+    port: u16,
+
+    #[arg(long)]
+    debug: bool,
+}
+
+fn main() {
+    let args = Args::parse();
+    println!("{args:?}");
+}</code></pre>
+<p>运行示例：</p>
+<pre><code class="language-bash">cargo run -- --config app.toml --port 3000 --debug
+</code></pre>
+<p>关键点：</p>
+<ul>
+<li><code>Parser</code> 用来解析整个命令行参数。</li>
+<li><code>#[arg(short, long)]</code> 表示同时支持 <code>-c</code> 和 <code>--config</code>。</li>
+<li><code>default_value_t</code> 设置默认值。</li>
+<li><code>bool</code> 字段常作为开关参数。</li>
+</ul>
+<h2 id="tracing"><a class="header" href="#tracing">tracing</a></h2>
+<p><code>tracing</code> 用来做结构化日志和链路追踪。相比 <code>println!</code>，它能记录日志级别、字段、上下文 span，更适合异步和服务端项目。</p>
+<h3 id="基本日志"><a class="header" href="#基本日志">基本日志</a></h3>
+<pre class="playground"><code class="language-rust">use tracing::{debug, error, info, warn};
+
+fn main() {
+    info!("服务启动");
+    warn!("配置项缺失，使用默认值");
+    debug!(port = 8080, "监听端口");
+    error!("请求处理失败");
+}</code></pre>
+<h3 id="span"><a class="header" href="#span">span</a></h3>
+<p><code>span</code> 表示一段执行上下文，例如一次请求、一个任务、一次数据库查询。</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use tracing::{info, instrument};
+
+#[instrument]
+async fn handle_request(user_id: u64) {
+    info!("开始处理请求");
+}
+<span class="boring">}</span></code></pre>
+<p>关键点：</p>
+<ul>
+<li><code>info!</code>、<code>warn!</code>、<code>error!</code> 等宏用于输出不同级别日志。</li>
+<li>字段写法如 <code>user_id = 1</code>，便于机器解析。</li>
+<li><code>#[instrument]</code> 可以自动记录函数参数和调用上下文。</li>
+</ul>
+<h2 id="tracing-subscriber"><a class="header" href="#tracing-subscriber">tracing-subscriber</a></h2>
+<p><code>tracing-subscriber</code> 负责接收、过滤、格式化并输出 <code>tracing</code> 产生的事件。</p>
+<p>最简单初始化：</p>
+<pre class="playground"><code class="language-rust">fn main() {
+    tracing_subscriber::fmt::init();
+
+    tracing::info!("hello tracing");
+}</code></pre>
+<p>带日志级别：</p>
+<pre class="playground"><code class="language-rust">use tracing_subscriber::EnvFilter;
+
+fn main() {
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
+    tracing::info!("服务启动");
+}</code></pre>
+<p>运行时设置日志级别：</p>
+<pre><code class="language-bash">RUST_LOG=info cargo run
+RUST_LOG=debug,my_crate=trace cargo run
+</code></pre>
+<p>关键点：</p>
+<ul>
+<li><code>tracing</code> 负责产生事件。</li>
+<li><code>tracing-subscriber</code> 负责处理和输出事件。</li>
+<li><code>EnvFilter</code> 可以通过 <code>RUST_LOG</code> 控制日志级别。</li>
+</ul>
+<h2 id="常见组合"><a class="header" href="#常见组合">常见组合</a></h2>
+<h3 id="cli-工具"><a class="header" href="#cli-工具">CLI 工具</a></h3>
+<pre><code class="language-toml">[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+</code></pre>
+<p>常见结构是 <code>clap</code> 解析参数，<code>anyhow</code> 处理错误，<code>tracing</code> 输出日志。</p>
+<h3 id="http-客户端"><a class="header" href="#http-客户端">HTTP 客户端</a></h3>
+<pre><code class="language-toml">[dependencies]
+anyhow = "1"
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+</code></pre>
+<p>常见结构是 <code>reqwest</code> 发请求，<code>serde</code> 定义请求和响应结构，<code>anyhow</code> 简化错误传播。</p>
+<h3 id="配置文件"><a class="header" href="#配置文件">配置文件</a></h3>
+<pre><code class="language-toml">[dependencies]
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+</code></pre>
+<p>常见结构是把配置文件读成字符串，再用 <code>toml::from_str</code> 转成结构体。</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../notes/web/网络编程.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../rust/迭代器.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../notes/misc/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../tokio/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -196,11 +615,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../notes/web/网络编程.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../rust/迭代器.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../notes/misc/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../tokio/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
