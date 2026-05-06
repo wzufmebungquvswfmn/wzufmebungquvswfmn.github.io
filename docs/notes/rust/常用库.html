@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-94e55a80.js";
+            window.path_to_searchindex_js = "../searchindex-0b1498f3.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-4d7222e8.js"></script>
@@ -227,7 +227,6 @@ fn read_config(path: &amp;str) -&gt; Result&lt;String&gt; {
 <ul>
 <li><code>?</code> 可以自动把不同错误转换成 <code>anyhow::Error</code>。</li>
 <li><code>Context</code> 可以给错误补充上下文。</li>
-<li>面试时可以说：<code>anyhow</code> 更偏应用层，重点是方便地传播和包装错误。</li>
 </ul>
 <h2 id="thiserror"><a class="header" href="#thiserror">thiserror</a></h2>
 <p><code>thiserror</code> 用来定义自己的错误类型。它通过 <code>#[derive(Error)]</code> 自动实现 <code>std::error::Error</code> 和 <code>Display</code>。</p>
@@ -260,7 +259,6 @@ pub type Result&lt;T&gt; = std::result::Result&lt;T, ConfigError&gt;;
 <ul>
 <li><code>#[error("...")]</code> 定义错误展示文本。</li>
 <li><code>#[from]</code> 会自动实现 <code>From</code>，方便 <code>?</code> 转换错误。</li>
-<li>面试时可以说：<code>thiserror</code> 负责“定义错误类型”，<code>anyhow</code> 负责“在应用层承接和传播错误”。</li>
 </ul>
 <h2 id="serde"><a class="header" href="#serde">serde</a></h2>
 <p><code>serde</code> 是 Rust 生态中最常用的序列化和反序列化框架。它本身提供通用 trait，具体格式由 <code>serde_json</code>、<code>toml</code>、<code>bincode</code> 等库实现。</p>
@@ -298,7 +296,6 @@ struct Config {
 <li><code>Deserialize</code> 表示外部格式可以转回 Rust 类型。</li>
 <li><code>rename</code> 用来处理字段名不一致。</li>
 <li><code>default</code> 用来给缺失字段填默认值。</li>
-<li>面试时可以说：serde 的优势是类型安全、性能好、格式无关。</li>
 </ul>
 <h2 id="serde_json"><a class="header" href="#serde_json">serde_json</a></h2>
 <p><code>serde_json</code> 是 serde 的 JSON 格式实现，用来把 Rust 结构体和 JSON 字符串互转。</p>
@@ -349,7 +346,6 @@ println!("{}", value["name"]);
 <ul>
 <li>能定义结构体时优先用结构体，不要到处用 <code>Value</code>。</li>
 <li><code>Value</code> 适合字段不固定、临时处理、调试。</li>
-<li>面试时可以说：<code>serde_json</code> 常用于 Web API 的请求体和响应体处理。</li>
 </ul>
 <h2 id="toml"><a class="header" href="#toml">toml</a></h2>
 <p><code>toml</code> 用来读取 TOML 格式配置文件。Rust 项目里的 <code>Cargo.toml</code> 就是 TOML 格式。</p>
@@ -382,7 +378,6 @@ fn load_config(text: &amp;str) -&gt; toml::de::Result&lt;AppConfig&gt; {
 <ul>
 <li>TOML 适合人手写配置。</li>
 <li>配合 <code>serde::Deserialize</code> 可以直接转成结构体。</li>
-<li>面试时可以说：配置文件解析一般会用 <code>std::fs</code> 读取文本，再用 <code>toml::from_str</code> 反序列化。</li>
 </ul>
 <h2 id="bytes"><a class="header" href="#bytes">bytes</a></h2>
 <p><code>bytes</code> 提供高效字节缓冲区，常见类型是 <code>Bytes</code> 和 <code>BytesMut</code>。</p>
@@ -422,7 +417,6 @@ let frozen = buf.freeze();
 <li><code>Bytes</code> 偏只读共享。</li>
 <li><code>BytesMut</code> 偏可变构建。</li>
 <li><code>freeze()</code> 可以把 <code>BytesMut</code> 转成 <code>Bytes</code>。</li>
-<li>面试时可以说：<code>bytes</code> 常用于网络 I/O，核心价值是减少不必要的内存拷贝。</li>
 </ul>
 <h2 id="reqwest"><a class="header" href="#reqwest">reqwest</a></h2>
 <p><code>reqwest</code> 是 Rust 常用 HTTP 客户端，支持异步请求、JSON、header、timeout 等。</p>

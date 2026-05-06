@@ -129,6 +129,16 @@ function App() {
       delay: '-5.1s',
     },
     {
+      title: '常用库',
+      href: noteHref('rust/常用库.html'),
+      description: 'rust 项目中常用工具库介绍',
+      tone: 'pink',
+      size: 'sm',
+      x: 70,
+      y: 30,
+      delay: '-2.4s',
+    },
+    {
       title: 'Tokio',
       href: noteHref('tokio/'),
       description: '异步运行时、任务调度，以及把并发程序写稳的实践。',
