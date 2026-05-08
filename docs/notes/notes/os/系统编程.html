@@ -36,7 +36,7 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-d86b7fd4.js";
+            window.path_to_searchindex_js = "../../searchindex-5ae99f90.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-4d7222e8.js"></script>
@@ -175,868 +175,448 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="操作系统及基础知识"><a class="header" href="#操作系统及基础知识">操作系统及基础知识</a></h1>
-<p>快速跳转 &gt;&gt; <a href="#rust-系统编程">Rust 系统编程</a></p>
+                        <h1 id="操作系统与-rust-系统编程"><a class="header" href="#操作系统与-rust-系统编程">操作系统与 Rust 系统编程</a></h1>
 <p>系统编程的主线是：</p>
 <blockquote>
-<p>通过操作系统提供的接口，管理和控制计算机资源。</p>
+<p>通过操作系统提供的抽象和接口，管理 CPU、内存、文件、设备、网络和并发。</p>
 </blockquote>
-<p>不同层次负责的事情：</p>
+<p>这篇笔记分成两部分：</p>
 <ol>
-<li><strong>操作系统内核</strong>管理 CPU、内存、设备等硬件资源。</li>
-<li><strong>系统调用</strong>是用户程序请求内核服务的唯一入口。</li>
-<li><strong>并发模型</strong>控制多任务如何共享 CPU。</li>
-<li><strong>内存管理</strong>决定进程如何使用物理和虚拟内存。</li>
-<li><strong>文件与 I/O</strong>是进程与外设交换数据的方式。</li>
-<li><strong>进程间通信</strong>让不同进程可以交换数据。</li>
+<li><strong>操作系统基础</strong>：先把内核、系统调用、进程、线程、虚拟内存、文件描述符、IPC、同步、信号、I/O 模型这些概念讲清楚。</li>
+<li><a href="#第二部分rust-系统编程"><strong>Rust 系统编程</strong></a>：再看 Rust 如何使用这些操作系统能力，包括 <code>std</code> 封装、Unix fd、<code>libc</code>、FFI、<code>mmap</code>、<code>unsafe</code>、<code>no_std</code>、异步运行时和诊断工具。</li>
 </ol>
+<p>这样安排的目的很简单：先建立 OS 的地基，再解释 Rust 为什么这样设计、哪些 API 其实是在包一层系统调用。</p>
 <hr>
-<h2 id="速览"><a class="header" href="#速览">速览</a></h2>
+<h2 id="第一部分操作系统基础"><a class="header" href="#第一部分操作系统基础">第一部分：操作系统基础</a></h2>
+<h3 id="速览"><a class="header" href="#速览">速览</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>概念</th><th>作用</th><th>备注</th></tr>
+<tr><th>概念</th><th>解决的问题</th><th>关键点</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="#用户态与内核态">用户态 / 内核态</a></td><td>CPU 特权级别</td><td>内核态可以执行特权指令，用户态不能</td></tr>
-<tr><td><a href="#系统调用">系统调用</a></td><td>用户程序请求内核服务</td><td>如 <code>read</code>、<code>write</code>、<code>mmap</code></td></tr>
-<tr><td><a href="#进程与线程">进程 / 线程</a></td><td>资源分配和调度单位</td><td>进程是资源容器，线程是执行单元</td></tr>
-<tr><td><a href="#协程">协程</a></td><td>用户态并发</td><td>由程序自己调度，不依赖内核</td></tr>
-<tr><td><a href="#虚拟内存">虚拟内存</a></td><td>进程对内存的抽象</td><td>每个进程看到独立的地址空间</td></tr>
-<tr><td><a href="#分页机制">页表 / 缺页中断</a></td><td>虚拟地址到物理地址的映射</td><td>缺页时由内核加载数据</td></tr>
-<tr><td><a href="#文件描述符">文件描述符</a></td><td>I/O 资源的抽象</td><td>一切皆文件的思想</td></tr>
-<tr><td><a href="#进程间通信">进程间通信</a></td><td>进程之间交换数据</td><td>管道、共享内存、信号量、消息队列等</td></tr>
-<tr><td><a href="#同步机制">锁 / 同步</a></td><td>协调并发访问共享资源</td><td>互斥锁、读写锁、信号量、条件变量</td></tr>
-<tr><td><a href="#信号">信号</a></td><td>异步事件通知</td><td><code>SIGKILL</code>、<code>SIGSEGV</code>、<code>SIGINT</code></td></tr>
-<tr><td><a href="#内存映射文件">内存映射</a></td><td>文件内容映射到进程地址空间</td><td><code>mmap</code> 系统调用</td></tr>
-<tr><td><a href="#io模型">非阻塞 I/O / epoll</a></td><td>高效的 I/O 事件通知</td><td>多路复用、异步 I/O 的基础</td></tr>
+<tr><td><a href="#用户态与内核态">用户态 / 内核态</a></td><td>防止普通程序直接破坏系统</td><td>特权级、陷入内核、隔离</td></tr>
+<tr><td><a href="#系统调用">系统调用</a></td><td>用户程序请求内核服务</td><td>用户态到内核态的受控入口</td></tr>
+<tr><td><a href="#进程">进程</a></td><td>程序运行时的资源容器</td><td>地址空间、fd 表、PID、权限</td></tr>
+<tr><td><a href="#线程与调度">线程</a></td><td>CPU 调度的基本执行单元</td><td>共享进程资源，各自有栈</td></tr>
+<tr><td><a href="#线程与调度">调度</a></td><td>多个执行流共享 CPU</td><td>时间片、阻塞、唤醒、上下文切换</td></tr>
+<tr><td><a href="#虚拟内存">虚拟内存</a></td><td>给每个进程独立地址空间</td><td>页表、MMU、TLB、缺页</td></tr>
+<tr><td><a href="#文件描述符">文件描述符</a></td><td>统一 I/O 资源</td><td>文件、管道、socket、设备</td></tr>
+<tr><td><a href="#进程间通信">IPC</a></td><td>进程之间交换信息</td><td>管道、共享内存、信号量、socket</td></tr>
+<tr><td><a href="#同步机制">同步</a></td><td>协调并发访问共享资源</td><td>Mutex、RwLock、条件变量、原子操作</td></tr>
+<tr><td><a href="#信号">信号</a></td><td>异步事件通知</td><td>中断进程控制流，处理受限</td></tr>
+<tr><td><a href="#io-模型">I/O 模型</a></td><td>决定等待 I/O 的方式</td><td>阻塞、非阻塞、多路复用、异步</td></tr>
 </tbody>
 </table>
 </div>
 <hr>
 <h2 id="用户态与内核态"><a class="header" href="#用户态与内核态">用户态与内核态</a></h2>
-<p>CPU 一般提供多个特权级别。以 Linux/x86 为例：</p>
+<p>现代操作系统把程序运行分成不同的特权级。普通应用运行在<strong>用户态</strong>，内核运行在<strong>内核态</strong>。</p>
 <ul>
-<li><strong>内核态</strong>（ring 0）：可以执行任何指令（操作页表、中断、设备 I/O 等）。</li>
-<li><strong>用户态</strong>（ring 3）：只能执行普通指令，访问受限的内存区域。</li>
+<li><strong>用户态</strong>：不能执行特权指令，不能随意访问内核内存，不能直接操作硬件。</li>
+<li><strong>内核态</strong>：可以管理页表、中断、调度器、设备驱动和所有进程资源。</li>
 </ul>
-<p>用户程序大部分时间在<strong>用户态</strong>运行。当需要内核服务（读文件、发网络包、分配内存）时，通过<strong>系统调用</strong>切换到内核态。</p>
-<blockquote>
-<p>为什么要分两态？防止用户程序乱搞——比如一个 buggy 的进程直接修改了别的进程的内存，或者把系统搞崩。</p>
-</blockquote>
+<p>这个分层是操作系统安全性的基础。否则一个普通程序就可能改写别的进程内存、关闭中断、破坏文件系统，甚至让整个机器崩溃。</p>
+<p>用户程序需要内核服务时，不能直接调用内核函数，而是通过<strong>系统调用</strong>进入内核。内核完成工作后再返回用户态。</p>
+<pre><code class="language-text">用户程序
+  |
+  |  系统调用
+  v
+内核：检查权限、访问资源、返回结果
+  |
+  v
+用户程序继续执行
+</code></pre>
+<p><strong>Rust 对应：</strong> <code>std::fs::File::open</code>、<code>TcpStream::connect</code>、<code>thread::spawn</code> 等高层 API 最终都会走到操作系统能力上。Rust 通常不让你直接碰内核，而是通过标准库或 <code>libc</code> 间接使用系统调用。</p>
 <hr>
 <h2 id="系统调用"><a class="header" href="#系统调用">系统调用</a></h2>
-<p>系统调用是用户程序请求内核服务的唯一入口。</p>
-<p>常见分类：</p>
+<p>系统调用是用户程序请求内核服务的正式入口。</p>
+<p>常见系统调用类别：</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>类别</th><th>系统调用举例</th></tr>
+<tr><th>类别</th><th>Linux 示例</th></tr>
 </thead>
 <tbody>
 <tr><td>进程控制</td><td><code>fork</code>、<code>execve</code>、<code>exit</code>、<code>waitpid</code></td></tr>
 <tr><td>文件 I/O</td><td><code>open</code>、<code>read</code>、<code>write</code>、<code>close</code>、<code>fsync</code></td></tr>
-<tr><td>内存管理</td><td><code>mmap</code>、<code>munmap</code>、<code>brk</code></td></tr>
-<tr><td>网络</td><td><code>socket</code>、<code>bind</code>、<code>listen</code>、<code>accept</code></td></tr>
-<tr><td>IPC</td><td><code>pipe</code>、<code>shmget</code>、<code>semop</code></td></tr>
-<tr><td>信号</td><td><code>kill</code>、<code>signal</code>、<code>sigaction</code></td></tr>
+<tr><td>内存管理</td><td><code>mmap</code>、<code>munmap</code>、<code>brk</code>、<code>mprotect</code></td></tr>
+<tr><td>网络</td><td><code>socket</code>、<code>bind</code>、<code>listen</code>、<code>accept</code>、<code>connect</code></td></tr>
+<tr><td>IPC</td><td><code>pipe</code>、<code>shmget</code>、<code>semop</code>、<code>sendmsg</code></td></tr>
+<tr><td>信号</td><td><code>kill</code>、<code>sigaction</code>、<code>sigprocmask</code></td></tr>
 </tbody>
 </table>
 </div>
-<p>系统调用流程：</p>
+<p>一次系统调用大致经历这些步骤：</p>
 <ol>
-<li>用户程序把参数放到寄存器。</li>
-<li>触发 <code>syscall</code> / <code>int 0x80</code> 等指令。</li>
-<li>CPU 切换到内核态。</li>
-<li>内核根据系统调用号执行对应函数。</li>
-<li>结果返回给用户程序，切换回用户态。</li>
+<li>用户程序按系统调用 ABI 放好系统调用号和参数。</li>
+<li>CPU 执行 <code>syscall</code>、<code>int 0x80</code>、<code>svc</code>、<code>ecall</code> 等陷入指令。</li>
+<li>CPU 从用户态切到内核态，进入内核的系统调用入口。</li>
+<li>内核检查参数、权限和资源状态。</li>
+<li>内核执行对应操作，并把结果或错误码返回给用户程序。</li>
 </ol>
-<p>每次系统调用都有开销（上下文切换、TLB 刷新等），所以高并发场景下要尽量减少系统调用的次数。</p>
-<blockquote>
-<p>Rust 标准库已经封装了大部分系统调用，一般不需要直接写 <code>syscall</code> 指令。</p>
-</blockquote>
-<h3 id="系统调用-abi"><a class="header" href="#系统调用-abi">系统调用 ABI</a></h3>
-<p>系统调用和普通函数调用用的不是同一套 ABI。以 Linux 为例：</p>
-<ul>
-<li>系统调用号放在 <code>rax</code>（x86_64）或 <code>a7</code>（riscv64）。</li>
-<li>参数放在 <code>rdi, rsi, rdx, r10, r8, r9</code>（x86_64）或 <code>a0~a5</code>（riscv64）。</li>
-<li><code>syscall</code> 指令触发内核态切换，返回值在 <code>rax</code> / <code>a0</code>。</li>
-<li>错误码通过返回值范围判断（如 x86_64 用 <code>-4095~-1</code> 表示错误）。</li>
-</ul>
-<p>如果要在 Rust 中直接做系统调用（不走 libc），需要用 <code>core::arch::asm!</code> 内联汇编：</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// x86_64 Linux 直接调用 write(1, buf, len)
-fn sys_write(fd: u64, buf: *const u8, len: u64) -&gt; i64 {
-    let ret: i64;
-    unsafe {
-        core::arch::asm!(
-            "syscall",
-            in("rax") 1,       // 系统调用号：write=1
-            in("rdi") fd,
-            in("rsi") buf,
-            in("rdx") len,
-            out("rcx") _,     // syscall 会破坏 rcx
-            out("r11") _,     // syscall 会破坏 r11
-            lateout("rax") ret,
-        );
-    }
-    ret
-}
-<span class="boring">}</span></code></pre>
-<p>不同的 CPU 架构的系统调用 ABI 不同，移植时要注意：</p>
+<p>系统调用不是普通函数调用。它会跨越用户态和内核态边界，通常比普通函数调用更贵。因此高性能程序会减少不必要的系统调用，例如批量读写、使用缓冲、使用 <code>epoll</code> 避免大量阻塞线程。</p>
+<h3 id="abi-与错误"><a class="header" href="#abi-与错误">ABI 与错误</a></h3>
+<p>系统调用 ABI 规定了调用号、参数和返回值放在哪里。以 Linux x86_64 为例：</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>架构</th><th>触发指令</th><th>系统调用号寄存器</th><th>参数寄存器</th></tr>
+<tr><th>项目</th><th>位置</th></tr>
 </thead>
 <tbody>
-<tr><td>x86_64</td><td><code>syscall</code></td><td><code>rax</code></td><td><code>rdi, rsi, rdx, r10, r8, r9</code></td></tr>
-<tr><td>aarch64</td><td><code>svc #0</code></td><td><code>x8</code></td><td><code>x0~x5</code></td></tr>
-<tr><td>riscv64</td><td><code>ecall</code></td><td><code>a7</code></td><td><code>a0~a5</code></td></tr>
+<tr><td>系统调用号</td><td><code>rax</code></td></tr>
+<tr><td>参数</td><td><code>rdi, rsi, rdx, r10, r8, r9</code></td></tr>
+<tr><td>返回值</td><td><code>rax</code></td></tr>
+<tr><td>触发指令</td><td><code>syscall</code></td></tr>
 </tbody>
 </table>
 </div>
+<p>系统调用失败时通常返回负错误码，用户态库会把它转换成更友好的错误形式，例如 C 的 <code>errno</code>，Rust 的 <code>std::io::Error</code>。</p>
+<p><strong>Rust 对应：</strong> 优先使用标准库。只有在标准库没有暴露某个 OS 能力时，才考虑 <code>libc</code>、<code>nix</code>、<code>rustix</code> 或手写 FFI。</p>
 <hr>
-<h2 id="进程与线程"><a class="header" href="#进程与线程">进程与线程</a></h2>
-<h3 id="进程"><a class="header" href="#进程">进程</a></h3>
-<p>进程是资源分配的基本单位。</p>
-<p>每个进程拥有：</p>
+<h2 id="进程"><a class="header" href="#进程">进程</a></h2>
+<p>进程是操作系统分配资源的基本单位。一个进程通常拥有：</p>
 <ul>
 <li>独立的虚拟地址空间。</li>
 <li>文件描述符表。</li>
-<li>进程 ID（PID）。</li>
-<li>环境变量、工作目录等。</li>
+<li>当前工作目录、环境变量、权限信息。</li>
+<li>进程 ID、父进程 ID、进程状态。</li>
+<li>一个或多个线程。</li>
 </ul>
-<p>进程间默认不共享内存。要交换数据需要用 IPC 机制。</p>
-<pre><code>┌─────────────────┐     ┌─────────────────┐
-│  进程 A          │     │  进程 B          │
-│  ┌───────────┐  │     │  ┌───────────┐  │
-│  │ 地址空间   │  │     │  │ 地址空间   │  │
-│  │ (独立)     │  │     │  │ (独立)     │  │
-│  └───────────┘  │     │  └───────────┘  │
-│  │ 文件描述符  │  │     │  │ 文件描述符  │  │
-│  └───────────┘  │     │  └───────────┘  │
-└─────────────────┘     └─────────────────┘
-       │                       │
-       └──────── IPC ──────────┘
+<p>进程之间默认不共享内存。这个隔离非常重要：一个进程崩溃，通常不会直接破坏另一个进程的地址空间。</p>
+<pre><code class="language-text">进程 A                           进程 B
++-------------------+           +-------------------+
+| 地址空间           |           | 地址空间           |
+| fd 表              |           | fd 表              |
+| 权限 / 环境变量     |           | 权限 / 环境变量     |
++-------------------+           +-------------------+
+        |                               |
+        +----------- IPC ---------------+
 </code></pre>
-<h3 id="线程"><a class="header" href="#线程">线程</a></h3>
-<p>线程是 CPU 调度的基本单位。</p>
-<p>同一进程内的线程：</p>
+<h3 id="创建与替换"><a class="header" href="#创建与替换">创建与替换</a></h3>
+<p>Unix 里经典的进程创建模型是：</p>
 <ul>
-<li>共享地址空间和文件描述符。</li>
-<li>各有独立的栈和寄存器上下文。</li>
-<li>创建和切换开销比进程小。</li>
+<li><code>fork</code>：复制当前进程，产生子进程。</li>
+<li><code>execve</code>：把当前进程映像替换成另一个可执行文件。</li>
+<li><code>waitpid</code>：父进程等待子进程结束并回收状态。</li>
 </ul>
-<pre><code class="language-text">┌─────────────────────────────┐
-│  进程                       │
-│  ┌──────┐ ┌──────┐ ┌──────┐ │
-│  │线程1 │ │线程2 │ │线程3 │ │
-│  │(栈A) │ │(栈B) │ │(栈C) │ │
-│  └──────┘ └──────┘ └──────┘ │
-│  共享：地址空间、fd表        │
-└─────────────────────────────┘
-</code></pre>
-<p>Rust 中创建线程：</p>
-<pre class="playground"><code class="language-rust">use std::thread;
-
-fn main() {
-    let handle = thread::spawn(|| {
-        println!("子线程");
-    });
-
-    println!("主线程");
-    handle.join().unwrap(); // 等待子线程结束
-}</code></pre>
-<h3 id="进程-vs-线程"><a class="header" href="#进程-vs-线程">进程 vs 线程</a></h3>
+<p>Shell 执行命令时大致就是 <code>fork</code> 一个子进程，然后在子进程中 <code>execve</code> 目标程序。</p>
+<p><strong>Rust 对应：</strong> Rust 标准库通常不直接暴露 <code>fork</code> 风格的接口，而是用 <code>std::process::Command</code> 表达“启动一个新程序”。这比裸 <code>fork</code> 更符合跨平台抽象。</p>
+<hr>
+<h2 id="线程与调度"><a class="header" href="#线程与调度">线程与调度</a></h2>
+<p>线程是 CPU 调度的基本执行单元。同一个进程内的多个线程：</p>
+<ul>
+<li>共享地址空间。</li>
+<li>共享文件描述符表。</li>
+<li>各自拥有独立的栈和寄存器上下文。</li>
+<li>一个线程崩溃可能导致整个进程崩溃。</li>
+</ul>
+<p>进程和线程的区别：</p>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>特性</th><th>进程</th><th>线程</th></tr>
 </thead>
 <tbody>
-<tr><td>地址空间</td><td>独立</td><td>共享</td></tr>
-<tr><td>资源开销</td><td>大</td><td>小</td></tr>
-<tr><td>切换开销</td><td>大</td><td>小</td></tr>
-<tr><td>通信</td><td>IPC</td><td>直接读写共享内存</td></tr>
-<tr><td>隔离性</td><td>高（一个崩了不影响别的）</td><td>低（一个崩了整个进程崩）</td></tr>
-<tr><td>Rust 创建方式</td><td><code>std::process::Command</code></td><td><code>std::thread::spawn</code></td></tr>
+<tr><td>地址空间</td><td>独立</td><td>同进程内共享</td></tr>
+<tr><td>创建成本</td><td>较高</td><td>较低</td></tr>
+<tr><td>切换成本</td><td>较高</td><td>较低</td></tr>
+<tr><td>通信方式</td><td>IPC</td><td>共享内存加同步</td></tr>
+<tr><td>隔离性</td><td>强</td><td>弱</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="send-和-sync"><a class="header" href="#send-和-sync">Send 和 Sync</a></h3>
-<p>Rust 的线程安全由两个标记 trait 静态保证：</p>
-<ul>
-<li><strong><code>Send</code></strong>：类型可以安全地<strong>转移</strong>到另一个线程。几乎所有类型都实现了 <code>Send</code>，但 <code>Rc&lt;T&gt;</code> 没有（因为引用计数不是原子的）。</li>
-<li><strong><code>Sync</code></strong>：类型可以安全地<strong>共享引用</strong>到另一个线程。即 <code>&amp;T</code> 可以安全地在多个线程中访问。<code>Rc&lt;T&gt;</code> 和 <code>RefCell&lt;T&gt;</code> 没有实现 <code>Sync</code>。</li>
-</ul>
-<pre><code class="language-text">          Send（所有权可跨线程转移）     Sync（引用可跨线程共享）
-Rc&lt;T&gt;     ❌                           ❌
-Arc&lt;T&gt;    ✅                           ✅
-RefCell&lt;T&gt; ✅                          ❌
-Mutex&lt;T&gt;  ✅                           ✅
+<p>调度器负责决定下一个运行哪个线程。线程可能处于运行、就绪、阻塞、结束等状态。</p>
+<pre><code class="language-text">就绪队列 -&gt; 运行 -&gt; 阻塞等待 I/O
+   ^          |          |
+   |          v          |
+   +------ 时间片结束 &lt;- I/O 完成
 </code></pre>
-<p><code>thread::spawn</code> 的闭包必须是 <code>Send + 'static</code>——闭包捕获的数据必须能跨线程转移所有权，且不包含任何借用。</p>
-<pre class="playground"><code class="language-rust">use std::thread;
-
-fn main() {
-    let data = vec![1, 2, 3];
-
-    // move 强制闭包获取 data 的所有权，保证转移后数据有效
-    let handle = thread::spawn(move || {
-        println!("data: {:?}", data);
-    });
-
-    // 这里不能再使用 data，所有权已转移给线程
-    handle.join().unwrap();
-}</code></pre>
+<h3 id="上下文切换"><a class="header" href="#上下文切换">上下文切换</a></h3>
+<p>上下文切换就是保存当前执行流的 CPU 状态，并恢复另一个执行流的状态。需要保存的内容通常包括：</p>
+<ul>
+<li>程序计数器。</li>
+<li>栈指针。</li>
+<li>通用寄存器。</li>
+<li>地址空间相关状态。</li>
+<li>调度器维护的线程状态。</li>
+</ul>
+<p>上下文切换有成本，所以高并发程序不一定是线程越多越好。线程太多会带来调度开销、栈内存开销和缓存失效。</p>
+<p><strong>Rust 对应：</strong> <code>std::thread::spawn</code> 创建的是 OS 线程。Rust 的 <code>Send</code> 和 <code>Sync</code> 不是 OS 概念，而是 Rust 在类型系统层面对跨线程移动和共享做出的安全约束，适合放到第二部分讲。</p>
 <hr>
-<h2 id="协程"><a class="header" href="#协程">协程</a></h2>
-<p>协程是用户态并发，不由内核调度，而是由程序自己控制。</p>
-<p>特点：</p>
+<h2 id="协程与用户态任务"><a class="header" href="#协程与用户态任务">协程与用户态任务</a></h2>
+<p>协程不是操作系统必须提供的基本调度单位。它通常由语言运行时或库在用户态调度。</p>
+<p>协程的特点：</p>
 <ul>
-<li>不依赖内核线程，轻量。</li>
-<li>切换开销极小，只是保存/恢复寄存器。</li>
-<li>一个线程可以跑成千上万个协程。</li>
-<li>通常配合异步 I/O 使用。</li>
+<li>数量可以远多于 OS 线程。</li>
+<li>切换通常比 OS 线程便宜。</li>
+<li>适合大量 I/O 等待任务。</li>
+<li>如果协程长期不让出执行权，其他协程可能无法运行。</li>
 </ul>
-<blockquote>
-<p>线程是内核调度的最小单位，协程是用户态调度的最小单位。</p>
-</blockquote>
-<p>Rust 中协程通过 <code>async/await</code> 实现，运行时如 tokio：</p>
-<pre class="playground"><code class="language-rust">use tokio::time::{sleep, Duration};
-
-#[tokio::main]
-async fn main() {
-    tokio::spawn(async {
-        sleep(Duration::from_millis(100)).await;
-        println!("协程1");
-    });
-
-    tokio::spawn(async {
-        sleep(Duration::from_millis(50)).await;
-        println!("协程2");
-    });
-
-    sleep(Duration::from_millis(200)).await;
-}</code></pre>
-<h3 id="上下文切换的原理"><a class="header" href="#上下文切换的原理">上下文切换的原理</a></h3>
-<p>协程、绿色线程、甚至内核的线程切换，底层都是同一件事：<strong>保存当前执行上下文，恢复另一个执行上下文</strong>。</p>
-<p>执行上下文包括：</p>
-<ul>
-<li><strong>被调用者保存的寄存器</strong>（Callee-saved）：<code>s0~s11</code>（riscv64）、<code>rbx, rbp, r12~r15</code>（x86_64）。这些由当前函数负责保存。</li>
-<li><strong>栈指针 SP</strong>：指向当前栈帧，切换 SP 就等于切换了栈。</li>
-<li><strong>返回地址 RA</strong>：切换后从哪条指令继续执行。</li>
-</ul>
-<p>手动上下文切换（riscv64）的核心汇编（简化）：</p>
-<pre><code class="language-text"># 保存当前上下文
-sd   ra,  0(a0)    # 保存返回地址
-sd   sp,  8(a0)    # 保存栈指针
-sd   s0,  16(a0)   # 保存被调用者保存的寄存器
-sd   s1,  24(a0)
-# ... 继续保存 s2~s11
-
-# 恢复目标上下文
-ld   ra,  0(a1)    # 恢复返回地址
-ld   sp,  8(a1)    # 恢复栈指针
-ld   s0,  16(a1)   # 恢复被调用者保存的寄存器
-ld   s1,  24(a1)
-# ...
-ret                 # 跳到目标上下文继续执行
-</code></pre>
-<blockquote>
-<p>协作式调度的关键是每个任务<strong>主动 yield</strong>，把 CPU 让给其他任务。因为没有时钟中断，如果某个任务不 yield，其他任务就永远得不到执行。</p>
-</blockquote>
+<p>协程和线程的核心区别：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>项目</th><th>OS 线程</th><th>协程 / 用户态任务</th></tr>
+</thead>
+<tbody>
+<tr><td>调度者</td><td>内核</td><td>运行时 / 程序</td></tr>
+<tr><td>抢占</td><td>通常可抢占</td><td>常见为协作式</td></tr>
+<tr><td>创建成本</td><td>较高</td><td>较低</td></tr>
+<tr><td>适合场景</td><td>CPU 并行、阻塞调用</td><td>大量 I/O 并发</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Rust 对应：</strong> Rust 的 <code>async/await</code> 生成的是可轮询的 <code>Future</code>，需要 Tokio、async-std 等运行时驱动。它不是自动创建 OS 线程。</p>
 <hr>
 <h2 id="虚拟内存"><a class="header" href="#虚拟内存">虚拟内存</a></h2>
-<p>虚拟内存是操作系统给每个进程提供的地址空间抽象。</p>
-<p>核心好处：</p>
+<p>虚拟内存让每个进程都以为自己拥有一整块连续、独立的地址空间。内核和硬件共同把虚拟地址翻译成物理地址。</p>
+<p>虚拟内存带来的好处：</p>
 <ul>
-<li><strong>隔离</strong>：进程 A 不能直接访问进程 B 的内存。</li>
-<li><strong>简化</strong>：每个进程认为自己在独占内存（地址从 0 到最大值）。</li>
-<li><strong>安全性</strong>：用户程序无法访问内核空间。</li>
-<li><strong>按需加载</strong>：只有真正用到的部分才被加载到物理内存。</li>
+<li><strong>隔离</strong>：进程不能直接访问其他进程内存。</li>
+<li><strong>简化</strong>：程序使用连续地址，不需要关心物理内存碎片。</li>
+<li><strong>保护</strong>：代码段可以只读，栈可以不可执行。</li>
+<li><strong>按需加载</strong>：真正访问页面时才把数据加载进物理内存。</li>
+<li><strong>共享</strong>：多个进程可以把同一个文件映射到各自地址空间。</li>
 </ul>
-<p>典型 64 位 Linux 进程地址空间布局（简化）：</p>
-<pre><code class="language-text">0x0000_0000_0000_0000
-┌─────────────────────┐
-│  代码段 (.text)      │
-├─────────────────────┤
-│  数据段 (.data/.bss) │
-├─────────────────────┤
-│  堆                  │
-│     ↓               │
-│     空闲            │
-│     ↑               │
-│  栈                 │
-├─────────────────────┤
-│  环境变量 / 参数     │
-├─────────────────────┤
-│  内核空间（用户不可见）│
-└─────────────────────┘
-0xFFFF_FFFF_FFFF_FFFF
+<p>典型进程地址空间：</p>
+<pre><code class="language-text">低地址
++------------------+
+| 代码段 .text      |
+| 只读数据 .rodata  |
+| 数据段 .data/.bss |
+| 堆 heap           |
+|        ...        |
+| 栈 stack          |
+| 环境变量 / 参数    |
++------------------+
+高地址
 </code></pre>
+<h3 id="堆与栈"><a class="header" href="#堆与栈">堆与栈</a></h3>
+<ul>
+<li><strong>栈</strong>：用于函数调用、局部变量、返回地址。分配和释放很快，但空间有限。</li>
+<li><strong>堆</strong>：用于动态分配对象。生命周期更灵活，但需要分配器管理。</li>
+</ul>
+<p>栈溢出、堆碎片、悬垂指针、越界访问等问题都和内存管理密切相关。</p>
+<p><strong>Rust 对应：</strong> Rust 的所有权、借用和生命周期主要是在语言层减少悬垂指针、重复释放、数据竞争等问题。但虚拟内存、页表、缺页这些仍然由操作系统管理。</p>
 <hr>
-<h2 id="分页机制"><a class="header" href="#分页机制">分页机制</a></h2>
-<p>虚拟内存通过<strong>分页</strong>实现。虚拟地址分成固定大小的<strong>页</strong>，物理内存分成同样大小的<strong>页框</strong>。</p>
-<ul>
-<li>虚拟地址 → 页号 + 页内偏移。</li>
-<li>页号通过<strong>页表</strong>查找到对应的物理页框号。</li>
-<li>页内偏移直接对应物理页框内的偏移。</li>
-</ul>
-<pre><code class="language-text">虚拟地址：  [页号 | 偏移]
-                 │
-                 ▼
-            ┌──────────┐
-            │   页表    │
-            │ vpn → ppn │
-            └──────────┘
-                 │
-                 ▼
-物理地址：  [物理页框号 | 偏移]
+<h2 id="分页页表tlb"><a class="header" href="#分页页表tlb">分页、页表、TLB</a></h2>
+<p>分页是虚拟内存的常见实现方式。虚拟地址空间被切成固定大小的<strong>页</strong>，物理内存被切成同样大小的<strong>页框</strong>。</p>
+<p>虚拟地址通常拆成：</p>
+<pre><code class="language-text">虚拟地址 = 页号 + 页内偏移
 </code></pre>
-<p>如果访问的页不在物理内存中，会触发<strong>缺页中断</strong>，由内核从磁盘加载。</p>
-<p>Rust 中没有直接操作页表的 API，但可以通过 <code>mmap</code> 间接控制内存映射：</p>
-<pre class="playground"><code class="language-rust">use std::alloc::{alloc, Layout};
-
-fn main() {
-    // Rust 默认走 jemalloc/glibc malloc
-    // 底层通过 brk 或 mmap 分配虚拟内存
-    let layout = Layout::new::&lt;[u8; 4096]&gt;();
-    let ptr = unsafe { alloc(layout) };
-    unsafe { *ptr = 42 };
-    println!("分配了一个页: {}", unsafe { *ptr });
-}</code></pre>
-<h3 id="sv39-三级页表"><a class="header" href="#sv39-三级页表">SV39 三级页表</a></h3>
-<p>RISC-V 的 SV39 方案把 39 位虚拟地址分成三级索引，每级 9 位，最后 12 位是页内偏移：</p>
-<pre><code class="language-text">虚拟地址（39位有效）：
-[VPN2:9位 | VPN1:9位 | VPN0:9位 | 页内偏移:12位]
-    │          │          │
-    ▼          ▼          ▼
-  L2页表     L1页表     L0页表     → 物理页框
+<p>页号通过页表翻译成物理页框号，页内偏移保持不变。</p>
+<pre><code class="language-text">虚拟地址
+  |
+  v
+页表：虚拟页号 -&gt; 物理页框号
+  |
+  v
+物理地址
 </code></pre>
-<p>如果某个中间级页表的 PTE 设置了<strong>大页标志</strong>，则跳过后续级别。SV39 支持两种大页：</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>级别</th><th>页大小</th><th>有效虚拟地址位数</th></tr>
-</thead>
-<tbody>
-<tr><td>L0（标准页）</td><td>4 KiB</td><td>39 位</td></tr>
-<tr><td>L1（大页）</td><td>2 MiB</td><td>30 位</td></tr>
-<tr><td>L2（超大页）</td><td>1 GiB</td><td>21 位</td></tr>
-</tbody>
-</table>
-</div>
-<h3 id="tlb-和-mmu"><a class="header" href="#tlb-和-mmu">TLB 和 MMU</a></h3>
-<p>MMU（内存管理单元）负责把虚拟地址翻译成物理地址。TLB（ Translation Lookaside Buffer）是 MMU 内部的页表缓存。</p>
+<h3 id="缺页中断"><a class="header" href="#缺页中断">缺页中断</a></h3>
+<p>当进程访问的虚拟页还没有映射到物理内存时，会触发缺页中断。内核可能会：</p>
 <ul>
-<li>TLB 命中：直接拿到物理地址，无需访问内存页表。</li>
-<li>TLB 缺失：硬件遍历页表（或触发缺页异常），加载页表项到 TLB。</li>
-<li>TLB 刷新：修改页表后，需要使对应的 TLB 项失效，否则 MMU 会读到过期的映射。</li>
+<li>从磁盘加载对应页面。</li>
+<li>分配新的物理页。</li>
+<li>建立页表映射。</li>
+<li>如果访问非法，则向进程发送异常，例如段错误。</li>
 </ul>
-<p>TLB 刷新策略：</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>刷新粒度</th><th>触发时机</th></tr>
-</thead>
-<tbody>
-<tr><td>全部刷新</td><td>进程切换（切换地址空间）</td></tr>
-<tr><td>按页刷新</td><td><code>mprotect</code>、<code>munmap</code> 等单页操作</td></tr>
-<tr><td>按 ASID 刷新</td><td>支持 ASID 的 CPU 可按进程刷新</td></tr>
-</tbody>
-</table>
-</div>
+<h3 id="tlb"><a class="header" href="#tlb">TLB</a></h3>
+<p>页表在内存里，直接查页表很慢。CPU 使用 TLB 缓存最近的地址翻译结果。</p>
+<ul>
+<li>TLB 命中：快速得到物理地址。</li>
+<li>TLB 未命中：需要查页表。</li>
+<li>修改页表后：需要让相关 TLB 项失效。</li>
+</ul>
+<p><strong>Rust 对应：</strong> 普通 Rust 程序不能直接改页表，但可以通过 <code>mmap</code>、<code>mprotect</code>、分配器等接口影响虚拟内存布局。</p>
 <hr>
 <h2 id="文件描述符"><a class="header" href="#文件描述符">文件描述符</a></h2>
-<p>在 Unix/Linux 中，<strong>一切皆文件</strong>。文件、socket、管道、设备等 I/O 资源，都通过文件描述符（fd）访问。</p>
-<p>文件描述符是一个非负整数。每个进程有自己的 fd 表：</p>
-<pre><code class="language-text">fd 表：
- 0 → 标准输入（stdin）
- 1 → 标准输出（stdout）
- 2 → 标准错误（stderr）
- 3 → 打开的文件 / socket / 等
+<p>Unix/Linux 把很多 I/O 资源统一抽象成文件描述符。fd 是进程 fd 表中的一个整数索引。</p>
+<p>常见 fd：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>fd</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>标准输入</td></tr>
+<tr><td>1</td><td>标准输出</td></tr>
+<tr><td>2</td><td>标准错误</td></tr>
+</tbody>
+</table>
+</div>
+<p>文件、管道、socket、终端、设备都可以通过 fd 读写。</p>
+<pre><code class="language-text">进程 fd 表
++----+----------------+
+| 0  | stdin          |
+| 1  | stdout         |
+| 2  | stderr         |
+| 3  | file.txt       |
+| 4  | socket         |
++----+----------------+
 </code></pre>
-<p>Rust 中操作文件描述符：</p>
-<pre class="playground"><code class="language-rust">use std::fs::File;
-use std::os::unix::io::{RawFd, AsRawFd};
-
-fn main() {
-    let file = File::open("Cargo.toml").unwrap();
-    let fd: RawFd = file.as_raw_fd();
-    println!("文件描述符: {fd}");
-}</code></pre>
+<h3 id="fd-与内核对象"><a class="header" href="#fd-与内核对象">fd 与内核对象</a></h3>
+<p>fd 只是进程内的句柄。多个 fd 可以指向同一个内核文件对象，例如 <code>dup</code> 复制 fd 后就是这样。进程退出时，内核会关闭它持有的 fd。</p>
+<p>需要注意：</p>
+<ul>
+<li>fd 编号会复用，关闭 <code>3</code> 后下次打开文件可能又得到 <code>3</code>。</li>
+<li>fd 泄漏会耗尽进程或系统资源。</li>
+<li><code>fork</code> 后子进程会继承父进程的 fd，除非设置 close-on-exec。</li>
+</ul>
+<p><strong>Rust 对应：</strong> <code>std::fs::File</code> 在 Unix 上内部持有 fd，并在 <code>Drop</code> 时关闭。<code>OwnedFd</code>、<code>BorrowedFd</code>、<code>RawFd</code> 用来表达 fd 的所有权和借用关系。</p>
 <hr>
 <h2 id="进程间通信"><a class="header" href="#进程间通信">进程间通信</a></h2>
-<p>进程间通信（IPC）的方式：</p>
+<p>进程之间默认内存隔离，所以需要 IPC 机制交换数据。</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>方式</th><th>特点</th><th>Rust 中使用</th></tr>
+<tr><th>机制</th><th>特点</th><th>适合场景</th></tr>
 </thead>
 <tbody>
-<tr><td>管道</td><td>单向通信，适合父子进程</td><td><code>std::process::Command</code> 的管道</td></tr>
-<tr><td>命名管道（FIFO）</td><td>不相关进程也可用</td><td>通过文件系统创建</td></tr>
-<tr><td>信号量</td><td>同步/互斥</td><td>通常是 <code>extern crate</code> 或系统调用</td></tr>
-<tr><td>共享内存</td><td>最快，需配合同步</td><td><code>mmap</code> + <code>MAP_SHARED</code></td></tr>
-<tr><td>消息队列</td><td>消息传递</td><td><code>libc</code> 的 <code>mq_*</code> 系列</td></tr>
-<tr><td>信号</td><td>异步通知</td><td>见<a href="#信号">信号</a></td></tr>
-<tr><td>Unix Socket</td><td>本地双工通信</td><td><code>std::os::unix::net::UnixStream</code></td></tr>
-<tr><td>TCP/UDP</td><td>远程通信</td><td><code>std::net::TcpStream</code></td></tr>
+<tr><td>管道</td><td>字节流、单向、简单</td><td>父子进程、命令管线</td></tr>
+<tr><td>命名管道</td><td>有路径名的管道</td><td>无亲缘关系进程</td></tr>
+<tr><td>Unix domain socket</td><td>支持双向通信和传 fd</td><td>本机服务通信</td></tr>
+<tr><td>TCP/UDP socket</td><td>跨机器通信</td><td>网络服务</td></tr>
+<tr><td>共享内存</td><td>避免拷贝，速度快</td><td>大数据交换</td></tr>
+<tr><td>信号量</td><td>计数同步原语</td><td>进程间同步</td></tr>
+<tr><td>消息队列</td><td>消息边界明确</td><td>任务队列、事件传递</td></tr>
+<tr><td>信号</td><td>异步通知</td><td>中断、终止、 reload</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="管道示例"><a class="header" href="#管道示例">管道示例</a></h3>
-<pre class="playground"><code class="language-rust">use std::process::{Command, Stdio};
-use std::io::Read;
-
-fn main() {
-    // 等价于 echo hello | wc -c
-    let echo = Command::new("echo")
-        .arg("hello")
-        .stdout(Stdio::piped())
-        .spawn()
-        .unwrap();
-
-    let output = Command::new("wc")
-        .arg("-c")
-        .stdin(echo.stdout.unwrap())
-        .output()
-        .unwrap();
-
-    println!("结果: {}", String::from_utf8_lossy(&amp;output.stdout));
-}</code></pre>
-<h3 id="unix-socket-示例"><a class="header" href="#unix-socket-示例">Unix Socket 示例</a></h3>
-<pre class="playground"><code class="language-rust">use std::os::unix::net::UnixListener;
-use std::thread;
-
-fn main() {
-    let socket_path = "/tmp/example.sock";
-
-    // 服务端
-    let listener = UnixListener::bind(socket_path).unwrap();
-    thread::spawn(move || {
-        let (mut stream, _) = listener.accept().unwrap();
-        use std::io::Read;
-        let mut buf = [0; 1024];
-        let n = stream.read(&amp;mut buf).unwrap();
-        println!("收到: {}", String::from_utf8_lossy(&amp;buf[..n]));
-    });
-
-    // 客户端
-    use std::os::unix::net::UnixStream;
-    use std::io::Write;
-    let mut stream = UnixStream::connect(socket_path).unwrap();
-    stream.write_all(b"hello via unix socket").unwrap();
-}</code></pre>
-<h3 id="mpsc-通道"><a class="header" href="#mpsc-通道">mpsc 通道</a></h3>
-<p>除了管道和 Unix Socket，Rust 标准库还提供了 <strong>mpsc（多生产者单消费者）</strong> 通道用于线程间通信：</p>
-<pre class="playground"><code class="language-rust">use std::sync::mpsc;
-use std::thread;
-
-fn main() {
-    let (tx, rx) = mpsc::channel();
-
-    // 多生产者：克隆发送端
-    let tx2 = tx.clone();
-
-    thread::spawn(move || {
-        tx.send("来自线程1").unwrap();
-    });
-
-    thread::spawn(move || {
-        tx2.send("来自线程2").unwrap();
-    });
-
-    // 单消费者：按发送顺序接收
-    for msg in rx {
-        println!("收到: {msg}");
-    }
-}</code></pre>
-<p>特点：</p>
+<p>不同 IPC 的核心取舍：</p>
 <ul>
-<li>发送端可以克隆（<code>clone</code>），任意数量的生产者往同一个通道发数据。</li>
-<li>接收端只有一个，按发送顺序取出消息。</li>
-<li>发送和接收是不同步的（发送不会阻塞等待接收），通道内部有缓冲区。</li>
-<li>所有发送端关闭后，接收端的迭代器自然结束。</li>
+<li>管道和 socket 容易用，但数据要经过内核缓冲。</li>
+<li>共享内存快，但必须自己处理同步。</li>
+<li>信号轻量，但能做的事情非常有限。</li>
 </ul>
-<p><code>mpsc</code> 适合<strong>一个消费者处理多个生产者</strong>的通信模式。如果需要多消费者，考虑使用第三方库（如 <code>crossbeam</code>）或异步通道（<code>tokio::sync::mpsc</code>）。</p>
+<p><strong>Rust 对应：</strong> 标准库提供了进程管道、TCP/UDP、Unix socket 等封装。共享内存、信号量、消息队列通常需要第三方 crate 或 <code>libc</code>。</p>
 <hr>
 <h2 id="同步机制"><a class="header" href="#同步机制">同步机制</a></h2>
-<p>多线程/多进程访问共享资源时，需要同步来避免数据竞争。</p>
-<h3 id="互斥锁mutex"><a class="header" href="#互斥锁mutex">互斥锁（Mutex）</a></h3>
-<p>同一时刻只有一个线程能持有锁：</p>
-<pre class="playground"><code class="language-rust">use std::sync::{Arc, Mutex};
-use std::thread;
-
-fn main() {
-    let counter = Arc::new(Mutex::new(0));
-    let mut handles = vec![];
-
-    for _ in 0..10 {
-        let counter = Arc::clone(&amp;counter);
-        handles.push(thread::spawn(move || {
-            let mut num = counter.lock().unwrap();
-            *num += 1;
-        }));
-    }
-
-    for handle in handles {
-        handle.join().unwrap();
-    }
-
-    println!("结果: {}", *counter.lock().unwrap());
-}</code></pre>
-<p><code>Arc&lt;T&gt;</code>（原子引用计数）和 <code>Mutex&lt;T&gt;</code> 经常搭配使用：<code>Arc</code> 负责跨线程共享所有权，<code>Mutex</code> 负责互斥访问。单独用 <code>Arc</code> 只能共享不可变数据，单独用 <code>Mutex</code> 无法跨线程传递所有权（需要 <code>Arc</code>）。</p>
-<h3 id="读写锁rwlock"><a class="header" href="#读写锁rwlock">读写锁（RwLock）</a></h3>
-<p>多个读者可以同时读，写者独占：</p>
-<pre class="playground"><code class="language-rust">use std::sync::RwLock;
-
-fn main() {
-    let data = RwLock::new(42);
-
-    // 多个读者可以同时读
-    let read_guard = data.read().unwrap();
-    println!("读到: {read_guard}");
-    drop(read_guard);
-
-    // 写者独占
-    let mut write_guard = data.write().unwrap();
-    *write_guard += 1;
-    drop(write_guard);
-}</code></pre>
-<h3 id="条件变量condvar"><a class="header" href="#条件变量condvar">条件变量（Condvar）</a></h3>
-<p>线程等待某个条件成立：</p>
-<pre class="playground"><code class="language-rust">use std::sync::{Arc, Condvar, Mutex};
-use std::thread;
-
-fn main() {
-    let pair = Arc::new((Mutex::new(false), Condvar::new()));
-    let pair2 = Arc::clone(&amp;pair);
-
-    thread::spawn(move || {
-        let (lock, cvar) = &amp;*pair2;
-        let mut ready = lock.lock().unwrap();
-        *ready = true;
-        cvar.notify_one(); // 通知等待的线程
-    });
-
-    let (lock, cvar) = &amp;*pair;
-    let mut ready = lock.lock().unwrap();
-    while !*ready {
-        ready = cvar.wait(ready).unwrap(); // 等待条件成立
-    }
-    println!("条件已满足");
-}</code></pre>
-<h3 id="原子操作"><a class="header" href="#原子操作">原子操作</a></h3>
-<p>对于简单的整数操作，原子操作比锁轻量得多：</p>
-<pre class="playground"><code class="language-rust">use std::sync::atomic::{AtomicUsize, Ordering};
-
-fn main() {
-    let counter = AtomicUsize::new(0);
-
-    // 原子加 1
-    counter.fetch_add(1, Ordering::SeqCst);
-    println!("{}", counter.load(Ordering::SeqCst));
-}</code></pre>
-<h3 id="内存序memory-ordering"><a class="header" href="#内存序memory-ordering">内存序（Memory Ordering）</a></h3>
-<p>原子操作的内存序决定了<strong>多核之间能观察到什么顺序</strong>。Rust 提供了三种主要的内存序：</p>
+<p>只要多个执行流访问共享状态，就可能需要同步。</p>
+<p>典型问题：</p>
+<ul>
+<li><strong>数据竞争</strong>：多个线程同时读写同一块内存，且至少一个是写。</li>
+<li><strong>竞态条件</strong>：结果依赖不可控的执行顺序。</li>
+<li><strong>死锁</strong>：多个执行流互相等待对方释放资源。</li>
+<li><strong>饥饿</strong>：某些执行流长期得不到资源。</li>
+</ul>
+<p>常见同步原语：</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>内存序</th><th>保证</th><th>代价</th></tr>
+<tr><th>原语</th><th>作用</th></tr>
 </thead>
 <tbody>
-<tr><td><code>Relaxed</code></td><td>仅保证原子性，不保证顺序</td><td>最低（无编译器/CPU 重排序限制）</td></tr>
-<tr><td><code>Release</code> / <code>Acquire</code></td><td>写用 Release、读用 Acquire，形成<strong>happens-before</strong>关系</td><td>中等</td></tr>
-<tr><td><code>SeqCst</code></td><td>全局一致顺序，所有核看到相同的操作顺序</td><td>最高（可能触发全屏障指令）</td></tr>
+<tr><td>Mutex</td><td>一次只允许一个执行流进入临界区</td></tr>
+<tr><td>RwLock</td><td>多读单写</td></tr>
+<tr><td>Semaphore</td><td>控制资源计数</td></tr>
+<tr><td>Condition Variable</td><td>等待某个条件成立</td></tr>
+<tr><td>Atomic</td><td>无锁地读改写小数据</td></tr>
+<tr><td>Barrier</td><td>等待一组线程都到达某点</td></tr>
 </tbody>
 </table>
 </div>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::sync::atomic::{AtomicBool, Ordering};
-
-// 手写 OnceCell：利用 Acquire-Release 保证初始化完成可见性
-static INITIALIZED: AtomicBool = AtomicBool::new(false);
-static mut DATA: u64 = 0;
-
-fn init() {
-    // 只初始化一次
-    if !INITIALIZED.load(Ordering::Acquire) {
-        unsafe { DATA = 42 };            // 数据写
-        INITIALIZED.store(true, Ordering::Release); // 释放屏障
-    }
-}
-<span class="boring">}</span></code></pre>
-<h3 id="自旋锁spinlock"><a class="header" href="#自旋锁spinlock">自旋锁（Spinlock）</a></h3>
-<p>自旋锁用 <code>compare_exchange_weak</code> 忙等（busy-wait），适合短临界区：</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::sync::atomic::{AtomicBool, Ordering};
-use std::hint::spin_loop;
-
-pub struct Spinlock {
-    locked: AtomicBool,
-}
-
-impl Spinlock {
-    pub fn new() -&gt; Self { Spinlock { locked: AtomicBool::new(false) } }
-
-    pub fn lock(&amp;self) {
-        // CAS 循环：期待 locked==false，尝试设为 true
-        while self.locked.compare_exchange_weak(
-            false, true,
-            Ordering::Acquire,
-            Ordering::Relaxed,
-        ).is_err() {
-            spin_loop(); // 提示 CPU：我在自旋等锁
-        }
-    }
-
-    pub fn unlock(&amp;self) {
-        self.locked.store(false, Ordering::Release);
-    }
-}
-<span class="boring">}</span></code></pre>
-<h3 id="raii-守卫guard"><a class="header" href="#raii-守卫guard">RAII 守卫（Guard）</a></h3>
-<p>RAII（Resource Acquisition Is Initialization）是 Rust 管理资源的核心理念——<strong>资源在构造时获取，在析构时释放</strong>。</p>
-<p>用自旋锁配上 RAII Guard，就能实现作用域结束自动解锁：</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::ops::{Deref, DerefMut};
-
-// Spinlock 的 RAII 守卫
-pub struct SpinlockGuard&lt;'a, T&gt; {
-    lock: &amp;'a Spinlock,
-    data: &amp;'a mut T,
-}
-
-impl&lt;'a, T&gt; Deref for SpinlockGuard&lt;'a, T&gt; {
-    type Target = T;
-    fn deref(&amp;self) -&gt; &amp;T { self.data }
-}
-
-impl&lt;'a, T&gt; DerefMut for SpinlockGuard&lt;'a, T&gt; {
-    fn deref_mut(&amp;mut self) -&gt; &amp;mut T { self.data }
-}
-
-impl&lt;'a, T&gt; Drop for SpinlockGuard&lt;'a, T&gt; {
-    fn drop(&amp;mut self) {
-        self.lock.unlock(); // 离开作用域自动解锁！
-    }
-}
-<span class="boring">}</span></code></pre>
-<blockquote>
-<p>这就是标准库 <code>Mutex::lock()</code> 返回 <code>MutexGuard</code> 的原理——Guard 离开作用域自动 <code>Drop</code>，在 <code>drop</code> 里释放锁。你永远不用担心忘记解锁。</p>
-</blockquote>
+<h3 id="死锁条件"><a class="header" href="#死锁条件">死锁条件</a></h3>
+<p>经典死锁通常同时满足四个条件：</p>
+<ol>
+<li>互斥：资源不能被同时占用。</li>
+<li>持有并等待：持有一个资源时继续等待其他资源。</li>
+<li>不可抢占：资源不能被强制夺走。</li>
+<li>循环等待：多个任务形成等待环。</li>
+</ol>
+<p>打破任意一个条件都可以避免死锁。工程上常见做法是固定加锁顺序、缩小锁作用域、避免持锁执行阻塞 I/O。</p>
+<p><strong>Rust 对应：</strong> Rust 类型系统能防止很多内存层面的数据竞争，但不能自动消除所有逻辑竞态和死锁。<code>Mutex</code>、<code>RwLock</code>、<code>Atomic</code> 的具体使用放到第二部分讲。</p>
 <hr>
 <h2 id="信号"><a class="header" href="#信号">信号</a></h2>
-<p>信号是操作系统用来异步通知进程的机制。</p>
+<p>信号是 Unix 提供的异步事件通知机制。它可以打断进程当前执行流，让进程终止、暂停、继续，或者执行信号处理函数。</p>
 <p>常见信号：</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>信号</th><th>默认行为</th><th>常见来源</th></tr>
+<tr><th>信号</th><th>含义</th></tr>
 </thead>
 <tbody>
-<tr><td>SIGINT (2)</td><td>终止进程</td><td><code>Ctrl+C</code></td></tr>
-<tr><td>SIGKILL (9)</td><td>强制终止（不可捕获）</td><td><code>kill -9</code></td></tr>
-<tr><td>SIGTERM (15)</td><td>终止进程</td><td><code>kill</code> 默认信号</td></tr>
-<tr><td>SIGSEGV (11)</td><td>终止+core dump</td><td>访问非法内存（段错误）</td></tr>
-<tr><td>SIGPIPE (13)</td><td>终止进程</td><td>向已关闭的管道写数据</td></tr>
-<tr><td>SIGCHLD (17)</td><td>忽略</td><td>子进程结束</td></tr>
+<tr><td><code>SIGINT</code></td><td>终端中断，通常来自 Ctrl-C</td></tr>
+<tr><td><code>SIGTERM</code></td><td>请求进程终止</td></tr>
+<tr><td><code>SIGKILL</code></td><td>强制杀死，不能捕获</td></tr>
+<tr><td><code>SIGSEGV</code></td><td>非法内存访问</td></tr>
+<tr><td><code>SIGCHLD</code></td><td>子进程状态变化</td></tr>
+<tr><td><code>SIGHUP</code></td><td>终端断开，常用于 reload</td></tr>
 </tbody>
 </table>
 </div>
-<p>Rust 中处理信号（需要 <code>libc</code> 或 <code>signal-hook</code> crate）：</p>
-<pre class="playground"><code class="language-rust">// 用 signal-hook crate 更安全
-use signal_hook::{consts::SIGINT, iterator::Signals};
-use std::{thread, time::Duration};
-
-fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
-    let mut signals = Signals::new(&amp;[SIGINT])?;
-
-    thread::spawn(move || {
-        for sig in signals.forever() {
-            println!("收到信号: {sig:?}");
-            // 在这里做清理工作
-        }
-    });
-
-    loop {
-        println!("工作中...");
-        thread::sleep(Duration::from_secs(1));
-    }
-}</code></pre>
-<hr>
-<h2 id="内存映射文件"><a class="header" href="#内存映射文件">内存映射文件</a></h2>
-<p><code>mmap</code> 把文件内容直接映射到进程的地址空间，读写文件就像读写内存一样。</p>
-<p>好处：</p>
-<ul>
-<li>减少系统调用（不用多次 <code>read</code>/<code>write</code>）。</li>
-<li>多个进程可以共享同一个映射（<code>MAP_SHARED</code>）。</li>
-<li>内核负责脏页回写。</li>
-</ul>
-<p>Rust 用 <code>memmap2</code> crate 或直接 <code>libc::mmap</code>：</p>
-<pre class="playground"><code class="language-rust">use std::fs::File;
-use memmap2::Mmap;
-
-fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
-    let file = File::open("Cargo.toml")?;
-    let mmap = unsafe { Mmap::map(&amp;file)? };
-
-    let content = &amp;mmap[..100];
-    println!("前100字节: {}", String::from_utf8_lossy(content));
-    Ok(())
-}</code></pre>
-<p>匿名映射（<code>MAP_ANONYMOUS</code>）可以用来分配大块内存，底层就是 <code>mmap</code>：</p>
-<pre class="playground"><code class="language-rust">use std::alloc::{alloc, Layout};
-
-// 大块分配（&gt; 128KB）通常走 mmap
-fn main() {
-    let layout = Layout::from_size_align(1024 * 1024, 4096).unwrap();
-    let ptr = unsafe { alloc(layout) };
-    println!("分配了 1MB 内存");
-}</code></pre>
+<p>信号处理函数里能做的事情非常有限，因为它可能在任意指令处打断程序。复杂逻辑通常应当交给主循环处理，信号处理函数只设置标志位或写入 self-pipe。</p>
+<p><strong>Rust 对应：</strong> 生产代码通常使用 <code>signal-hook</code>、Tokio signal 等封装，而不是手写裸 <code>sigaction</code>。</p>
 <hr>
 <h2 id="io-模型"><a class="header" href="#io-模型">I/O 模型</a></h2>
+<p>I/O 模型决定程序如何等待外部数据。</p>
+<h3 id="阻塞-io"><a class="header" href="#阻塞-io">阻塞 I/O</a></h3>
+<p>调用 <code>read</code> 时，如果没有数据，线程会睡眠，直到数据到达。</p>
+<p>优点是简单，缺点是大量连接会占用大量线程。</p>
+<h3 id="非阻塞-io"><a class="header" href="#非阻塞-io">非阻塞 I/O</a></h3>
+<p>fd 设置成非阻塞后，如果没有数据，<code>read</code> 立即返回错误，例如 <code>EAGAIN</code>。程序需要稍后再试。</p>
+<p>非阻塞 I/O 通常和事件通知机制配合使用。</p>
+<h3 id="io-多路复用"><a class="header" href="#io-多路复用">I/O 多路复用</a></h3>
+<p><code>select</code>、<code>poll</code>、<code>epoll</code>、<code>kqueue</code>、IOCP 等机制用于同时等待多个 I/O 事件。</p>
+<p>Linux 高并发网络服务常用 <code>epoll</code>：</p>
+<ol>
+<li>把 fd 注册到 epoll。</li>
+<li>调用 <code>epoll_wait</code> 等待事件。</li>
+<li>哪些 fd 可读可写，就处理哪些 fd。</li>
+</ol>
+<h3 id="异步-io"><a class="header" href="#异步-io">异步 I/O</a></h3>
+<p>异步 I/O 的核心思想是提交操作后不阻塞当前执行流，完成后再通知程序。不同平台实现差异很大，例如 Linux 的 io_uring、Windows 的 IOCP。</p>
+<p><strong>Rust 对应：</strong> Tokio、mio、async-std 等运行时把非阻塞 fd、事件循环、任务调度和 <code>Future</code> 组合起来，形成 Rust 的 async 生态。</p>
+<hr>
+<h2 id="第二部分rust-系统编程"><a class="header" href="#第二部分rust-系统编程">第二部分：Rust 系统编程</a></h2>
+<p>这一部分开始使用 Rust。前面已经讲过 OS 概念，这里重点回答：Rust 的哪些类型和 API 对应哪些系统能力。</p>
+<h3 id="rust-系统编程的层次"><a class="header" href="#rust-系统编程的层次">Rust 系统编程的层次</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>模型</th><th>特点</th><th>适用场景</th></tr>
+<tr><th>层次</th><th>常用工具</th><th>特点</th></tr>
 </thead>
 <tbody>
-<tr><td>阻塞 I/O</td><td>系统调用直到完成才返回</td><td>简单场景</td></tr>
-<tr><td>非阻塞 I/O</td><td>立即返回，需轮询</td><td>较少直接使用</td></tr>
-<tr><td>I/O 多路复用</td><td>一次监控多个 fd</td><td>高并发（<code>epoll</code>/<code>kqueue</code>）</td></tr>
-<tr><td>异步 I/O</td><td>I/O 操作不阻塞线程</td><td>tokio/async-std</td></tr>
+<tr><td>标准库</td><td><code>std::fs</code>、<code>std::net</code>、<code>std::process</code>、<code>std::thread</code></td><td>安全、跨平台、够用优先</td></tr>
+<tr><td>平台扩展</td><td><code>std::os::unix</code>、<code>std::os::windows</code></td><td>暴露平台特有能力</td></tr>
+<tr><td>第三方封装</td><td><code>nix</code>、<code>rustix</code>、<code>socket2</code>、<code>memmap2</code></td><td>比 <code>libc</code> 更 Rust 化</td></tr>
+<tr><td>C ABI</td><td><code>libc</code>、FFI</td><td>能力完整，但 unsafe 多</td></tr>
+<tr><td>裸机 / 内核</td><td><code>no_std</code>、内联汇编、启动代码</td><td>自己管理运行环境</td></tr>
 </tbody>
 </table>
 </div>
-<h3 id="epolllinux-高并发核心"><a class="header" href="#epolllinux-高并发核心">epoll（Linux 高并发核心）</a></h3>
-<p>Rust 中一般通过 tokio 等异步运行时使用，不会直接操作 epoll。</p>
-<p>但底层原理值得了解：</p>
-<pre><code class="language-text">epoll 流程：
-1. epoll_create 创建 epoll 实例。
-2. epoll_ctl 注册关注的 fd 和事件类型。
-3. epoll_wait 阻塞等待事件发生。
-4. 返回就绪的 fd 列表，逐个处理。
-</code></pre>
-<hr>
-<h2 id="posix-线程pthreads"><a class="header" href="#posix-线程pthreads">POSIX 线程（pthreads）</a></h2>
-<p>Linux 中线程是通过 <code>clone</code> 系统调用创建的。pthreads 是 POSIX 标准的线程 API。</p>
-<p>Rust 的 <code>std::thread::spawn</code> 底层最终会调用 <code>clone</code>（或 <code>pthread_create</code>）：</p>
-<pre><code class="language-text">Rust thread::spawn
-  → 调用 sysconf 获取栈大小
-  → 调用 pthread_create 或 clone
-  → 新线程执行闭包
-</code></pre>
-<hr>
-<h1 id="rust-系统编程"><a class="header" href="#rust-系统编程">rust 系统编程</a></h1>
-<p>Rust 的目标之一就是成为系统编程语言。它提供：</p>
+<p>实践原则：</p>
 <ul>
-<li><strong>零成本抽象</strong>：高层 API 不会比手写底层代码慢。</li>
-<li><strong>精确的内存控制</strong>：可以手动管理内存，也可以借助所有权安全使用。</li>
-<li><strong>直接调用 C</strong>：通过 FFI 可以调用任意系统库。</li>
-<li><strong>平台相关 API</strong>：通过 <code>std::os::unix</code> 和 <code>std::os::windows</code> 访问平台特性。</li>
+<li>能用标准库就先用标准库。</li>
+<li>标准库不够时优先找成熟 crate。</li>
+<li>必须碰底层 API 时，把 <code>unsafe</code> 包在小而清晰的边界内。</li>
+<li>明确资源所有权，尤其是 fd、指针、映射内存和外部库返回的句柄。</li>
 </ul>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>主题</th><th>Rust 中的方式</th><th>说明</th></tr>
-</thead>
-<tbody>
-<tr><td><a href="#文件io">文件 I/O</a></td><td><code>std::fs</code>、<code>std::io</code></td><td>标准库封装了 POSIX API</td></tr>
-<tr><td><a href="#进程管理">进程管理</a></td><td><code>std::process</code></td><td>创建、控制子进程</td></tr>
-<tr><td><a href="#操作文件描述符">文件描述符操作</a></td><td><code>std::os::unix::io</code></td><td>直接操作原始 fd</td></tr>
-<tr><td><a href="#内存映射mmap">内存映射</a></td><td><code>memmap2</code> / <code>libc::mmap</code></td><td>文件映射、匿名映射</td></tr>
-<tr><td><a href="#裸指针与不安全">裸指针与不安全代码</a></td><td><code>unsafe</code>、<code>*const T</code>、<code>*mut T</code></td><td>绕过安全检查</td></tr>
-<tr><td><a href="#no_std-开发">no_std 开发</a></td><td><code>#![no_std]</code>、<code>GlobalAlloc</code></td><td>无标准库的内核开发</td></tr>
-<tr><td><a href="#ffi调用c代码">FFI 调用 C 库</a></td><td><code>extern "C"</code>、<code>#[link]</code></td><td>调用 C 动态库</td></tr>
-<tr><td><a href="#libc直接调用系统调用">libc 直接调用系统调用</a></td><td><code>libc</code> crate</td><td>直通操作系统 API</td></tr>
-<tr><td><a href="#平台抽象">平台抽象</a></td><td><code>cfg(unix)</code> / <code>cfg(windows)</code></td><td>条件编译</td></tr>
-<tr><td><a href="#异步编程">异步编程</a></td><td><code>async/await</code>、tokio</td><td>零成本异步、Future 状态机</td></tr>
-</tbody>
-</table>
-</div>
 <hr>
 <h2 id="文件-io"><a class="header" href="#文件-io">文件 I/O</a></h2>
-<p>Rust 标准库的 <code>std::fs</code> 和 <code>std::io</code> 封装了 POSIX 文件操作。</p>
-<h3 id="基本读写"><a class="header" href="#基本读写">基本读写</a></h3>
+<p>标准库的文件 I/O 是系统编程最常见入口。</p>
 <pre class="playground"><code class="language-rust">use std::fs;
 
 fn main() -&gt; std::io::Result&lt;()&gt; {
-    // 写文件
-    fs::write("hello.txt", b"Hello, world!")?;
-
-    // 读文件
+    fs::write("hello.txt", "hello\n")?;
     let content = fs::read_to_string("hello.txt")?;
-    println!("内容: {content}");
-
-    // 读二进制
-    let bytes = fs::read("hello.txt")?;
-    println!("字节数: {}", bytes.len());
-
+    print!("{content}");
     Ok(())
 }</code></pre>
-<h3 id="文件元信息"><a class="header" href="#文件元信息">文件元信息</a></h3>
-<pre class="playground"><code class="language-rust">use std::fs;
+<p>更细粒度的控制使用 <code>File</code> 和 <code>OpenOptions</code>：</p>
+<pre class="playground"><code class="language-rust">use std::fs::OpenOptions;
+use std::io::{Read, Seek, SeekFrom, Write};
 
 fn main() -&gt; std::io::Result&lt;()&gt; {
-    let metadata = fs::metadata("hello.txt")?;
-
-    println!("大小: {} 字节", metadata.len());
-    println!("是文件: {}", metadata.is_file());
-    println!("是目录: {}", metadata.is_dir());
-    println!("权限: {:?}", metadata.permissions());
-
-    Ok(())
-}</code></pre>
-<h3 id="目录操作"><a class="header" href="#目录操作">目录操作</a></h3>
-<pre class="playground"><code class="language-rust">use std::fs;
-
-fn main() -&gt; std::io::Result&lt;()&gt; {
-    // 创建目录
-    fs::create_dir("mydir")?;
-
-    // 递归创建
-    fs::create_dir_all("mydir/a/b/c")?;
-
-    // 遍历目录
-    for entry in fs::read_dir("mydir")? {
-        let entry = entry?;
-        println!("{}", entry.file_name().to_string_lossy());
-    }
-
-    // 删除
-    fs::remove_dir_all("mydir")?;
-
-    Ok(())
-}</code></pre>
-<h3 id="底层文件操作"><a class="header" href="#底层文件操作">底层文件操作</a></h3>
-<p><code>File</code> 类型提供更底层的控制：</p>
-<pre class="playground"><code class="language-rust">use std::fs::{File, OpenOptions};
-use std::io::{Read, Write, Seek, SeekFrom};
-
-fn main() -&gt; std::io::Result&lt;()&gt; {
-    // 追加模式
-    let mut file = OpenOptions::new()
-        .append(true)
-        .create(true)
-        .open("log.txt")?;
-    writeln!(file, "日志条目")?;
-
-    // 读写模式
     let mut file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
+        .truncate(false)
         .open("data.bin")?;
 
-    // 随机访问
     file.write_all(b"hello")?;
     file.seek(SeekFrom::Start(0))?;
 
@@ -1046,554 +626,430 @@ fn main() -&gt; std::io::Result&lt;()&gt; {
 
     Ok(())
 }</code></pre>
+<p>这里的 <code>?</code> 会把底层 I/O 错误作为 <code>std::io::Error</code> 传播。它可能对应权限不足、文件不存在、磁盘满、系统调用被中断等情况。</p>
 <hr>
 <h2 id="进程管理"><a class="header" href="#进程管理">进程管理</a></h2>
-<h3 id="创建子进程"><a class="header" href="#创建子进程">创建子进程</a></h3>
-<pre class="playground"><code class="language-rust">use std::process::{Command, Output};
-
-fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
-    // 简单执行
-    let output = Command::new("echo")
-        .arg("hello")
-        .output()?;
-
-    println!("stdout: {}", String::from_utf8_lossy(&amp;output.stdout));
-    println!("status: {}", output.status);
-
-    // 管道传数据
-    let child = Command::new("grep")
-        .arg("error")
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .spawn()?;
-
-    // 向子进程写数据
-    use std::io::Write;
-    if let Some(mut stdin) = child.stdin {
-        stdin.write_all(b"line1: ok\nline2: error\n")?;
-    }
-
-    // 获取输出
-    let output = child.wait_with_output()?;
-    println!("grep 结果: {}", String::from_utf8_lossy(&amp;output.stdout));
-
-    Ok(())
-}</code></pre>
-<h3 id="进程-id-和环境"><a class="header" href="#进程-id-和环境">进程 ID 和环境</a></h3>
-<pre class="playground"><code class="language-rust">use std::process;
-
-fn main() {
-    println!("PID: {}", process::id());
-
-    // 环境变量
-    for (key, value) in std::env::vars() {
-        println!("{key}={value}");
-    }
-
-    // 退出码
-    process::exit(0);
-}</code></pre>
-<hr>
-<h2 id="操作文件描述符"><a class="header" href="#操作文件描述符">操作文件描述符</a></h2>
-<p>Unix 下可以直接操作原始 fd：</p>
-<pre class="playground"><code class="language-rust">use std::fs::File;
-use std::os::unix::io::{FromRawFd, RawFd, AsRawFd};
-use std::io::Read;
+<p>Rust 用 <code>std::process::Command</code> 创建子进程。</p>
+<pre class="playground"><code class="language-rust">use std::process::Command;
 
 fn main() -&gt; std::io::Result&lt;()&gt; {
-    // 获取 fd
-    let file = File::open("Cargo.toml")?;
-    let fd: RawFd = file.as_raw_fd();
-    println!("fd 是: {fd}");
+    let output = Command::new("rustc")
+        .arg("--version")
+        .output()?;
 
-    // 从原始 fd 重建 File（转移所有权）
-    let mut file2 = unsafe { File::from_raw_fd(fd) };
-    let mut content = String::new();
-    file2.read_to_string(&amp;mut content)?;
-    println!("前100字符: {}", &amp;content[..100.min(content.len())]);
-
+    println!("{}", String::from_utf8_lossy(&amp;output.stdout));
     Ok(())
 }</code></pre>
-<blockquote>
-<p>注意 <code>from_raw_fd</code> 是 unsafe 的，因为 Rust 无法验证这个 fd 是否有效、是否已被其他地方使用。</p>
-</blockquote>
-<h3 id="文件描述符表"><a class="header" href="#文件描述符表">文件描述符表</a></h3>
-<p>内核为每个进程维护一张<strong>文件描述符表</strong>，每个表项指向一个打开的文件/socket 等。</p>
-<pre><code class="language-text">fd 表（数组/向量）:
-索引: 0    1    2    3    4    5    6
-     ┌────┬────┬────┬────┬────┬────┬────┐
-     │stdin│stdout│stderr│  /a.txt  │  ...  │
-     └────┴────┴────┴────┴────┴────┴────┘
-</code></pre>
-<p>关键设计点：</p>
+<p>带管道的例子：</p>
+<pre class="playground"><code class="language-rust">use std::io::Write;
+use std::process::{Command, Stdio};
+
+fn main() -&gt; std::io::Result&lt;()&gt; {
+    let mut child = Command::new("findstr")
+        .arg("error")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()?;
+
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin.write_all(b"ok\nerror: failed\n")?;
+    }
+
+    let output = child.wait_with_output()?;
+    println!("{}", String::from_utf8_lossy(&amp;output.stdout));
+    Ok(())
+}</code></pre>
+<p>在 Unix 上这背后通常涉及创建进程、设置 fd、执行新程序。在 Windows 上底层机制不同，但 <code>Command</code> 尽量提供统一抽象。</p>
+<hr>
+<h2 id="线程send-与-sync"><a class="header" href="#线程send-与-sync">线程、Send 与 Sync</a></h2>
+<p>创建 OS 线程：</p>
+<pre class="playground"><code class="language-rust">use std::thread;
+
+fn main() {
+    let data = vec![1, 2, 3];
+
+    let handle = thread::spawn(move || {
+        println!("{data:?}");
+    });
+
+    handle.join().unwrap();
+}</code></pre>
+<p><code>move</code> 把 <code>data</code> 的所有权移动进新线程，避免子线程引用主线程栈上的数据。</p>
+<h3 id="send"><a class="header" href="#send">Send</a></h3>
+<p><code>Send</code> 表示一个类型的值可以安全地移动到另一个线程。</p>
 <ul>
-<li><strong>fd 复用</strong>：新打开的 fd 取当前<strong>最小可用的编号</strong>（关闭 3 后，下一个打开的文件用 3）。</li>
-<li><strong>动态分发</strong>：fd 表项可以是 <code>Arc&lt;dyn File&gt;</code>，统一抽象文件、socket、管道等。</li>
-<li><strong>引用计数</strong>：多个 fd 可以指向同一个内核文件对象（如 <code>dup</code> 复制 fd），<code>Arc</code> 负责自动释放。</li>
+<li><code>Vec&lt;T&gt;</code> 通常是 <code>Send</code>，前提是 <code>T: Send</code>。</li>
+<li><code>Rc&lt;T&gt;</code> 不是 <code>Send</code>，因为引用计数不是原子的。</li>
+<li><code>Arc&lt;T&gt;</code> 可以跨线程共享所有权。</li>
 </ul>
-<p>实现一个简单的 fd 表：</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::sync::Arc;
-
-// 假设的 File trait
-pub trait File: Send + Sync {
-    fn read(&amp;self, buf: &amp;mut [u8]) -&gt; usize;
-    fn write(&amp;self, buf: &amp;[u8]) -&gt; usize;
-}
-
-pub struct FdTable {
-    // Option 表示槽位空闲
-    entries: Vec&lt;Option&lt;Arc&lt;dyn File&gt;&gt;&gt;,
-}
-
-impl FdTable {
-    pub fn alloc(&amp;mut self, file: Arc&lt;dyn File&gt;) -&gt; usize {
-        // 查找最小可用 fd
-        for (i, entry) in self.entries.iter_mut().enumerate() {
-            if entry.is_none() {
-                *entry = Some(file);
-                return i;
-            }
-        }
-        // 没有空闲槽，追加到末尾
-        let fd = self.entries.len();
-        self.entries.push(Some(file));
-        fd
-    }
-
-    pub fn free(&amp;mut self, fd: usize) {
-        if let Some(entry) = self.entries.get_mut(fd) {
-            *entry = None; // Arc drop 自动关闭文件
-        }
-    }
-}
-<span class="boring">}</span></code></pre>
-<blockquote>
-<p>标准库的 <code>File</code> 底层就是通过 fd 表管理的。Rust 的 <code>OwnedFd</code> 类型（std 1.63+）提供了类型安全的 fd 所有权。</p>
-</blockquote>
+<h3 id="sync"><a class="header" href="#sync">Sync</a></h3>
+<p><code>Sync</code> 表示一个类型的共享引用 <code>&amp;T</code> 可以安全地被多个线程同时使用。</p>
+<ul>
+<li><code>Mutex&lt;T&gt;</code> 通常是 <code>Sync</code>，因为内部保证互斥访问。</li>
+<li><code>RefCell&lt;T&gt;</code> 不是 <code>Sync</code>，因为运行时借用计数不是线程安全的。</li>
+</ul>
+<pre><code class="language-text">类型          Send    Sync
+Rc&lt;T&gt;         否      否
+Arc&lt;T&gt;        是      是
+RefCell&lt;T&gt;    是*     否
+Mutex&lt;T&gt;      是*     是*
+</code></pre>
+<p><code>*</code> 表示通常还取决于内部的 <code>T</code> 是否满足相应约束。</p>
 <hr>
-<h2 id="内存映射mmap"><a class="header" href="#内存映射mmap">内存映射（mmap）</a></h2>
-<p>通过 <code>memmap2</code> crate（推荐）或直接 <code>libc::mmap</code>。</p>
-<h3 id="使用-memmap2"><a class="header" href="#使用-memmap2">使用 memmap2</a></h3>
-<pre class="playground"><code class="language-rust">use memmap2::{Mmap, MmapMut};
+<h2 id="同步原语"><a class="header" href="#同步原语">同步原语</a></h2>
+<p><code>Mutex</code> 用于互斥访问共享数据：</p>
+<pre class="playground"><code class="language-rust">use std::sync::{Arc, Mutex};
+use std::thread;
 
-fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
-    // 只读映射文件
-    let mmap = Mmap::open("Cargo.toml", memmap2::Access::Read)?;
-    let content = &amp;mmap[..100];
-    println!("{}", String::from_utf8_lossy(content));
+fn main() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = Vec::new();
 
-    // 可写映射（修改会写回文件）
-    let mut mmap_mut = MmapMut::open("data.bin", memmap2::Access::Write)?;
-    mmap_mut[..5].copy_from_slice(b"hello");
+    for _ in 0..4 {
+        let counter = Arc::clone(&amp;counter);
+        handles.push(thread::spawn(move || {
+            let mut value = counter.lock().unwrap();
+            *value += 1;
+        }));
+    }
 
-    // 匿名共享内存
-    let shared = MmapMut::anonymous(4096)?;
-    // 可用于多个进程间共享（需 fork，或通过文件传递 fd）
+    for handle in handles {
+        handle.join().unwrap();
+    }
 
+    println!("{}", *counter.lock().unwrap());
+}</code></pre>
+<p><code>Arc</code> 负责跨线程共享所有权，<code>Mutex</code> 负责互斥访问内部值。</p>
+<p><code>RwLock</code> 适合读多写少：</p>
+<pre class="playground"><code class="language-rust">use std::sync::RwLock;
+
+fn main() {
+    let value = RwLock::new(String::from("hello"));
+
+    {
+        let read = value.read().unwrap();
+        println!("{read}");
+    }
+
+    {
+        let mut write = value.write().unwrap();
+        write.push_str(" world");
+    }
+}</code></pre>
+<p>注意：Rust 可以防止数据竞争，但仍然可能死锁。例如两个线程用相反顺序获取两把锁，类型系统不会自动替你发现。</p>
+<hr>
+<h2 id="unix-文件描述符"><a class="header" href="#unix-文件描述符">Unix 文件描述符</a></h2>
+<p>在 Unix 上，可以通过 <code>std::os::fd</code> 处理 fd。</p>
+<pre class="playground"><code class="language-rust">use std::fs::File;
+use std::os::fd::{AsRawFd, RawFd};
+
+fn print_fd(file: &amp;File) {
+    let fd: RawFd = file.as_raw_fd();
+    println!("fd = {fd}");
+}
+
+fn main() -&gt; std::io::Result&lt;()&gt; {
+    let file = File::open("Cargo.toml")?;
+    print_fd(&amp;file);
     Ok(())
 }</code></pre>
-<h3 id="直接使用-libcmmap"><a class="header" href="#直接使用-libcmmap">直接使用 libc::mmap</a></h3>
-<pre class="playground"><code class="language-rust">use std::ptr;
-
-fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
-    unsafe {
-        // 分配 4KB 匿名内存
-        let addr = libc::mmap(
-            ptr::null_mut(),
-            4096,
-            libc::PROT_READ | libc::PROT_WRITE,
-            libc::MAP_PRIVATE | libc::MAP_ANONYMOUS,
-            -1,
-            0,
-        );
-
-        if addr == libc::MAP_FAILED {
-            return Err("mmap failed".into());
-        }
-
-        // 当作普通指针用
-        *(addr as *mut u32) = 42;
-        println!("值: {}", *(addr as *mut u32));
-
-        // 释放
-        libc::munmap(addr, 4096);
-    }
-    Ok(())
-}</code></pre>
-<hr>
-<h2 id="裸指针与不安全"><a class="header" href="#裸指针与不安全">裸指针与不安全</a></h2>
-<p>系统编程经常需要突破 Rust 的安全限制——比如<strong>自己管理内存</strong>、<strong>类型双关</strong>、<strong>操作硬件寄存器</strong>。</p>
-<pre class="playground"><code class="language-rust">fn main() {
-    let mut x = 42;
-    let raw_ptr: *mut i32 = &amp;mut x;
-
-    unsafe {
-        *raw_ptr = 100;
-        println!("通过裸指针修改: {x}"); // 输出 100
-
-        // 手工分配和释放内存
-        let layout = std::alloc::Layout::new::&lt;[u8; 1024]&gt;();
-        let mem = std::alloc::alloc(layout);
-        *(mem as *mut u32) = 0xDEAD_BEEF;
-        println!("手工分配的内存: {:x}", *(mem as *mut u32));
-        std::alloc::dealloc(mem, layout);
-    }
-}</code></pre>
-<p>用 <code>unsafe</code> 的常见场景：</p>
+<p>几个重要类型：</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>场景</th><th>说明</th></tr>
+<tr><th>类型</th><th>含义</th></tr>
 </thead>
 <tbody>
-<tr><td>解引用裸指针</td><td>Rust 无法保证指针有效</td></tr>
-<tr><td>调用 unsafe 函数</td><td>如 <code>std::mem::transmute</code></td></tr>
-<tr><td>访问可变全局变量</td><td>可能造成数据竞争</td></tr>
-<tr><td>实现 unsafe trait</td><td>如 <code>Send</code>、<code>Sync</code></td></tr>
-<tr><td>FFI 调用</td><td>调用 C 函数</td></tr>
+<tr><td><code>RawFd</code></td><td>裸 fd，只是整数，不表达所有权</td></tr>
+<tr><td><code>BorrowedFd&lt;'a&gt;</code></td><td>借用 fd，不负责关闭</td></tr>
+<tr><td><code>OwnedFd</code></td><td>拥有 fd，<code>Drop</code> 时关闭</td></tr>
 </tbody>
 </table>
 </div>
-<blockquote>
-<p>记住：<code>unsafe</code> 不是关闭安全检查，而是<strong>由你来保证安全</strong>。</p>
-</blockquote>
+<p>不要随便从 <code>RawFd</code> 构造 <code>File</code> 或 <code>OwnedFd</code>。如果所有权判断错了，可能重复关闭 fd，或者关闭了别人还在用的 fd。</p>
 <hr>
-<h2 id="no_std-开发"><a class="header" href="#no_std-开发">no_std 开发</a></h2>
-<p>在 OS 内核或裸机环境中，没有标准库可用（<code>#![no_std]</code>）。一切基础组件都要自己实现。</p>
-<blockquote>
-<p>这是通往 OS 内核开发的必经之路——没有标准库，一切自己动手。</p>
-</blockquote>
-<h3 id="内存原语"><a class="header" href="#内存原语">内存原语</a></h3>
-<p>标准库的 <code>memcpy</code>、<code>memset</code> 等内存操作在 no_std 下需要自己实现：</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// 手写 memcpy（逐字节拷贝）
-#[no_mangle]
-pub unsafe extern "C" fn memcpy(dest: *mut u8, src: *const u8, n: usize) -&gt; *mut u8 {
-    for i in 0..n {
-        *dest.add(i) = *src.add(i);
+<h2 id="mmap-与内存映射"><a class="header" href="#mmap-与内存映射">mmap 与内存映射</a></h2>
+<p><code>mmap</code> 可以把文件或匿名内存映射到进程地址空间。常见用途：</p>
+<ul>
+<li>大文件读取。</li>
+<li>进程间共享内存。</li>
+<li>自定义分配器。</li>
+<li>JIT 或加载器管理可执行内存。</li>
+</ul>
+<p>使用 <code>memmap2</code> 的典型方式：</p>
+<pre class="playground"><code class="language-rust">use memmap2::Mmap;
+use std::fs::File;
+
+fn main() -&gt; std::io::Result&lt;()&gt; {
+    let file = File::open("Cargo.toml")?;
+
+    // SAFETY: 文件在映射期间保持打开，且这里只创建只读映射。
+    let mmap = unsafe { Mmap::map(&amp;file)? };
+
+    let len = mmap.len().min(64);
+    println!("{}", String::from_utf8_lossy(&amp;mmap[..len]));
+    Ok(())
+}</code></pre>
+<p>为什么这里是 <code>unsafe</code>？因为内存映射绕过了普通 Rust 借用规则。文件可能被其他进程修改，映射区域也可能和外部状态相关。库无法完全证明这些访问总是安全。</p>
+<hr>
+<h2 id="libc-与直接系统调用"><a class="header" href="#libc-与直接系统调用">libc 与直接系统调用</a></h2>
+<p>当标准库没有暴露某个能力时，可以使用 <code>libc</code> 或更安全的封装 crate。</p>
+<pre class="playground"><code class="language-rust">use std::ffi::CString;
+
+fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+    let path = CString::new("Cargo.toml")?;
+
+    unsafe {
+        let fd = libc::open(path.as_ptr(), libc::O_RDONLY);
+        if fd &lt; 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
+
+        let mut buf = [0u8; 128];
+        let n = libc::read(fd, buf.as_mut_ptr().cast(), buf.len());
+        if n &lt; 0 {
+            let err = std::io::Error::last_os_error();
+            libc::close(fd);
+            return Err(err.into());
+        }
+
+        libc::close(fd);
+        println!("{}", String::from_utf8_lossy(&amp;buf[..n as usize]));
     }
-    dest
+
+    Ok(())
+}</code></pre>
+<p>这类代码要特别注意：</p>
+<ul>
+<li>C 字符串必须以 <code>\0</code> 结尾，且内部不能有额外 NUL。</li>
+<li>返回值要检查错误。</li>
+<li>fd、指针、分配内存必须有清晰释放路径。</li>
+<li><code>unsafe</code> 块内的假设最好写成简短注释。</li>
+</ul>
+<hr>
+<h2 id="ffi-调用-c"><a class="header" href="#ffi-调用-c">FFI 调用 C</a></h2>
+<p>Rust 可以通过 C ABI 调用 C 函数，也可以把 Rust 函数导出给 C。</p>
+<p>调用 C 函数：</p>
+<pre class="playground"><code class="language-rust">unsafe extern "C" {
+    fn puts(s: *const libc::c_char) -&gt; libc::c_int;
 }
 
-// 手写 memset
-#[no_mangle]
-pub unsafe extern "C" fn memset(s: *mut u8, c: i32, n: usize) -&gt; *mut u8 {
-    for i in 0..n {
-        *s.add(i) = c as u8;
+fn main() {
+    let message = std::ffi::CString::new("hello from C").unwrap();
+
+    unsafe {
+        puts(message.as_ptr());
     }
-    s
+}</code></pre>
+<p>导出 Rust 函数：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[no_mangle]
+pub extern "C" fn rust_add(a: i32, b: i32) -&gt; i32 {
+    a + b
 }
 <span class="boring">}</span></code></pre>
-<h3 id="分配器"><a class="header" href="#分配器">分配器</a></h3>
-<p><code>#[global_allocator]</code> 让自定义分配器无缝替换默认的 jemalloc：</p>
+<p>FFI 边界要格外明确：</p>
+<ul>
+<li>用 <code>#[repr(C)]</code> 固定结构体布局。</li>
+<li>不要让 Rust 引用、<code>String</code>、<code>Vec</code> 直接穿过不匹配的 ABI 边界。</li>
+<li>谁分配，谁释放，规则要写清楚。</li>
+<li>panic 不应该跨过 FFI 边界。</li>
+</ul>
+<hr>
+<h2 id="unsafe-与裸指针"><a class="header" href="#unsafe-与裸指针">unsafe 与裸指针</a></h2>
+<p><code>unsafe</code> 表示有些安全条件编译器无法证明，需要程序员负责。</p>
+<p>常见 unsafe 场景：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>场景</th><th>风险</th></tr>
+</thead>
+<tbody>
+<tr><td>解引用裸指针</td><td>指针可能为空、悬垂、未对齐</td></tr>
+<tr><td>调用 C 函数</td><td>ABI、生命周期、错误处理不受 Rust 检查</td></tr>
+<tr><td>访问可变静态变量</td><td>可能产生数据竞争</td></tr>
+<tr><td>实现 unsafe trait</td><td>需要维护全局不变量</td></tr>
+<tr><td>内联汇编</td><td>编译器无法理解副作用</td></tr>
+</tbody>
+</table>
+</div>
+<p>裸指针示例：</p>
+<pre class="playground"><code class="language-rust">fn main() {
+    let mut value = 42;
+    let ptr: *mut i32 = &amp;mut value;
+
+    unsafe {
+        *ptr = 100;
+    }
+
+    println!("{value}");
+}</code></pre>
+<p>写 unsafe 代码时，重点不是“让它能编译”，而是把不变量收束到最小范围：</p>
+<ul>
+<li>unsafe 块尽量短。</li>
+<li>外层提供安全 API。</li>
+<li>用类型表达所有权。</li>
+<li>对复杂 unsafe 写清楚 <code>SAFETY:</code> 条件。</li>
+</ul>
+<hr>
+<h2 id="no_std-开发"><a class="header" href="#no_std-开发">no_std 开发</a></h2>
+<p><code>#![no_std]</code> 表示不链接 Rust 标准库，只使用 <code>core</code>，通常用于内核、裸机、嵌入式等环境。</p>
+<p><code>std</code> 依赖操作系统能力，例如线程、文件、网络、堆分配、环境变量。没有操作系统时，这些能力不存在，或者需要你自己提供。</p>
+<p><code>no_std</code> 常见工作：</p>
+<ul>
+<li>自己提供入口点。</li>
+<li>自己处理 panic。</li>
+<li>自己初始化内存和栈。</li>
+<li>自己实现或接入分配器。</li>
+<li>直接操作硬件寄存器或固件接口。</li>
+</ul>
+<p>最小形式：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>#![no_std]
+#![no_main]
+
+<span class="boring">fn main() {
+</span>use core::panic::PanicInfo;
+
+#[panic_handler]
+fn panic(_info: &amp;PanicInfo) -&gt; ! {
+    loop {}
+}
+<span class="boring">}</span></code></pre>
+<p>如果需要堆分配，要实现全局分配器：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use core::alloc::{GlobalAlloc, Layout};
 
-// Bump 分配器——简单快速，但不能释放单个对象
-pub struct BumpAllocator {
-    heap_start: usize,
-    heap_end: usize,
-    next: core::sync::atomic::AtomicUsize,
-}
+struct DummyAllocator;
 
-unsafe impl GlobalAlloc for BumpAllocator {
-    unsafe fn alloc(&amp;self, layout: Layout) -&gt; *mut u8 {
-        loop {
-            let current = self.next.load(core::sync::atomic::Ordering::Relaxed);
-            let aligned = (current + layout.align() - 1) &amp; !(layout.align() - 1);
-            let new_next = aligned + layout.size();
-            if new_next &gt; self.heap_end {
-                return core::ptr::null_mut(); // OOM
-            }
-            // CAS 保证线程安全
-            if self.next.compare_exchange_weak(
-                current, new_next,
-                core::sync::atomic::Ordering::SeqCst,
-                core::sync::atomic::Ordering::Relaxed,
-            ).is_ok() {
-                return aligned as *mut u8;
-            }
-        }
+unsafe impl GlobalAlloc for DummyAllocator {
+    unsafe fn alloc(&amp;self, _layout: Layout) -&gt; *mut u8 {
+        core::ptr::null_mut()
     }
 
-    unsafe fn dealloc(&amp;self, _ptr: *mut u8, _layout: Layout) {
-        // Bump 分配器不支持单对象释放
-    }
+    unsafe fn dealloc(&amp;self, _ptr: *mut u8, _layout: Layout) {}
 }
 <span class="boring">}</span></code></pre>
-<h3 id="分配器策略对比"><a class="header" href="#分配器策略对比">分配器策略对比</a></h3>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>策略</th><th style="text-align: center">分配速度</th><th style="text-align: center">内存利用率</th><th style="text-align: center">碎片</th><th>适用场景</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>Bump</strong>（线性分配）</td><td style="text-align: center">⚡ 最快（O(1)）</td><td style="text-align: center">低（不能释放）</td><td style="text-align: center">无</td><td>临时分配、一次性分配</td></tr>
-<tr><td><strong>Free-list</strong>（空闲链表）</td><td style="text-align: center">慢（O(n) 遍历）</td><td style="text-align: center">高（可重用）</td><td style="text-align: center">有（外部碎片）</td><td>通用场景</td></tr>
-<tr><td><strong>Buddy</strong>（伙伴系统）</td><td style="text-align: center">中（O(log n)）</td><td style="text-align: center">中</td><td style="text-align: center">内部碎片</td><td>内核页分配</td></tr>
-</tbody>
-</table>
-</div>
-<ul>
-<li><strong>Bump 分配器</strong>：维护一个 <code>next</code> 指针，分配时把指针往上移。不能释放单个对象，只能整体重置。适合短生命周期的临时分配（如帧分配器）。</li>
-<li><strong>Free-list 分配器</strong>：把空闲内存块用<strong>侵入式链表</strong>串起来（链表节点直接存在空闲内存中），分配时遍历找 first-fit 或 best-fit 的块。释放时会尝试合并相邻空闲块。</li>
-<li><strong>线程安全</strong>：no_std 下没有 <code>std::sync::Mutex</code>，通常用原子 CAS 实现（如 Bump 分配器中的 <code>compare_exchange_weak</code>），或者强制单线程使用。</li>
-</ul>
-<hr>
-<h2 id="ffi-调用-c-代码"><a class="header" href="#ffi-调用-c-代码">FFI 调用 C 代码</a></h2>
-<p>Rust 可以通过 FFI 直接调用 C 动态库。</p>
-<h3 id="调用-libc-的随机数函数"><a class="header" href="#调用-libc-的随机数函数">调用 libc 的随机数函数</a></h3>
-<pre class="playground"><code class="language-rust">use std::ffi::CString;
-
-extern "C" {
-    fn rand() -&gt; i32;
-    fn puts(s: *const i8) -&gt; i32;
-}
-
-fn main() {
-    unsafe {
-        let n = rand();
-        println!("随机数: {n}");
-
-        let s = CString::new("hello from C").unwrap();
-        puts(s.as_ptr());
-    }
-}</code></pre>
-<h3 id="链接自定义-c-库"><a class="header" href="#链接自定义-c-库">链接自定义 C 库</a></h3>
-<p>假设有 C 代码：</p>
-<pre><code class="language-c">// math_helper.c
-int add(int a, int b) {
-    return a + b;
-}
-</code></pre>
-<p>编译为静态库并链接：</p>
-<pre class="playground"><code class="language-rust">// build.rs
-fn main() {
-    println!("cargo:rustc-link-lib=static=math_helper");
-    println!("cargo:rerun-if-changed=math_helper.c");
-}</code></pre>
-<p>Rust 端：</p>
-<pre class="playground"><code class="language-rust">extern "C" {
-    fn add(a: i32, b: i32) -&gt; i32;
-}
-
-fn main() {
-    unsafe {
-        println!("3 + 4 = {}", add(3, 4));
-    }
-}</code></pre>
-<h3 id="从-c-调用-rust"><a class="header" href="#从-c-调用-rust">从 C 调用 Rust</a></h3>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// 导出为 C 函数
-#[no_mangle]
-pub extern "C" fn rust_add(a: i32, b: i32) -&gt; i32 {
-    a + b
-}
-
-// 生成动态库，C 端可以直接调用
-// cargo build --release 生成 .so/.dll/.dylib
-<span class="boring">}</span></code></pre>
-<blockquote>
-<p>FFI 是目前 Rust 系统编程中必不可少的技能。很多操作系统 API 只有 C 接口，Rust 需要通过 FFI 调用。</p>
-</blockquote>
-<hr>
-<h2 id="libc-直接调用系统调用"><a class="header" href="#libc-直接调用系统调用">libc 直接调用系统调用</a></h2>
-<p>通过 <code>libc</code> crate，可以直接调用 POSIX API：</p>
-<pre class="playground"><code class="language-rust">use std::ffi::CString;
-
-fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
-    // 直接 open/read/write/close
-    unsafe {
-        let path = CString::new("Cargo.toml")?;
-        let fd = libc::open(path.as_ptr(), libc::O_RDONLY);
-        if fd &lt; 0 {
-            return Err("open failed".into());
-        }
-
-        let mut buf = [0u8; 1024];
-        let n = libc::read(fd, buf.as_mut_ptr() as *mut libc::c_void, 1024);
-        println!("读了 {} 字节: {:?}", n, String::from_utf8_lossy(&amp;buf[..n as usize]));
-
-        libc::close(fd);
-    }
-    Ok(())
-}</code></pre>
-<p>常见 libc 封装：</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>系统调用</th><th>libc 函数</th><th>Rust 标准库封装</th></tr>
-</thead>
-<tbody>
-<tr><td><code>open</code></td><td><code>libc::open</code></td><td><code>File::open</code></td></tr>
-<tr><td><code>read</code>/<code>write</code></td><td><code>libc::read</code>/<code>libc::write</code></td><td><code>Read</code>/<code>Write</code> trait</td></tr>
-<tr><td><code>mmap</code></td><td><code>libc::mmap</code></td><td><code>memmap2</code></td></tr>
-<tr><td><code>fork</code></td><td><code>libc::fork</code></td><td><code>std::process::Command</code></td></tr>
-<tr><td><code>pipe</code></td><td><code>libc::pipe</code></td><td><code>std::process</code> 管道</td></tr>
-<tr><td><code>ioctl</code></td><td><code>libc::ioctl</code></td><td>无，需 FFI</td></tr>
-<tr><td><code>socket</code></td><td><code>libc::socket</code></td><td><code>std::net::TcpStream</code></td></tr>
-</tbody>
-</table>
-</div>
+<p>这部分已经接近 OS 内核或嵌入式开发，不再是普通用户态系统编程。</p>
 <hr>
 <h2 id="平台抽象"><a class="header" href="#平台抽象">平台抽象</a></h2>
-<p>通过条件编译，同一套代码可以适配不同平台：</p>
+<p>系统编程经常需要处理平台差异。Rust 用条件编译表达不同平台代码。</p>
 <pre class="playground"><code class="language-rust">#[cfg(unix)]
-fn platform_specific() {
-    use std::os::unix::fs::PermissionsExt;
-    println!("这是 Unix 系统");
-    
-    // 设置文件权限（chmod）
-    let metadata = std::fs::metadata("Cargo.toml").unwrap();
-    let mut perms = metadata.permissions();
-    perms.set_mode(0o755);
+fn platform_name() -&gt; &amp;'static str {
+    "unix"
 }
 
 #[cfg(windows)]
-fn platform_specific() {
-    println!("这是 Windows 系统");
-    // Windows 下没有 chmod，但有其他特性
+fn platform_name() -&gt; &amp;'static str {
+    "windows"
 }
 
 fn main() {
-    platform_specific();
+    println!("{}", platform_name());
 }</code></pre>
-<p>Unix 特有 API（<code>std::os::unix</code>）：</p>
-<pre class="playground"><code class="language-rust">use std::os::unix::fs::symlink;
-
-fn main() -&gt; std::io::Result&lt;()&gt; {
-    symlink("original.txt", "link.txt")?; // 创建符号链接
-    Ok(())
-}</code></pre>
+<p>Unix 特有能力通常在 <code>std::os::unix</code> 下，Windows 特有能力在 <code>std::os::windows</code> 下。</p>
+<p>设计跨平台系统代码时，常见做法是：</p>
+<ul>
+<li>业务逻辑保持平台无关。</li>
+<li>把平台相关代码隔离在小模块里。</li>
+<li>对外暴露统一 trait 或函数。</li>
+<li>平台能力差异不能强行抹平时，就显式暴露差异。</li>
+</ul>
 <hr>
 <h2 id="异步编程"><a class="header" href="#异步编程">异步编程</a></h2>
-<p>Rust 的异步编程通过 <code>async/await</code> 实现，核心是 <code>Future</code> trait 和 <code>Waker</code> 唤醒机制。</p>
+<p>Rust 的 async 是语言级 <code>Future</code> 加运行时调度。</p>
+<p><code>Future</code> 本质上是一个可以被轮询的状态机：</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-// 一个简单的 Future：等待指定次数后完成
-struct WaitForever;
+struct PendingForever;
 
-impl Future for WaitForever {
-    type Output = &amp;'static str;
+impl Future for PendingForever {
+    type Output = ();
 
-    fn poll(self: Pin&lt;&amp;mut Self&gt;, _cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Self::Output&gt; {
-        Poll::Pending // 永远 pending
+    fn poll(self: Pin&lt;&amp;mut Self&gt;, _cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;()&gt; {
+        Poll::Pending
     }
 }
 <span class="boring">}</span></code></pre>
-<p>实际开发中通常使用 tokio 运行时：</p>
+<p>实际应用通常使用 Tokio：</p>
 <pre class="playground"><code class="language-rust">use tokio::time::{sleep, Duration};
 
 #[tokio::main]
 async fn main() {
-    let handle = tokio::spawn(async {
+    let task = tokio::spawn(async {
         sleep(Duration::from_millis(100)).await;
-        println!("异步任务完成");
+        println!("done");
     });
 
-    // 等待所有任务
-    handle.await.unwrap();
+    task.await.unwrap();
 }</code></pre>
-<h3 id="future-与-waker"><a class="header" href="#future-与-waker">Future 与 Waker</a></h3>
-<p>Rust 的 Future 是<strong>可轮询的状态机</strong>，核心 trait 只有两个方法：</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait Future {
-    type Output;
-    fn poll(self: Pin&lt;&amp;mut Self&gt;, cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;Self::Output&gt;;
-}
-
-pub enum Poll&lt;T&gt; {
-    Ready(T),
-    Pending,
-}
-<span class="boring">}</span></code></pre>
-<ul>
-<li><code>poll</code> 返回 <code>Poll::Ready(val)</code> 表示计算完成，返回 <code>Poll::Pending</code> 表示还没好。</li>
-<li><code>Context</code> 中包含 <code>Waker</code>，异步任务在 I/O 就绪后通过 <code>waker.wake()</code> 通知执行器<strong>再来轮询一次</strong>。</li>
-</ul>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::future::Future;
-use std::pin::Pin;
-use std::task::{Context, Poll, Waker};
-use std::sync::{Arc, Mutex};
-
-// 手动实现一个可等待的 Timer Future
-struct TimerFuture {
-    shared: Arc&lt;Mutex&lt;SharedState&gt;&gt;,
-}
-
-struct SharedState {
-    completed: bool,
-    waker: Option&lt;Waker&gt;,
-}
-
-impl Future for TimerFuture {
-    type Output = ();
-    fn poll(self: Pin&lt;&amp;mut Self&gt;, cx: &amp;mut Context&lt;'_&gt;) -&gt; Poll&lt;()&gt; {
-        let mut shared = self.shared.lock().unwrap();
-        if shared.completed {
-            Poll::Ready(())
-        } else {
-            // 保存 waker，等时间到了通过它唤醒
-            shared.waker = Some(cx.waker().clone());
-            Poll::Pending
-        }
-    }
-}
-<span class="boring">}</span></code></pre>
-<h3 id="tokioselect"><a class="header" href="#tokioselect">tokio::select!</a></h3>
-<p><code>select!</code> 宏可以同时等待多个 Future，谁先完成就处理谁：</p>
-<pre class="playground"><code class="language-rust">use tokio::time::{sleep, Duration};
-
-#[tokio::main]
-async fn main() {
-    tokio::pin! {
-        let slow = sleep(Duration::from_secs(5));
-        let fast = sleep(Duration::from_secs(1));
-    }
-
-    tokio::select! {
-        _ = &amp;mut slow =&gt; println!("慢的完成了"),
-        _ = &amp;mut fast =&gt; println!("快的先完成了"),
-    }
-
-    // 输出 "快的先完成了"，且 slow 会被丢弃（取消）
-}</code></pre>
-<p>常见用法：</p>
-<ul>
-<li><strong>超时控制</strong>：<code>select! { res = op() =&gt; ..., _ = sleep(timeout) =&gt; ... }</code></li>
-<li><strong>竞速</strong>：多个数据源同时请求，谁先返回用谁的。</li>
-<li><strong>优雅关闭</strong>：监听一个 <code>shutdown</code> 信号，收到后退出循环。</li>
-</ul>
-<blockquote>
-<p>Rust 的 async 是零成本抽象——没有隐式的运行时堆分配，没有隐式的任务调度。你只为你使用的功能付费。</p>
-</blockquote>
+<p>把它和 OS I/O 模型联系起来看：</p>
+<ol>
+<li>socket 设置为非阻塞。</li>
+<li>运行时把 fd 注册到 epoll/kqueue/IOCP。</li>
+<li><code>Future</code> 暂时无法完成时返回 <code>Poll::Pending</code>。</li>
+<li>I/O 事件到达后，运行时通过 <code>Waker</code> 唤醒任务。</li>
+<li>任务再次被 poll，继续执行。</li>
+</ol>
+<p>所以 async 不是魔法。它是在 OS 事件通知机制上构建的用户态任务调度。</p>
 <hr>
 <h2 id="调试与诊断"><a class="header" href="#调试与诊断">调试与诊断</a></h2>
-<p>系统编程经常要面对<strong>段错误</strong>、<strong>内存泄漏</strong>、<strong>竞争条件</strong>等问题。</p>
-<h3 id="段错误定位"><a class="header" href="#段错误定位">段错误定位</a></h3>
-<pre><code class="language-text">$ RUST_BACKTRACE=1 cargo run
-</code></pre>
-<h3 id="内存泄漏检测linux"><a class="header" href="#内存泄漏检测linux">内存泄漏检测（Linux）</a></h3>
-<pre><code class="language-text">$ cargo install cargo-valgrind
-$ cargo valgrind run
-</code></pre>
-<h3 id="系统调用追踪"><a class="header" href="#系统调用追踪">系统调用追踪</a></h3>
-<pre><code class="language-text">$ strace -f -e trace=open,read,write,mmap cargo run 2&gt;trace.log
-</code></pre>
+<p>系统编程常见问题包括：</p>
+<ul>
+<li>段错误。</li>
+<li>fd 泄漏。</li>
+<li>死锁。</li>
+<li>数据竞争。</li>
+<li>内存泄漏。</li>
+<li>系统调用失败。</li>
+<li>性能被 I/O 或上下文切换拖垮。</li>
+</ul>
+<p>常用工具：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>工具</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RUST_BACKTRACE=1</code></td><td>打印 panic 回溯</td></tr>
+<tr><td><code>strace</code> / <code>dtruss</code></td><td>跟踪系统调用</td></tr>
+<tr><td><code>lsof</code></td><td>查看进程打开的文件和 socket</td></tr>
+<tr><td><code>perf</code></td><td>Linux 性能分析</td></tr>
+<tr><td><code>valgrind</code></td><td>内存错误和泄漏检查</td></tr>
+<tr><td><code>gdb</code> / <code>lldb</code></td><td>原生调试</td></tr>
+<tr><td><code>cargo flamegraph</code></td><td>火焰图</td></tr>
+<tr><td><code>loom</code></td><td>并发模型测试</td></tr>
+<tr><td><code>miri</code></td><td>检查部分 Rust 未定义行为</td></tr>
+</tbody>
+</table>
+</div>
+<p>排查系统编程问题时，建议按层次定位：</p>
+<ol>
+<li>Rust 层：所有权、生命周期、panic、错误传播是否正确。</li>
+<li>标准库层：是否正确处理 <code>Result</code>，是否泄漏资源。</li>
+<li>OS 层：系统调用是否失败，fd、权限、路径、信号是否符合预期。</li>
+<li>硬件和性能层：缓存、上下文切换、内存映射、I/O 等待是否成为瓶颈。</li>
+</ol>
 <hr>
-<pre><code></code></pre>
+<h2 id="学习路线建议"><a class="header" href="#学习路线建议">学习路线建议</a></h2>
+<p>如果按顺序学，可以这样走：</p>
+<ol>
+<li>用户态 / 内核态，理解为什么需要系统调用。</li>
+<li>进程、线程和调度，理解程序如何运行。</li>
+<li>虚拟内存、分页、TLB，理解地址和内存安全的底层。</li>
+<li>文件描述符、管道、socket，理解“一切皆文件”。</li>
+<li>同步、IPC、信号，理解多任务协作。</li>
+<li>Rust 标准库系统 API，先写安全的用户态程序。</li>
+<li>Unix fd、<code>mmap</code>、<code>libc</code>、FFI，逐步进入底层。</li>
+<li><code>unsafe</code> 和 <code>no_std</code>，只在确实需要时深入。</li>
+</ol>
+<p>第一部分解决“操作系统在做什么”，第二部分解决“Rust 如何安全地使用这些能力”。两条线分清楚之后，系统编程就不会再像一堆突然冒出来的名词。</p>
 
                     </main>
 
