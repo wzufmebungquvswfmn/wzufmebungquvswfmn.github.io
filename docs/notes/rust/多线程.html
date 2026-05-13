@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-5ae99f90.js";
+            window.path_to_searchindex_js = "../searchindex-ec154915.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-4d7222e8.js"></script>
@@ -266,6 +266,100 @@ fn main() {
 <h3 id="sync"><a class="header" href="#sync">Sync</a></h3>
 <p>具有Sync Trait的类型数据的引用可以被多个线程共享</p>
 <p><code>T</code> 是 <code>Sync</code> &lt;==&gt; <code>&amp;T</code> 是 <code>Send</code></p>
+<h2 id="线程池"><a class="header" href="#线程池">线程池</a></h2>
+<p>线程的创建和销毁都是有一定开销的，如果可以复用线程则可以节省开销。</p>
+<p>线程池可以提前创建一组线程，并在需要执行任务时通过传递任务（通过 mpsc ）给线程池来复用这些线程；下面我们来实现一个小型的线程池。</p>
+<h3 id="job"><a class="header" href="#job">Job</a></h3>
+<p>Job 是线程池中传递给执行线程的任务(线程间传递，所以需要满足Send trait)，通常是一个 FnOnce 闭包(因为只需要执行一次，符合最小特权原则)，同时有 ’static 生命周期便于编译器检查,需要使用动态分发：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>type Job = Box&lt;dyn FnOnce() + 'static + Send&gt;;
+<span class="boring">}</span></code></pre>
+<h3 id="worker"><a class="header" href="#worker">Worker</a></h3>
+<p>Worker 接受任务来执行，它包裹着一个执行线程的句柄，同时每个worker有自己的id便于线程池管理：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Worker {
+    id: usize,
+    thread: Option&lt;thread::JoinHandle&lt;Job&gt;&gt;,
+}
+<span class="boring">}</span></code></pre>
+<p>它的工作方式是，通过 Arc&lt;Mutex&lt;Receiver<job>&gt;&gt; 来接收任务，拿到任务后就执行，执行完后继续等待下一个任务的到来，仅需 new 方法：</job></p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl Worker {
+    fn new(id: usize, receiver: Arc&lt;Mutex&lt;Receiver&lt;Job&gt;&gt;&gt;) -&gt; Worker {
+        let thread = thread::spawn(move || loop {
+            let job = receiver.lock().unwrap().recv(); // 阻塞等待任务，拿到后释放锁
+            match job {
+                Ok(job) =&gt; job(),
+                Err(_) =&gt; break, // 发送端被drop了，迭代结束，线程退出
+            }
+        });
+
+        Worker {
+            id,
+            thread: Some(thread);
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
+<h3 id="threadpool"><a class="header" href="#threadpool">ThreadPool</a></h3>
+<p>ThreadPool 用于创建线程池，也就是创建相应数量的 Worker，同时它持有发送任务的 Sender 便于外部调用：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct ThreadPool {
+    workers: Vec&lt;Worker&gt;,
+    sender: Option&lt;Sender&lt;Job&gt;&gt;,
+}
+<span class="boring">}</span></code></pre>
+<p>new 方法用于创建消息传递通道和相应数量的 Worker：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl ThreadPool {
+    pub fn new(size: usize) -&gt; ThreadPool {
+        assert!(size &gt; 0);
+
+        let (sender, receiver) = mpsc::channel();
+        let receiver = Arc::new(Mutex::new(receiver));
+        let mut workers = Vec::with_capacity(size);
+
+        for id in 0..size {
+            workers.push(Worker::new(id, receiver.clone()));
+        }
+
+        ThreadPool {
+            workers,
+            sender: Some(sender),
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>execute 方法用于将任务交给执行线程执行：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl ThreadPool {
+    pub fn execute(&amp;self, job: Job) {
+        self.sender.as_ref().unwrap().send(job).unwrap();
+    }
+}
+<span class="boring">}</span></code></pre>
+<p>drop 方法用于销毁线程池：</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl Drop for ThreadPool {
+    fn drop(&amp;mut self) {
+        self.sender.take(); // 先把发送端drop了，迭代才能结束，线程才能退出
+
+        for worker in &amp;mut self.workers {
+            println!("Shutting down worker {} ……", worker.id);
+            if let Some(thread) = worker.thread.take() {
+                thread.join().unwrap();
+            }
+        }
+    }
+}
+<span class="boring">}</span></code></pre>
 
                     </main>
 
