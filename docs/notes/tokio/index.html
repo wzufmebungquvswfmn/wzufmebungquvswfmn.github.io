@@ -36,7 +36,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ec154915.js";
+            window.path_to_searchindex_js = "../searchindex-ccc61339.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-4d7222e8.js"></script>
@@ -264,20 +264,12 @@ let (done_tx, done_rx) = oneshot::channel::&lt;u32&gt;();
 <li>CPU 密集或阻塞操作放入 <code>spawn_blocking</code>。</li>
 <li>不要在 async 任务里直接长时间阻塞线程。</li>
 </ul>
-<h2 id="8-常见坑"><a class="header" href="#8-常见坑">8. 常见坑</a></h2>
+<h2 id="线程池与调度"><a class="header" href="#线程池与调度">线程池与调度</a></h2>
 <ul>
-<li>忘记 <code>.await</code>，future 实际没有执行。</li>
-<li>在 async 任务中使用 <code>std::sync::Mutex</code> 并跨 await 持锁。</li>
-<li>无限制 <code>spawn</code> 导致内存和调度压力过大。</li>
-<li>任务里捕获了非 <code>'static</code> 引用，导致无法 <code>spawn</code>。</li>
+<li>Tokio 内部默认使用线程池调度任务。</li>
+<li>任务调度基于工作窃取算法，动态平衡负载。</li>
+<li>线程池大小可配置，默认为 CPU 核数。</li>
 </ul>
-<h2 id="9-学习顺序建议"><a class="header" href="#9-学习顺序建议">9. 学习顺序建议</a></h2>
-<ol>
-<li><code>spawn</code> + <code>join!</code> + <code>try_join!</code></li>
-<li><code>mpsc</code> + <code>oneshot</code></li>
-<li><code>select!</code> + <code>timeout</code></li>
-<li><code>Semaphore</code> + <code>spawn_blocking</code></li>
-</ol>
 
                     </main>
 

@@ -89,16 +89,7 @@ let v = tokio::task::spawn_blocking(|| {
 - CPU 密集或阻塞操作放入 `spawn_blocking`。
 - 不要在 async 任务里直接长时间阻塞线程。
 
-## 8. 常见坑
-
-- 忘记 `.await`，future 实际没有执行。
-- 在 async 任务中使用 `std::sync::Mutex` 并跨 await 持锁。
-- 无限制 `spawn` 导致内存和调度压力过大。
-- 任务里捕获了非 `'static` 引用，导致无法 `spawn`。
-
-## 9. 学习顺序建议
-
-1. `spawn` + `join!` + `try_join!`
-2. `mpsc` + `oneshot`
-3. `select!` + `timeout`
-4. `Semaphore` + `spawn_blocking`
+## 线程池与调度
+- Tokio 内部默认使用线程池调度任务。
+- 任务调度基于工作窃取算法，动态平衡负载。
+- 线程池大小可配置，默认为 CPU 核数。
