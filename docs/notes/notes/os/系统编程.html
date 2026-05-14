@@ -36,7 +36,7 @@
             const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-ccc61339.js";
+            window.path_to_searchindex_js = "../../searchindex-e2f151a8.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-4d7222e8.js"></script>
@@ -551,12 +551,25 @@
 <p><strong>Rust 对应：</strong> 生产代码通常使用 <code>signal-hook</code>、Tokio signal 等封装，而不是手写裸 <code>sigaction</code>。</p>
 <hr>
 <h2 id="io-模型"><a class="header" href="#io-模型">I/O 模型</a></h2>
-<p>I/O 模型决定程序如何等待外部数据。</p>
+<p>I/O 模型指：当程序发起 I/O（读文件、读 socket、写网络）时，如果数据还没准备好，<strong>操作系统如何让你等待</strong>、<strong>如何通知你继续</strong>。它不是“读写本身的 API”，而是“等待与唤醒的策略”。</p>
+<p>从操作系统视角看，I/O 牵涉三个核心角色：</p>
+<ul>
+<li><strong>fd 与内核对象</strong>：fd 指向内核里的文件/管道/socket。数据是否就绪由内核决定。</li>
+<li><strong>线程与调度器</strong>：线程在等待时可能被挂起，CPU 让给别的线程。</li>
+<li><strong>事件通知机制</strong>：内核在数据就绪时通知用户态，避免无意义轮询。</li>
+</ul>
+<p>理解 I/O 模型的关键问题是：</p>
+<ol>
+<li>线程是在内核里睡眠，还是在用户态自旋轮询？</li>
+<li>同时管理很多连接时，是“一个连接一个线程”，还是“一个线程管理很多连接”？</li>
+<li>谁来通知“数据就绪”：内核主动通知，还是应用反复询问？</li>
+</ol>
 <h3 id="阻塞-io"><a class="header" href="#阻塞-io">阻塞 I/O</a></h3>
 <p>调用 <code>read</code> 时，如果没有数据，线程会睡眠，直到数据到达。</p>
 <p>优点是简单，缺点是大量连接会占用大量线程。</p>
 <h3 id="非阻塞-io"><a class="header" href="#非阻塞-io">非阻塞 I/O</a></h3>
 <p>fd 设置成非阻塞后，如果没有数据，<code>read</code> 立即返回错误，例如 <code>EAGAIN</code>。程序需要稍后再试。</p>
+<p>这意味着线程不会被内核挂起，但应用必须自己决定“什么时候再试”，通常会配合事件通知机制使用，否则就是忙等浪费 CPU。</p>
 <p>非阻塞 I/O 通常和事件通知机制配合使用。</p>
 <h3 id="io-多路复用"><a class="header" href="#io-多路复用">I/O 多路复用</a></h3>
 <p><code>select</code>、<code>poll</code>、<code>epoll</code>、<code>kqueue</code>、IOCP 等机制用于同时等待多个 I/O 事件。</p>
@@ -566,9 +579,25 @@
 <li>调用 <code>epoll_wait</code> 等待事件。</li>
 <li>哪些 fd 可读可写，就处理哪些 fd。</li>
 </ol>
+<p>这里的核心价值是：<strong>一个线程同时管理大量连接</strong>，避免“一连接一线程”的爆炸式成本。</p>
 <h3 id="异步-io"><a class="header" href="#异步-io">异步 I/O</a></h3>
 <p>异步 I/O 的核心思想是提交操作后不阻塞当前执行流，完成后再通知程序。不同平台实现差异很大，例如 Linux 的 io_uring、Windows 的 IOCP。</p>
 <p><strong>Rust 对应：</strong> Tokio、mio、async-std 等运行时把非阻塞 fd、事件循环、任务调度和 <code>Future</code> 组合起来，形成 Rust 的 async 生态。</p>
+<h3 id="一个对比表"><a class="header" href="#一个对比表">一个对比表</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>模型</th><th>线程是否阻塞</th><th>谁负责等待</th><th>常见特点</th></tr>
+</thead>
+<tbody>
+<tr><td>阻塞 I/O</td><td>是</td><td>内核</td><td>实现简单，但线程数与连接数近似 1:1</td></tr>
+<tr><td>非阻塞 I/O</td><td>否</td><td>应用</td><td>需要自行重试或配合事件通知</td></tr>
+<tr><td>多路复用</td><td>取决于调用 <code>select</code>/<code>epoll_wait</code> 是否阻塞</td><td>内核 + 应用</td><td>一个线程等待多个 fd，适合高并发</td></tr>
+<tr><td>异步 I/O</td><td>否（提交后立即返回）</td><td>内核</td><td>内核完成后通知，应用拿结果</td></tr>
+</tbody>
+</table>
+</div>
+<p>如果你把“阻塞/非阻塞”理解为“单个 <code>read</code> 调用会不会让线程睡眠”，把“多路复用/异步 I/O”理解为“同时管理很多 I/O 的方式”，这四个概念就能串起来了。</p>
 <hr>
 <h2 id="第二部分rust-系统编程"><a class="header" href="#第二部分rust-系统编程">第二部分：Rust 系统编程</a></h2>
 <p>这一部分开始使用 Rust。前面已经讲过 OS 概念，这里重点回答：Rust 的哪些类型和 API 对应哪些系统能力。</p>
