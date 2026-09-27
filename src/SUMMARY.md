@@ -35,7 +35,10 @@
   - [宏](rust/宏.md)
   - [迭代器](rust/迭代器.md)
   - [常用库](rust/常用库.md)
-  
+
+- [python](python/README.md)
+  - [集合数据结构](python/集合数据结构.md)
+    - [list]  
 
 - [tokio](tokio/README.md)
 
