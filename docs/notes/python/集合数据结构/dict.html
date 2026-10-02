@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>博客 - rust_tour</title>
+        <title>dict - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -12,34 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-2459343d.css">
+        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="src/theme/custom-5829cf29.css">
+        <link rel="stylesheet" href="../../src/theme/custom-5829cf29.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "";
+            const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-19168232.js";
+            window.path_to_searchindex_js = "../../searchindex-19168232.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-dfcd581a.js"></script>
+        <script src="../../toc-dfcd581a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -106,7 +106,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -141,7 +141,7 @@
                     <h1 class="menu-title">rust_tour</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
 
@@ -175,18 +175,165 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="博客"><a class="header" href="#博客">博客</a></h1>
-<p>这里是我基于mdbook构建的个人博客，记录一些学习笔记。</p>
-<ul>
-<li><a href="博客构建.html">博客构建</a></li>
-</ul>
+                        <h1 id="dict"><a class="header" href="#dict">dict</a></h1>
+<p><code>dict</code> 是 Python 的哈希表，存储键值对。键必须可哈希，值可以是任意对象。从 Python 3.7 起，<code>dict</code> 会保持键的插入顺序。</p>
+<h2 id="速览"><a class="header" href="#速览">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>作用</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>d[key]</code></td><td>访问，键不存在会报错</td><td><a href="#增删改查">增删改查</a></td></tr>
+<tr><td><code>get</code></td><td>访问，键不存在返回默认值</td><td></td></tr>
+<tr><td><code>setdefault</code></td><td>键不存在时设默认值并返回</td><td></td></tr>
+<tr><td><code>d[key] = v</code></td><td>插入或覆盖</td><td></td></tr>
+<tr><td><code>pop</code></td><td>按键删除并返回值</td><td></td></tr>
+<tr><td><code>popitem</code></td><td>弹出最后一个键值对</td><td></td></tr>
+<tr><td><code>del</code></td><td>按键删除</td><td></td></tr>
+<tr><td><code>keys</code> / <code>values</code> / <code>items</code></td><td>遍历</td><td><a href="#遍历">遍历</a></td></tr>
+<tr><td><code>update</code> / <code>|</code></td><td>合并</td><td><a href="#合并">合并</a></td></tr>
+<tr><td><code>in</code></td><td>判断键是否存在</td><td><a href="#查找">查找</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="创建"><a class="header" href="#创建">创建</a></h2>
+<pre><code class="language-python">d = {"apple": 3, "banana": 5}
+empty = {}
+from_pairs = dict([("a", 1), ("b", 2)])
+from_keys = dict.fromkeys(["a", "b"], 0)   # {'a': 0, 'b': 0}
+
+# 从两个列表构造
+keys = ["a", "b"]
+vals = [1, 2]
+d = dict(zip(keys, vals))                  # {'a': 1, 'b': 2}
+</code></pre>
+<h2 id="增删改查"><a class="header" href="#增删改查">增删改查</a></h2>
+<h3 id="访问"><a class="header" href="#访问">访问</a></h3>
+<p>用 <code>[]</code> 访问不存在的键会抛 <code>KeyError</code>，不确定时用 <code>get</code>：</p>
+<pre><code class="language-python">d = {"apple": 3}
+
+d["apple"]            # 3
+d.get("pear")         # None
+d.get("pear", 0)      # 0
+</code></pre>
+<h3 id="插入和修改"><a class="header" href="#插入和修改">插入和修改</a></h3>
+<p>直接赋值即可，键已存在就是覆盖：</p>
+<pre><code class="language-python">d = {}
+d["apple"] = 3
+d["apple"] = 5        # 覆盖，d == {"apple": 5}
+</code></pre>
+<h3 id="删除"><a class="header" href="#删除">删除</a></h3>
+<pre><code class="language-python">d = {"a": 1, "b": 2}
+
+del d["a"]            # 按键删除
+x = d.pop("b")        # 删除并返回，x == 2
+d.pop("c", 0)         # 键不存在时返回默认值，不报错
+last = d.popitem()    # 弹出最后一个键值对
+d.clear()             # 清空
+</code></pre>
+<h2 id="查找"><a class="header" href="#查找">查找</a></h2>
+<p><code>in</code> 判断键是否存在（不是值）：</p>
+<pre><code class="language-python">d = {"apple": 3}
+
+"apple" in d          # True
+3 in d                # False
+</code></pre>
+<h2 id="遍历"><a class="header" href="#遍历">遍历</a></h2>
+<p>遍历时拿到的是键，想同时拿到键值要用 <code>items()</code>：</p>
+<pre><code class="language-python">for key in d:
+    print(key)
+
+for key, value in d.items():
+    print(key, value)
+
+for value in d.values():
+    print(value)
+</code></pre>
+<p>遍历顺序就是插入顺序。</p>
+<p>遍历过程中不要增删键，否则会抛 <code>RuntimeError</code>。需要修改时可以先转成 <code>list(d.items())</code> 或用推导式生成新字典。</p>
+<h2 id="合并"><a class="header" href="#合并">合并</a></h2>
+<p><code>update</code> 原地合并，<code>|</code> 返回新字典（Python 3.9+）：</p>
+<pre><code class="language-python">a = {"x": 1}
+b = {"x": 2, "y": 3}
+
+a.update(b)          # a == {"x": 2, "y": 3}
+c = {"x": 1} | b     # c == {"x": 2, "y": 3}
+</code></pre>
+<p>也可以在字面量里用 <code>**</code> 解包：</p>
+<pre><code class="language-python">c = {**a, **b}
+</code></pre>
+<p>后面的键会覆盖前面的同名键。</p>
+<h2 id="字典推导式"><a class="header" href="#字典推导式">字典推导式</a></h2>
+<pre><code class="language-python">squares = {x: x * x for x in range(4)}      # {0: 0, 1: 1, 2: 4, 3: 9}
+
+key_to_index = {v: i for i, v in enumerate(["a", "b", "c"])}
+# {'a': 0, 'b': 1, 'c': 2}
+</code></pre>
+<h2 id="常用模板"><a class="header" href="#常用模板">常用模板</a></h2>
+<h3 id="计数"><a class="header" href="#计数">计数</a></h3>
+<p>最直接的写法是用 <code>get</code>：</p>
+<pre><code class="language-python">nums = [1, 2, 1, 3, 2, 1]
+count = {}
+
+for x in nums:
+    count[x] = count.get(x, 0) + 1
+
+print(count[1])     # 3
+</code></pre>
+<p>也可以用 <code>collections.defaultdict</code>，省去默认值判断：</p>
+<pre><code class="language-python">from collections import defaultdict
+
+count = defaultdict(int)
+for x in nums:
+    count[x] += 1
+</code></pre>
+<p>或者直接用 <code>collections.Counter</code>：</p>
+<pre><code class="language-python">from collections import Counter
+
+count = Counter(nums)
+count[1]                        # 3
+count.most_common(1)            # [(1, 3)]，出现最多的元素
+</code></pre>
+<h3 id="记录下标"><a class="header" href="#记录下标">记录下标</a></h3>
+<pre><code class="language-python">nums = [2, 7, 11, 15]
+pos = {}
+
+for i, x in enumerate(nums):
+    pos[x] = i
+
+print(pos[7])    # 1
+</code></pre>
+<h3 id="分组"><a class="header" href="#分组">分组</a></h3>
+<p><code>defaultdict(list)</code> 常用于按某个键把元素分组：</p>
+<pre><code class="language-python">from collections import defaultdict
+
+words = ["eat", "tea", "tan", "ate"]
+groups = defaultdict(list)
+
+for w in words:
+    groups["".join(sorted(w))].append(w)
+
+print(groups["aet"])    # ['eat', 'tea', 'ate']
+</code></pre>
+<h3 id="存在性判断与默认值"><a class="header" href="#存在性判断与默认值">存在性判断与默认值</a></h3>
+<p><code>setdefault</code> 可以一次完成“有就用、没有就设”：</p>
+<pre><code class="language-python">d = {}
+d.setdefault("a", []).append(1)
+d.setdefault("a", []).append(2)
+
+print(d["a"])    # [1, 2]
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../python/集合数据结构/tuple.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
-                            <a rel="next prefetch" href="blog/博客构建.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../python/集合数据结构/set.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -196,8 +343,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../python/集合数据结构/tuple.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
-                    <a rel="next prefetch" href="blog/博客构建.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../python/集合数据结构/set.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -233,17 +383,17 @@
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-c2a407aa.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="mermaid-35374ef1.min.js"></script>
-        <script src="mermaid-init-12acb6c2.js"></script>
+        <script src="../../mermaid-35374ef1.min.js"></script>
+        <script src="../../mermaid-init-12acb6c2.js"></script>
 
 
 

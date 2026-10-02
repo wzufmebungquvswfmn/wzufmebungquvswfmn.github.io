@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>博客 - rust_tour</title>
+        <title>tuple - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -12,34 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-2459343d.css">
+        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="src/theme/custom-5829cf29.css">
+        <link rel="stylesheet" href="../../src/theme/custom-5829cf29.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "";
+            const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-19168232.js";
+            window.path_to_searchindex_js = "../../searchindex-19168232.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-dfcd581a.js"></script>
+        <script src="../../toc-dfcd581a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -106,7 +106,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -141,7 +141,7 @@
                     <h1 class="menu-title">rust_tour</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
 
@@ -175,18 +175,108 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="博客"><a class="header" href="#博客">博客</a></h1>
-<p>这里是我基于mdbook构建的个人博客，记录一些学习笔记。</p>
-<ul>
-<li><a href="博客构建.html">博客构建</a></li>
-</ul>
+                        <h1 id="tuple"><a class="header" href="#tuple">tuple</a></h1>
+<p><code>tuple</code> 和 <code>list</code> 很像，都是有序序列，区别是 <code>tuple</code> 一旦创建就不可变，因此可以作为 <code>dict</code> 的键和 <code>set</code> 的元素。</p>
+<h2 id="速览"><a class="header" href="#速览">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>操作</th><th>说明</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>(1, 2)</code></td><td>创建元组</td><td><a href="#创建">创建</a></td></tr>
+<tr><td><code>(1,)</code></td><td>单元素元组，逗号不能省</td><td><a href="#创建">创建</a></td></tr>
+<tr><td><code>a, b = b, a</code></td><td>解包、交换</td><td><a href="#解包">解包</a></td></tr>
+<tr><td><code>t[i]</code></td><td>按下标访问</td><td><a href="#不可变">不可变</a></td></tr>
+<tr><td><code>t.count(x)</code> / <code>t.index(x)</code></td><td>统计 / 查找下标</td><td></td></tr>
+<tr><td><code>t + t2</code></td><td>拼接</td><td></td></tr>
+<tr><td><code>t * 3</code></td><td>重复</td><td></td></tr>
+<tr><td><code>namedtuple</code></td><td>带字段名的元组</td><td><a href="#命名元组">命名元组</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="创建"><a class="header" href="#创建">创建</a></h2>
+<pre><code class="language-python">point = (1, 2)
+empty = ()
+single = (1,)        # 单元素元组必须带逗号
+nums = tuple([1, 2, 3])
+</code></pre>
+<p><code>(1)</code> 只是加了括号的整数，不是元组：</p>
+<pre><code class="language-python">type((1))    # &lt;class 'int'&gt;
+type((1,))   # &lt;class 'tuple'&gt;
+</code></pre>
+<h2 id="不可变"><a class="header" href="#不可变">不可变</a></h2>
+<p>元组创建后不能修改元素：</p>
+<pre><code class="language-python">t = (1, 2, 3)
+t[0] = 10    # TypeError: 'tuple' object does not support item assignment
+</code></pre>
+<p>但如果元组里存的是可变对象（比如列表），那个对象本身仍可以被修改：</p>
+<pre><code class="language-python">t = ([1], 2)
+t[0].append(3)
+print(t)     # ([1, 3], 2)
+</code></pre>
+<h2 id="解包"><a class="header" href="#解包">解包</a></h2>
+<p>元组最常见的用途之一是和函数返回值配合：</p>
+<pre><code class="language-python">def min_max(nums):
+    return min(nums), max(nums)
+
+lo, hi = min_max([3, 1, 2])    # lo == 1，hi == 3
+</code></pre>
+<p>用 <code>*</code> 可以收集剩余元素：</p>
+<pre><code class="language-python">first, *rest = (1, 2, 3, 4)    # first == 1，rest == [2, 3, 4]
+a, *mid, b = (1, 2, 3, 4)      # a == 1，mid == [2, 3]，b == 4
+</code></pre>
+<p>交换两个变量本质上是元组打包再解包：</p>
+<pre><code class="language-python">a, b = 1, 2
+a, b = b, a     # a == 2，b == 1
+</code></pre>
+<h2 id="作为键"><a class="header" href="#作为键">作为键</a></h2>
+<p>只要元组里所有元素都可哈希，元组本身就可哈希，可以作为 <code>dict</code> 的键或放进 <code>set</code>：</p>
+<pre><code class="language-python">pos = {}
+pos[(0, 1)] = "start"
+
+seen = set()
+seen.add((1, 2))
+</code></pre>
+<p>这在网格、坐标、记录复合状态时非常常用。</p>
+<h2 id="比较和排序"><a class="header" href="#比较和排序">比较和排序</a></h2>
+<p>元组按元素依次比较，所以常用来做多关键字排序：</p>
+<pre><code class="language-python">sorted([(2, 1), (1, 3), (1, 2)])   # [(1, 2), (1, 3), (2, 1)]
+</code></pre>
+<p>如果想让第二项降序，仍然需要显式指定 <code>key</code>（见 <a href="list.html#排序">list 的排序</a>）。</p>
+<h2 id="命名元组"><a class="header" href="#命名元组">命名元组</a></h2>
+<p><code>collections.namedtuple</code> 可以给字段起名字，兼顾可读性和不可变性：</p>
+<pre><code class="language-python">from collections import namedtuple
+
+Point = namedtuple("Point", ["x", "y"])
+p = Point(1, 2)
+
+print(p.x, p.y)     # 1 2
+print(p[0])         # 1，仍然支持下标访问
+</code></pre>
+<h2 id="与-list-的选择"><a class="header" href="#与-list-的选择">与 list 的选择</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>list</th><th>tuple</th></tr>
+</thead>
+<tbody>
+<tr><td>可变</td><td>是</td><td>否</td></tr>
+<tr><td>可哈希，能作 dict 键</td><td>否</td><td>是</td></tr>
+<tr><td>常用场景</td><td>动态数组、栈、队列</td><td>坐标、记录、函数返回值</td></tr>
+</tbody>
+</table>
+</div>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../python/集合数据结构/list.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
-                            <a rel="next prefetch" href="blog/博客构建.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../python/集合数据结构/dict.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -196,8 +286,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../python/集合数据结构/list.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
-                    <a rel="next prefetch" href="blog/博客构建.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../python/集合数据结构/dict.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -233,17 +326,17 @@
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-c2a407aa.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="mermaid-35374ef1.min.js"></script>
-        <script src="mermaid-init-12acb6c2.js"></script>
+        <script src="../../mermaid-35374ef1.min.js"></script>
+        <script src="../../mermaid-init-12acb6c2.js"></script>
 
 
 

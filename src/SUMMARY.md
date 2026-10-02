@@ -24,6 +24,7 @@
      - [BinaryHeap](rust/集合数据结构/binaryheap.md)
      - [VecDeque](rust/集合数据结构/vecdeque.md)
      - [BTreeMap/BTreeSet](rust/集合数据结构/btreemap.md)
+     - [LinkedList](rust/集合数据结构/LinkedList.md)
   - [模式匹配](rust/模式匹配.md)
     - [全模式列表](rust/模式匹配/全模式列表.md)
   - [泛型和特征](rust/泛型和特征.md)
@@ -38,7 +39,13 @@
 
 - [python](python/README.md)
   - [集合数据结构](python/集合数据结构.md)
-    - [list]  
+    - [list](python/集合数据结构/list.md)
+    - [tuple](python/集合数据结构/tuple.md)
+    - [dict](python/集合数据结构/dict.md)
+    - [set](python/集合数据结构/set.md)
+    - [collections 模块](python/集合数据结构/collections.md)
+    - [heapq](python/集合数据结构/heapq.md)
+    - [bisect](python/集合数据结构/bisect.md)
 
 - [tokio](tokio/README.md)
 

@@ -7,6 +7,8 @@ function App() {
   const [introOpen, setIntroOpen] = useState(false)
   const noteHref = (path = '') => `${notesUrl}${path}`
 
+  const pythonTopics = ['list', 'tuple', 'dict', 'set', 'collections', 'heapq', 'bisect']
+
   const knowledgeNodes = [
     {
       title: '所有权',
@@ -264,6 +266,47 @@ function App() {
               </a>
             ))}
           </div>
+        </section>
+
+        <section className="section container python-section" id="python">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Python</p>
+              <h2>集合数据结构</h2>
+            </div>
+            <a className="section-link" href={noteHref('python/')} target="_blank" rel="noopener noreferrer">All Python Notes</a>
+          </div>
+
+          <a
+            className="py-card"
+            href={noteHref('python/集合数据结构.html')}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div className="py-card-bar">
+              <span className="py-dot" />
+              <span className="py-dot" />
+              <span className="py-dot" />
+              <span className="py-card-file">python/集合数据结构.md</span>
+            </div>
+            <div className="py-card-body">
+              <div className="py-card-main">
+                <p className="py-card-kicker">Python Notes</p>
+                <h3>集合数据结构</h3>
+                <p className="py-card-desc">
+                  list、tuple、dict、set 等基础容器，以及 collections、heapq、bisect 等刷题常用模块。
+                </p>
+                <span className="py-card-cta">打开笔记 →</span>
+              </div>
+              <ul className="py-topics">
+                {pythonTopics.map((topic) => (
+                  <li key={topic}>
+                    <code>{topic}</code>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </a>
         </section>
       </main>
 

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>博客 - rust_tour</title>
+        <title>collections 模块 - rust_tour</title>
 
 
         <!-- Custom HTML head -->
@@ -12,34 +12,34 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-2459343d.css">
+        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="src/theme/custom-5829cf29.css">
+        <link rel="stylesheet" href="../../src/theme/custom-5829cf29.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "";
+            const path_to_root = "../../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-19168232.js";
+            window.path_to_searchindex_js = "../../searchindex-19168232.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-dfcd581a.js"></script>
+        <script src="../../toc-dfcd581a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -106,7 +106,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -141,7 +141,7 @@
                     <h1 class="menu-title">rust_tour</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
 
@@ -175,18 +175,241 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="博客"><a class="header" href="#博客">博客</a></h1>
-<p>这里是我基于mdbook构建的个人博客，记录一些学习笔记。</p>
-<ul>
-<li><a href="博客构建.html">博客构建</a></li>
-</ul>
+                        <h1 id="collections"><a class="header" href="#collections">collections</a></h1>
+<p><code>collections</code> 模块提供了几种标准容器之外的专用容器，刷题里最常用的是 <code>deque</code>、<code>defaultdict</code> 和 <code>Counter</code>。</p>
+<h2 id="速览"><a class="header" href="#速览">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>类型</th><th>作用</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>deque</code></td><td>双端队列，两端增删 O(1)</td><td><a href="#deque">deque</a></td></tr>
+<tr><td><code>defaultdict</code></td><td>带默认值的 dict</td><td><a href="#defaultdict">defaultdict</a></td></tr>
+<tr><td><code>Counter</code></td><td>计数器</td><td><a href="#counter">Counter</a></td></tr>
+<tr><td><code>OrderedDict</code></td><td>有序字典，可移动 / 两端弹出</td><td><a href="#ordereddict">OrderedDict</a></td></tr>
+<tr><td><code>namedtuple</code></td><td>带字段名的元组</td><td><a href="#namedtuple">namedtuple</a></td></tr>
+<tr><td><code>ChainMap</code></td><td>多个 dict 合并成一个视图</td><td><a href="#chainmap">ChainMap</a></td></tr>
+<tr><td><code>UserDict</code> / <code>UserList</code></td><td>方便继承的包装类</td><td><a href="#userdict-和-userlist">UserDict 和 UserList</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="deque"><a class="header" href="#deque">deque</a></h2>
+<p>双端队列，两端插入删除都是 O(1)，是 BFS、滑动窗口、单调队列的基础。</p>
+<pre><code class="language-python">from collections import deque
+
+q = deque([1, 2, 3])
+
+q.append(4)        # 右端加入
+q.appendleft(0)    # 左端加入
+q.pop()            # 右端弹出
+q.popleft()        # 左端弹出
+</code></pre>
+<p>按下标访问 <code>q[i]</code> 是 O(n)，不要当 list 用；两端操作才是 O(1)。</p>
+<p>其他常用方法：</p>
+<pre><code class="language-python">q = deque([1, 2, 3, 4, 5])
+
+q.rotate(1)           # 整体右移一位：[5, 1, 2, 3, 4]
+q.rotate(-1)          # 整体左移一位
+q.extend([6, 7])      # 右端批量加入
+q.extendleft([0, -1]) # 左端逐个 appendleft，顺序会反过来
+</code></pre>
+<p><code>maxlen</code> 可以限制长度，超出后自动从另一端挤出，很适合维护固定大小的窗口：</p>
+<pre><code class="language-python">q = deque(maxlen=3)
+for i in range(5):
+    q.append(i)
+
+print(q)    # deque([2, 3, 4], maxlen=3)
+</code></pre>
+<h3 id="bfs-模板"><a class="header" href="#bfs-模板">BFS 模板</a></h3>
+<pre><code class="language-python">from collections import deque
+
+def bfs(start, graph):
+    dist = {start: 0}
+    q = deque([start])
+
+    while q:
+        node = q.popleft()
+        for nxt in graph[node]:
+            if nxt not in dist:
+                dist[nxt] = dist[node] + 1
+                q.append(nxt)
+
+    return dist
+</code></pre>
+<h3 id="单调队列模板"><a class="header" href="#单调队列模板">单调队列模板</a></h3>
+<p>求每个长度为 k 的窗口的最大值，用一个单调递减的 deque 存下标：</p>
+<pre><code class="language-python">from collections import deque
+
+def max_sliding_window(nums, k):
+    q = deque()      # 存下标，对应的值单调递减
+    ans = []
+
+    for i, x in enumerate(nums):
+        while q and nums[q[-1]] &lt;= x:
+            q.pop()
+        q.append(i)
+
+        if q[0] &lt;= i - k:      # 队头滑出窗口
+            q.popleft()
+
+        if i &gt;= k - 1:
+            ans.append(nums[q[0]])
+
+    return ans
+</code></pre>
+<h2 id="defaultdict"><a class="header" href="#defaultdict">defaultdict</a></h2>
+<p><code>defaultdict</code> 在访问不存在的键时会自动创建一个默认值，省去 <code>if key not in d</code> 的判断。</p>
+<pre><code class="language-python">from collections import defaultdict
+
+# 参数是"默认值的工厂函数"
+count = defaultdict(int)      # 默认 0
+groups = defaultdict(list)    # 默认 []
+seen = defaultdict(set)       # 默认 set()
+</code></pre>
+<p>常见默认值写法：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>默认值</th><th>工厂函数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td><code>int</code></td></tr>
+<tr><td><code>0.0</code></td><td><code>float</code></td></tr>
+<tr><td><code>[]</code></td><td><code>list</code></td></tr>
+<tr><td><code>{}</code></td><td><code>dict</code></td></tr>
+<tr><td><code>set()</code></td><td><code>set</code></td></tr>
+<tr><td>自定义</td><td><code>lambda: ...</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="计数"><a class="header" href="#计数">计数</a></h3>
+<pre><code class="language-python">count = defaultdict(int)
+for x in nums:
+    count[x] += 1
+</code></pre>
+<h3 id="分组"><a class="header" href="#分组">分组</a></h3>
+<pre><code class="language-python">groups = defaultdict(list)
+for w in words:
+    groups[len(w)].append(w)
+</code></pre>
+<h3 id="建图"><a class="header" href="#建图">建图</a></h3>
+<p>这是刷题里最常用的场景之一：</p>
+<pre><code class="language-python">graph = defaultdict(list)
+for u, v in edges:
+    graph[u].append(v)
+    graph[v].append(u)     # 无向图
+</code></pre>
+<h2 id="counter"><a class="header" href="#counter">Counter</a></h2>
+<p><code>Counter</code> 是专门用来计数的字典，键是元素，值是出现次数。</p>
+<pre><code class="language-python">from collections import Counter
+
+c = Counter("hello")
+print(c)          # Counter({'l': 2, 'h': 1, 'e': 1, 'o': 1})
+
+c["l"]            # 2
+c["z"]            # 0，不存在的键返回 0，不会报错
+</code></pre>
+<p>常用方法：</p>
+<pre><code class="language-python">c = Counter([1, 1, 2, 3, 3, 3])
+
+c.most_common(2)      # [(3, 3), (1, 2)]，出现最多的前 2 个
+c.elements()          # 展开成元素迭代器（按计数重复）
+c.total()             # 所有计数之和，等价 sum(c.values())，Python 3.10+
+</code></pre>
+<p>统计和更新：</p>
+<pre><code class="language-python">c = Counter()
+c.update([1, 1, 2])   # 累加计数
+c.subtract([1])       # 相减，计数可能变成 0 或负数
+del c[2]              # 删除某个键
+</code></pre>
+<p><code>Counter</code> 还支持集合式的算术运算，结果只保留计数大于 0 的部分：</p>
+<pre><code class="language-python">a = Counter("aab")
+b = Counter("abc")
+
+a + b     # 相加
+a - b     # 相减，负数结果会被丢弃
+a &amp; b     # 取较小计数（交集）
+a | b     # 取较大计数（并集）
+</code></pre>
+<h3 id="模板出现次数最多的-k-个元素"><a class="header" href="#模板出现次数最多的-k-个元素">模板：出现次数最多的 k 个元素</a></h3>
+<pre><code class="language-python">from collections import Counter
+
+nums = [1, 1, 1, 2, 2, 3]
+top2 = Counter(nums).most_common(2)
+print(top2)     # [(1, 3), (2, 2)]
+</code></pre>
+<h2 id="ordereddict"><a class="header" href="#ordereddict">OrderedDict</a></h2>
+<p>从 Python 3.7 起，普通 <code>dict</code> 已经保证插入顺序，所以 <code>OrderedDict</code> 现在主要用于两个场景：需要改变某个键的位置，或需要从两端弹出。</p>
+<pre><code class="language-python">from collections import OrderedDict
+
+od = OrderedDict()
+od["a"] = 1
+od["b"] = 2
+od["c"] = 3
+
+od.move_to_end("a")              # 移到末尾
+od.move_to_end("a", last=False)  # 移到开头
+
+od.popitem()                     # 弹出最后一个
+od.popitem(last=False)           # 弹出第一个
+</code></pre>
+<p>后两个操作是实现 LRU 缓存（最近最少使用）的关键。</p>
+<h2 id="namedtuple"><a class="header" href="#namedtuple">namedtuple</a></h2>
+<p><code>namedtuple</code> 是带字段名的元组，可以按名字访问，仍然不可变、可哈希。详细用法见 <a href="tuple.html#命名元组">tuple</a>。</p>
+<pre><code class="language-python">from collections import namedtuple
+
+Point = namedtuple("Point", ["x", "y"])
+p = Point(1, 2)
+
+print(p.x, p.y)    # 1 2
+print(p[0])        # 1
+</code></pre>
+<h2 id="chainmap"><a class="header" href="#chainmap">ChainMap</a></h2>
+<p><code>ChainMap</code> 把多个字典串成一个逻辑上的字典，查找时按顺序在多个字典里找，写操作只作用于第一个。</p>
+<pre><code class="language-python">from collections import ChainMap
+
+defaults = {"color": "red", "size": "m"}
+user = {"color": "blue"}
+
+c = ChainMap(user, defaults)
+print(c["color"])    # blue，user 优先
+print(c["size"])     # m，回退到 defaults
+</code></pre>
+<p>常用于合并配置（局部覆盖全局），刷题里用得不多。</p>
+<h2 id="userdict-和-userlist"><a class="header" href="#userdict-和-userlist">UserDict 和 UserList</a></h2>
+<p><code>dict</code> 和 <code>list</code> 也能直接继承，但 <code>UserDict</code>、<code>UserList</code> 用组合实现，行为更干净，适合需要自定义容器时使用。</p>
+<pre><code class="language-python">from collections import UserDict
+
+class MyDict(UserDict):
+    def __missing__(self, key):
+        return 0
+</code></pre>
+<h2 id="小结常见场景怎么选"><a class="header" href="#小结常见场景怎么选">小结：常见场景怎么选</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>场景</th><th>选择</th></tr>
+</thead>
+<tbody>
+<tr><td>两端增删、BFS、滑动窗口</td><td><code>deque</code></td></tr>
+<tr><td>计数</td><td><code>Counter</code> 或 <code>defaultdict(int)</code></td></tr>
+<tr><td>分组、建图</td><td><code>defaultdict(list)</code></td></tr>
+<tr><td>记录下标</td><td>普通 <code>dict</code></td></tr>
+<tr><td>移动键、LRU</td><td><code>OrderedDict</code></td></tr>
+</tbody>
+</table>
+</div>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../python/集合数据结构/set.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
-                            <a rel="next prefetch" href="blog/博客构建.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../python/集合数据结构/heapq.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -196,8 +419,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../python/集合数据结构/set.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
-                    <a rel="next prefetch" href="blog/博客构建.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../python/集合数据结构/heapq.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -233,17 +459,17 @@
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-c2a407aa.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="mermaid-35374ef1.min.js"></script>
-        <script src="mermaid-init-12acb6c2.js"></script>
+        <script src="../../mermaid-35374ef1.min.js"></script>
+        <script src="../../mermaid-init-12acb6c2.js"></script>
 
 
 

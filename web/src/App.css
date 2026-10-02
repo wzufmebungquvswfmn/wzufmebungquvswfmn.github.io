@@ -583,3 +583,116 @@
     will-change: auto;
   }
 }
+
+/* ---- Python section: editor-window card ---- */
+.py-card {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.py-card:hover,
+.py-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 28px 70px rgba(9, 9, 11, 0.14);
+}
+
+.py-card-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #2b5b84, #4b8bbe);
+}
+
+.py-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.py-dot:nth-child(1) {
+  background: #ffd43b;
+}
+
+.py-card-file {
+  margin-left: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.py-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px;
+  align-items: center;
+  padding: 26px 28px;
+}
+
+.py-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.py-card-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: #b9891d;
+}
+
+.py-card-main h3 {
+  font-size: 1.5rem;
+}
+
+.py-card-desc {
+  color: var(--muted);
+  max-width: 48ch;
+}
+
+.py-card-cta {
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.py-topics {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: 320px;
+}
+
+.py-topics code {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #f4f4f5;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .py-card-body {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .py-topics {
+    justify-content: flex-start;
+    max-width: none;
+  }
+}

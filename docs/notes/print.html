@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-eceb7363.js";
+            window.path_to_searchindex_js = "searchindex-19168232.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-ebf5d1b7.js"></script>
+        <script src="toc-dfcd581a.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -5099,6 +5099,1026 @@ toml = "0.8"
 <p>常见结构是把配置文件读成字符串，再用 <code>toml::from_str</code> 转成结构体。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="python"><a class="header" href="#python">python</a></h1>
+<p>这里存储的是我在学习 Python 时的一些知识点总结。</p>
+<ul>
+<li><a href="#集合数据结构-1">集合数据结构</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="集合数据结构-1"><a class="header" href="#集合数据结构-1">集合数据结构</a></h1>
+<p>Python 内置了几种常用的容器类型，再加上 <code>collections</code>、<code>heapq</code>、<code>bisect</code> 这几个标准库模块，日常和刷题遇到的绝大多数场景就够用了。</p>
+<h2 id="基础容器"><a class="header" href="#基础容器">基础容器</a></h2>
+<ul>
+<li><a href="#list">list</a>：有序、可变、允许重复元素</li>
+<li><a href="#tuple">tuple</a>：有序、不可变</li>
+<li><a href="#dict">dict</a>：键值映射，键唯一且可哈希</li>
+<li><a href="#set">set</a>：元素唯一且可哈希</li>
+</ul>
+<h2 id="常用标准库"><a class="header" href="#常用标准库">常用标准库</a></h2>
+<ul>
+<li><a href="#collections">collections 模块</a>：<code>deque</code>、<code>Counter</code>、<code>defaultdict</code>、<code>OrderedDict</code> 等</li>
+<li><a href="#heapq">heapq</a>：堆 / 优先队列</li>
+<li><a href="#bisect">bisect</a>：有序列表的二分查找</li>
+</ul>
+<h2 id="如何选择"><a class="header" href="#如何选择">如何选择</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>需求</th><th>选择</th></tr>
+</thead>
+<tbody>
+<tr><td>需要顺序、频繁按下标增删改</td><td><code>list</code></td></tr>
+<tr><td>需要不可变，或作为 <code>dict</code> 的键 / <code>set</code> 的元素</td><td><code>tuple</code></td></tr>
+<tr><td>通过键快速查找、计数、分组</td><td><code>dict</code></td></tr>
+<tr><td>去重、判重、集合运算</td><td><code>set</code></td></tr>
+<tr><td>需要有序的键值结构</td><td><code>dict</code>（Python 3.7 起保持插入顺序）</td></tr>
+<tr><td>频繁在两端增删、BFS、滑动窗口</td><td><code>collections.deque</code></td></tr>
+<tr><td>计数</td><td><code>collections.Counter</code></td></tr>
+<tr><td>分组、建图、带默认值的 dict</td><td><code>collections.defaultdict</code></td></tr>
+<tr><td>频繁取最小 / 最大元素</td><td><code>heapq</code></td></tr>
+<tr><td>有序列表上二分查找</td><td><code>bisect</code></td></tr>
+<tr><td>强制有序且支持范围查询</td><td>第三方库 <code>sortedcontainers</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>最常用的还是 <code>list</code> 和 <code>dict</code>，刷题时再加上 <code>collections</code>、<code>heapq</code>、<code>bisect</code>。</p>
+<h2 id="复杂度速查"><a class="header" href="#复杂度速查">复杂度速查</a></h2>
+<p>设 <code>n</code> 为元素个数。</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>操作</th><th>list</th><th>dict</th><th>set</th></tr>
+</thead>
+<tbody>
+<tr><td>按下标 / 键访问</td><td>O(1)</td><td>O(1)</td><td>—</td></tr>
+<tr><td>查找某个值是否存在</td><td>O(n)</td><td>O(1)</td><td>O(1)</td></tr>
+<tr><td>尾部插入</td><td>O(1) 均摊</td><td>O(1) 均摊</td><td>O(1) 均摊</td></tr>
+<tr><td>头部插入</td><td>O(n)</td><td>—</td><td>—</td></tr>
+<tr><td>按下标 / 键删除</td><td>O(n)</td><td>O(1)</td><td>O(1)</td></tr>
+</tbody>
+</table>
+</div>
+<p>需要注意，<code>dict</code> 和 <code>set</code> 的 <code>O(1)</code> 指的是平均复杂度，最坏情况下会退化为 <code>O(n)</code>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="list"><a class="header" href="#list">list</a></h1>
+<p><code>list</code> 是 Python 最常用的容器，本质上是一个动态数组。它有序、可变、允许重复元素，按下标访问是 O(1)。</p>
+<h2 id="速览-7"><a class="header" href="#速览-7">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>作用</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>append</code></td><td>尾部追加单个元素</td><td><a href="#增删">增删</a></td></tr>
+<tr><td><code>extend</code></td><td>尾部追加多个元素</td><td></td></tr>
+<tr><td><code>insert</code></td><td>指定位置插入</td><td></td></tr>
+<tr><td><code>pop</code></td><td>弹出元素，默认尾部</td><td></td></tr>
+<tr><td><code>remove</code></td><td>删除第一个匹配的值</td><td></td></tr>
+<tr><td><code>del</code></td><td>按下标删除</td><td></td></tr>
+<tr><td><code>clear</code></td><td>清空</td><td></td></tr>
+<tr><td><code>index</code></td><td>查找下标</td><td><a href="#查找-1">查找</a></td></tr>
+<tr><td><code>count</code></td><td>统计出现次数</td><td></td></tr>
+<tr><td><code>sort</code></td><td>原地排序</td><td><a href="#排序">排序</a></td></tr>
+<tr><td><code>reverse</code></td><td>原地翻转</td><td></td></tr>
+<tr><td><code>copy</code></td><td>浅拷贝</td><td><a href="#拷贝">拷贝</a></td></tr>
+<tr><td></td><td></td><td><a href="#常用模板-1">常用模板</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="创建"><a class="header" href="#创建">创建</a></h2>
+<pre><code class="language-python">nums = [1, 2, 3]
+empty = []
+from_range = list(range(5))        # [0, 1, 2, 3, 4]
+same = [0] * 3                     # [0, 0, 0]
+
+# 二维数组要这样创建
+grid = [[0] * n for _ in range(m)]
+</code></pre>
+<p>不要用 <code>[[0] * n] * m</code> 创建二维数组，它的每一行其实是同一个列表对象：</p>
+<pre><code class="language-python">grid = [[0] * 3] * 2
+grid[0][0] = 1
+print(grid)   # [[1, 0, 0], [1, 0, 0]]，第二行也被改了
+</code></pre>
+<h2 id="增删"><a class="header" href="#增删">增删</a></h2>
+<p><code>append</code> 在尾部追加单个元素，<code>extend</code> 在尾部追加可迭代对象里的所有元素：</p>
+<pre><code class="language-python">nums = [1, 2]
+nums.append(3)          # [1, 2, 3]
+nums.extend([4, 5])     # [1, 2, 3, 4, 5]
+</code></pre>
+<p>也可以直接用 <code>+=</code>，效果等同于 <code>extend</code>：</p>
+<pre><code class="language-python">nums += [6, 7]          # [1, 2, 3, 4, 5, 6, 7]
+</code></pre>
+<p><code>insert</code> 在指定位置插入，<code>remove</code> 删除第一个匹配的值：</p>
+<pre><code class="language-python">nums = [1, 3]
+nums.insert(1, 2)       # [1, 2, 3]
+nums.remove(2)          # [1, 3]
+</code></pre>
+<p><code>pop</code> 默认弹出并返回尾部元素，也可以给下标；<code>del</code> 按下标删除；<code>clear</code> 清空：</p>
+<pre><code class="language-python">nums = [1, 2, 3]
+x = nums.pop()          # x == 3，nums == [1, 2]
+y = nums.pop(0)         # y == 1，nums == [2]
+</code></pre>
+<p><code>insert</code>、<code>remove</code>、<code>pop(0)</code> 都要移动后面的元素，复杂度是 O(n)。如果需要在头部频繁增删，用 <code>collections.deque</code>。</p>
+<h2 id="访问与切片"><a class="header" href="#访问与切片">访问与切片</a></h2>
+<p>下标从 0 开始，负数表示从末尾数：</p>
+<pre><code class="language-python">nums = [10, 20, 30, 40, 50]
+
+nums[0]      # 10
+nums[-1]     # 50
+</code></pre>
+<p>切片 <code>nums[start:stop:step]</code> 返回一个新的列表（浅拷贝），<code>stop</code> 不包含：</p>
+<pre><code class="language-python">nums[1:3]    # [20, 30]
+nums[:2]     # [10, 20]
+nums[2:]     # [30, 40, 50]
+nums[::2]    # [10, 30, 50]
+nums[::-1]   # [50, 40, 30, 20, 10]，翻转
+</code></pre>
+<p>切片赋值可以一次性替换一段：</p>
+<pre><code class="language-python">nums = [1, 2, 3, 4]
+nums[1:3] = [20, 30, 40]   # [1, 20, 30, 40, 4]
+</code></pre>
+<h2 id="排序"><a class="header" href="#排序">排序</a></h2>
+<p><code>sort()</code> 原地排序，<code>sorted()</code> 返回新列表：</p>
+<pre><code class="language-python">nums = [3, 1, 2]
+nums.sort()                    # [1, 2, 3]
+
+words = ["aaa", "b", "cc"]
+new = sorted(words, key=len)   # ['b', 'cc', 'aaa']
+</code></pre>
+<p>降序用 <code>reverse=True</code>：</p>
+<pre><code class="language-python">nums = [3, 1, 2]
+nums.sort(reverse=True)     # [3, 2, 1]
+</code></pre>
+<p>多关键字排序时，<code>key</code> 返回元组，按元组顺序比较。要求第一关键字升序、第二关键字降序，可以对第二项取负：</p>
+<pre><code class="language-python">items = [("a", 2), ("b", 1), ("a", 1)]
+items.sort(key=lambda x: (x[0], -x[1]))
+# [('a', 2), ('a', 1), ('b', 1)]
+</code></pre>
+<p>Python 的排序是稳定的，相等元素会保持原有顺序。</p>
+<p>如果列表里是元组或列表，也可以直接比较，按元素依次比较：</p>
+<pre><code class="language-python">sorted([[1, 2], [1, 1]])   # [[1, 1], [1, 2]]
+</code></pre>
+<h2 id="查找-1"><a class="header" href="#查找-1">查找</a></h2>
+<ul>
+<li><code>in</code> 判断元素是否存在，<code>index</code> 返回第一个匹配的下标，<code>count</code> 统计次数：</li>
+</ul>
+<pre><code class="language-python">nums = [1, 2, 2, 3]
+
+2 in nums          # True
+nums.index(2)      # 1
+nums.count(2)      # 2
+</code></pre>
+<ul>
+<li>如果列表已经有序，可以用 <code>bisect</code> 做二分查找：</li>
+</ul>
+<pre><code class="language-python">import bisect
+
+nums = [1, 3, 5, 7]
+
+i = bisect.bisect_left(nums, 5)    # 2，第一个 &gt;= 5 的位置
+j = bisect.bisect_right(nums, 5)   # 3，第一个 &gt; 5 的位置
+bisect.insort(nums, 4)             # 插入并保持有序：[1, 3, 4, 5, 7]
+</code></pre>
+<p><code>bisect_left</code> 和 <code>bisect_right</code> 也常用来找插入位置或统计区间内元素个数。</p>
+<h2 id="拷贝"><a class="header" href="#拷贝">拷贝</a></h2>
+<p><code>b = a</code> 只是让两个名字指向同一个列表，修改其中一个另一个也会变。浅拷贝用 <code>a.copy()</code>、<code>a[:]</code> 或 <code>list(a)</code>：</p>
+<pre><code class="language-python">a = [1, 2]
+b = a.copy()
+b.append(3)
+
+print(a)   # [1, 2]
+print(b)   # [1, 2, 3]
+</code></pre>
+<p>需要注意浅拷贝只复制一层，嵌套的列表仍然是共享的。深拷贝用 <code>copy.deepcopy</code>。</p>
+<h2 id="推导式"><a class="header" href="#推导式">推导式</a></h2>
+<p>列表推导式可以简洁地生成新列表：</p>
+<pre><code class="language-python">squares = [x * x for x in range(5)]        # [0, 1, 4, 9, 16]
+evens = [x for x in range(10) if x % 2 == 0]
+
+# 嵌套推导，展平二维列表
+grid = [[1, 2], [3, 4]]
+flat = [x for row in grid for x in row]    # [1, 2, 3, 4]
+</code></pre>
+<h2 id="常用模板-1"><a class="header" href="#常用模板-1">常用模板</a></h2>
+<h3 id="栈"><a class="header" href="#栈">栈</a></h3>
+<p><code>list</code> 直接当栈用：</p>
+<pre><code class="language-python">stack = []
+stack.append(1)
+stack.append(2)
+top = stack.pop()     # 2
+</code></pre>
+<h3 id="双端队列"><a class="header" href="#双端队列">双端队列</a></h3>
+<p>需要从两端增删时用 <code>collections.deque</code>，它的头尾操作都是 O(1)（更多用法见 <a href="#deque">collections</a>）：</p>
+<pre><code class="language-python">from collections import deque
+
+q = deque([1, 2, 3])
+q.append(4)        # 右端加入
+q.appendleft(0)    # 左端加入
+q.pop()            # 右端弹出
+q.popleft()        # 左端弹出
+</code></pre>
+<h3 id="二维数组遍历-1"><a class="header" href="#二维数组遍历-1">二维数组遍历</a></h3>
+<pre><code class="language-python">dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+for i in range(m):
+    for j in range(n):
+        for di, dj in dirs:
+            ni, nj = i + di, j + dj
+            if 0 &lt;= ni &lt; m and 0 &lt;= nj &lt; n:
+                print(grid[ni][nj])
+</code></pre>
+<p>Python 里可以直接用 <code>0 &lt;= ni &lt; m</code> 这样的链式比较判断边界。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="tuple"><a class="header" href="#tuple">tuple</a></h1>
+<p><code>tuple</code> 和 <code>list</code> 很像，都是有序序列，区别是 <code>tuple</code> 一旦创建就不可变，因此可以作为 <code>dict</code> 的键和 <code>set</code> 的元素。</p>
+<h2 id="速览-8"><a class="header" href="#速览-8">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>操作</th><th>说明</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>(1, 2)</code></td><td>创建元组</td><td><a href="#创建-1">创建</a></td></tr>
+<tr><td><code>(1,)</code></td><td>单元素元组，逗号不能省</td><td><a href="#创建-1">创建</a></td></tr>
+<tr><td><code>a, b = b, a</code></td><td>解包、交换</td><td><a href="#解包">解包</a></td></tr>
+<tr><td><code>t[i]</code></td><td>按下标访问</td><td><a href="#不可变">不可变</a></td></tr>
+<tr><td><code>t.count(x)</code> / <code>t.index(x)</code></td><td>统计 / 查找下标</td><td></td></tr>
+<tr><td><code>t + t2</code></td><td>拼接</td><td></td></tr>
+<tr><td><code>t * 3</code></td><td>重复</td><td></td></tr>
+<tr><td><code>namedtuple</code></td><td>带字段名的元组</td><td><a href="#命名元组">命名元组</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="创建-1"><a class="header" href="#创建-1">创建</a></h2>
+<pre><code class="language-python">point = (1, 2)
+empty = ()
+single = (1,)        # 单元素元组必须带逗号
+nums = tuple([1, 2, 3])
+</code></pre>
+<p><code>(1)</code> 只是加了括号的整数，不是元组：</p>
+<pre><code class="language-python">type((1))    # &lt;class 'int'&gt;
+type((1,))   # &lt;class 'tuple'&gt;
+</code></pre>
+<h2 id="不可变"><a class="header" href="#不可变">不可变</a></h2>
+<p>元组创建后不能修改元素：</p>
+<pre><code class="language-python">t = (1, 2, 3)
+t[0] = 10    # TypeError: 'tuple' object does not support item assignment
+</code></pre>
+<p>但如果元组里存的是可变对象（比如列表），那个对象本身仍可以被修改：</p>
+<pre><code class="language-python">t = ([1], 2)
+t[0].append(3)
+print(t)     # ([1, 3], 2)
+</code></pre>
+<h2 id="解包"><a class="header" href="#解包">解包</a></h2>
+<p>元组最常见的用途之一是和函数返回值配合：</p>
+<pre><code class="language-python">def min_max(nums):
+    return min(nums), max(nums)
+
+lo, hi = min_max([3, 1, 2])    # lo == 1，hi == 3
+</code></pre>
+<p>用 <code>*</code> 可以收集剩余元素：</p>
+<pre><code class="language-python">first, *rest = (1, 2, 3, 4)    # first == 1，rest == [2, 3, 4]
+a, *mid, b = (1, 2, 3, 4)      # a == 1，mid == [2, 3]，b == 4
+</code></pre>
+<p>交换两个变量本质上是元组打包再解包：</p>
+<pre><code class="language-python">a, b = 1, 2
+a, b = b, a     # a == 2，b == 1
+</code></pre>
+<h2 id="作为键"><a class="header" href="#作为键">作为键</a></h2>
+<p>只要元组里所有元素都可哈希，元组本身就可哈希，可以作为 <code>dict</code> 的键或放进 <code>set</code>：</p>
+<pre><code class="language-python">pos = {}
+pos[(0, 1)] = "start"
+
+seen = set()
+seen.add((1, 2))
+</code></pre>
+<p>这在网格、坐标、记录复合状态时非常常用。</p>
+<h2 id="比较和排序"><a class="header" href="#比较和排序">比较和排序</a></h2>
+<p>元组按元素依次比较，所以常用来做多关键字排序：</p>
+<pre><code class="language-python">sorted([(2, 1), (1, 3), (1, 2)])   # [(1, 2), (1, 3), (2, 1)]
+</code></pre>
+<p>如果想让第二项降序，仍然需要显式指定 <code>key</code>（见 <a href="#排序">list 的排序</a>）。</p>
+<h2 id="命名元组"><a class="header" href="#命名元组">命名元组</a></h2>
+<p><code>collections.namedtuple</code> 可以给字段起名字，兼顾可读性和不可变性：</p>
+<pre><code class="language-python">from collections import namedtuple
+
+Point = namedtuple("Point", ["x", "y"])
+p = Point(1, 2)
+
+print(p.x, p.y)     # 1 2
+print(p[0])         # 1，仍然支持下标访问
+</code></pre>
+<h2 id="与-list-的选择"><a class="header" href="#与-list-的选择">与 list 的选择</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>list</th><th>tuple</th></tr>
+</thead>
+<tbody>
+<tr><td>可变</td><td>是</td><td>否</td></tr>
+<tr><td>可哈希，能作 dict 键</td><td>否</td><td>是</td></tr>
+<tr><td>常用场景</td><td>动态数组、栈、队列</td><td>坐标、记录、函数返回值</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="dict"><a class="header" href="#dict">dict</a></h1>
+<p><code>dict</code> 是 Python 的哈希表，存储键值对。键必须可哈希，值可以是任意对象。从 Python 3.7 起，<code>dict</code> 会保持键的插入顺序。</p>
+<h2 id="速览-9"><a class="header" href="#速览-9">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法</th><th>作用</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>d[key]</code></td><td>访问，键不存在会报错</td><td><a href="#增删改查">增删改查</a></td></tr>
+<tr><td><code>get</code></td><td>访问，键不存在返回默认值</td><td></td></tr>
+<tr><td><code>setdefault</code></td><td>键不存在时设默认值并返回</td><td></td></tr>
+<tr><td><code>d[key] = v</code></td><td>插入或覆盖</td><td></td></tr>
+<tr><td><code>pop</code></td><td>按键删除并返回值</td><td></td></tr>
+<tr><td><code>popitem</code></td><td>弹出最后一个键值对</td><td></td></tr>
+<tr><td><code>del</code></td><td>按键删除</td><td></td></tr>
+<tr><td><code>keys</code> / <code>values</code> / <code>items</code></td><td>遍历</td><td><a href="#遍历-1">遍历</a></td></tr>
+<tr><td><code>update</code> / <code>|</code></td><td>合并</td><td><a href="#合并">合并</a></td></tr>
+<tr><td><code>in</code></td><td>判断键是否存在</td><td><a href="#查找-2">查找</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="创建-2"><a class="header" href="#创建-2">创建</a></h2>
+<pre><code class="language-python">d = {"apple": 3, "banana": 5}
+empty = {}
+from_pairs = dict([("a", 1), ("b", 2)])
+from_keys = dict.fromkeys(["a", "b"], 0)   # {'a': 0, 'b': 0}
+
+# 从两个列表构造
+keys = ["a", "b"]
+vals = [1, 2]
+d = dict(zip(keys, vals))                  # {'a': 1, 'b': 2}
+</code></pre>
+<h2 id="增删改查"><a class="header" href="#增删改查">增删改查</a></h2>
+<h3 id="访问-1"><a class="header" href="#访问-1">访问</a></h3>
+<p>用 <code>[]</code> 访问不存在的键会抛 <code>KeyError</code>，不确定时用 <code>get</code>：</p>
+<pre><code class="language-python">d = {"apple": 3}
+
+d["apple"]            # 3
+d.get("pear")         # None
+d.get("pear", 0)      # 0
+</code></pre>
+<h3 id="插入和修改"><a class="header" href="#插入和修改">插入和修改</a></h3>
+<p>直接赋值即可，键已存在就是覆盖：</p>
+<pre><code class="language-python">d = {}
+d["apple"] = 3
+d["apple"] = 5        # 覆盖，d == {"apple": 5}
+</code></pre>
+<h3 id="删除-1"><a class="header" href="#删除-1">删除</a></h3>
+<pre><code class="language-python">d = {"a": 1, "b": 2}
+
+del d["a"]            # 按键删除
+x = d.pop("b")        # 删除并返回，x == 2
+d.pop("c", 0)         # 键不存在时返回默认值，不报错
+last = d.popitem()    # 弹出最后一个键值对
+d.clear()             # 清空
+</code></pre>
+<h2 id="查找-2"><a class="header" href="#查找-2">查找</a></h2>
+<p><code>in</code> 判断键是否存在（不是值）：</p>
+<pre><code class="language-python">d = {"apple": 3}
+
+"apple" in d          # True
+3 in d                # False
+</code></pre>
+<h2 id="遍历-1"><a class="header" href="#遍历-1">遍历</a></h2>
+<p>遍历时拿到的是键，想同时拿到键值要用 <code>items()</code>：</p>
+<pre><code class="language-python">for key in d:
+    print(key)
+
+for key, value in d.items():
+    print(key, value)
+
+for value in d.values():
+    print(value)
+</code></pre>
+<p>遍历顺序就是插入顺序。</p>
+<p>遍历过程中不要增删键，否则会抛 <code>RuntimeError</code>。需要修改时可以先转成 <code>list(d.items())</code> 或用推导式生成新字典。</p>
+<h2 id="合并"><a class="header" href="#合并">合并</a></h2>
+<p><code>update</code> 原地合并，<code>|</code> 返回新字典（Python 3.9+）：</p>
+<pre><code class="language-python">a = {"x": 1}
+b = {"x": 2, "y": 3}
+
+a.update(b)          # a == {"x": 2, "y": 3}
+c = {"x": 1} | b     # c == {"x": 2, "y": 3}
+</code></pre>
+<p>也可以在字面量里用 <code>**</code> 解包：</p>
+<pre><code class="language-python">c = {**a, **b}
+</code></pre>
+<p>后面的键会覆盖前面的同名键。</p>
+<h2 id="字典推导式"><a class="header" href="#字典推导式">字典推导式</a></h2>
+<pre><code class="language-python">squares = {x: x * x for x in range(4)}      # {0: 0, 1: 1, 2: 4, 3: 9}
+
+key_to_index = {v: i for i, v in enumerate(["a", "b", "c"])}
+# {'a': 0, 'b': 1, 'c': 2}
+</code></pre>
+<h2 id="常用模板-2"><a class="header" href="#常用模板-2">常用模板</a></h2>
+<h3 id="计数"><a class="header" href="#计数">计数</a></h3>
+<p>最直接的写法是用 <code>get</code>：</p>
+<pre><code class="language-python">nums = [1, 2, 1, 3, 2, 1]
+count = {}
+
+for x in nums:
+    count[x] = count.get(x, 0) + 1
+
+print(count[1])     # 3
+</code></pre>
+<p>也可以用 <code>collections.defaultdict</code>，省去默认值判断：</p>
+<pre><code class="language-python">from collections import defaultdict
+
+count = defaultdict(int)
+for x in nums:
+    count[x] += 1
+</code></pre>
+<p>或者直接用 <code>collections.Counter</code>：</p>
+<pre><code class="language-python">from collections import Counter
+
+count = Counter(nums)
+count[1]                        # 3
+count.most_common(1)            # [(1, 3)]，出现最多的元素
+</code></pre>
+<h3 id="记录下标"><a class="header" href="#记录下标">记录下标</a></h3>
+<pre><code class="language-python">nums = [2, 7, 11, 15]
+pos = {}
+
+for i, x in enumerate(nums):
+    pos[x] = i
+
+print(pos[7])    # 1
+</code></pre>
+<h3 id="分组"><a class="header" href="#分组">分组</a></h3>
+<p><code>defaultdict(list)</code> 常用于按某个键把元素分组：</p>
+<pre><code class="language-python">from collections import defaultdict
+
+words = ["eat", "tea", "tan", "ate"]
+groups = defaultdict(list)
+
+for w in words:
+    groups["".join(sorted(w))].append(w)
+
+print(groups["aet"])    # ['eat', 'tea', 'ate']
+</code></pre>
+<h3 id="存在性判断与默认值"><a class="header" href="#存在性判断与默认值">存在性判断与默认值</a></h3>
+<p><code>setdefault</code> 可以一次完成“有就用、没有就设”：</p>
+<pre><code class="language-python">d = {}
+d.setdefault("a", []).append(1)
+d.setdefault("a", []).append(2)
+
+print(d["a"])    # [1, 2]
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="set"><a class="header" href="#set">set</a></h1>
+<p><code>set</code> 是 Python 的哈希集合，元素唯一且必须可哈希。它常用于去重、判重和集合运算。</p>
+<h2 id="速览-10"><a class="header" href="#速览-10">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>方法 / 运算</th><th>作用</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>add</code></td><td>添加元素</td><td><a href="#增删-1">增删</a></td></tr>
+<tr><td><code>remove</code></td><td>删除元素，不存在会报错</td><td></td></tr>
+<tr><td><code>discard</code></td><td>删除元素，不存在不报错</td><td></td></tr>
+<tr><td><code>pop</code></td><td>随机弹出元素</td><td></td></tr>
+<tr><td><code>in</code></td><td>判断元素是否存在</td><td><a href="#查找-3">查找</a></td></tr>
+<tr><td><code>|</code> / <code>union</code></td><td>并集</td><td><a href="#集合运算-1">集合运算</a></td></tr>
+<tr><td><code>&amp;</code> / <code>intersection</code></td><td>交集</td><td></td></tr>
+<tr><td><code>-</code> / <code>difference</code></td><td>差集</td><td></td></tr>
+<tr><td><code>^</code> / <code>symmetric_difference</code></td><td>对称差集</td><td></td></tr>
+<tr><td><code>&lt;=</code> / <code>issubset</code></td><td>子集判断</td><td></td></tr>
+<tr><td><code>&gt;=</code> / <code>issuperset</code></td><td>超集判断</td><td></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="创建-3"><a class="header" href="#创建-3">创建</a></h2>
+<pre><code class="language-python">s = {1, 2, 3}
+empty = set()          # 注意 {} 创建的是空字典
+
+# 从任意可迭代对象创建，会自动去重
+nums = set([1, 2, 2, 3, 3, 3])    # {1, 2, 3}
+chars = set("hello")              # {'h', 'e', 'l', 'o'}
+</code></pre>
+<p><code>{}</code> 是空字典，空集合必须写成 <code>set()</code>。</p>
+<h2 id="增删-1"><a class="header" href="#增删-1">增删</a></h2>
+<pre><code class="language-python">s = {1, 2, 3}
+
+s.add(4)          # {1, 2, 3, 4}
+s.remove(4)       # 删除，不存在会 KeyError
+s.discard(4)      # 删除，不存在不报错
+x = s.pop()       # 随机弹出并返回一个元素
+s.clear()         # 清空
+</code></pre>
+<p><code>remove</code> 和 <code>discard</code> 的区别只在元素不存在时：前者报错，后者静默。</p>
+<h2 id="查找-3"><a class="header" href="#查找-3">查找</a></h2>
+<p><code>in</code> 判断元素是否存在，平均复杂度 O(1)：</p>
+<pre><code class="language-python">s = {1, 2, 3}
+
+2 in s       # True
+5 in s       # False
+</code></pre>
+<h2 id="集合运算-1"><a class="header" href="#集合运算-1">集合运算</a></h2>
+<pre><code class="language-python">a = {1, 2, 3}
+b = {3, 4, 5}
+
+a | b        # {1, 2, 3, 4, 5}，并集
+a &amp; b        # {3}，交集
+a - b        # {1, 2}，差集
+a ^ b        # {1, 2, 4, 5}，对称差集
+</code></pre>
+<p>对应的函数形式和原地更新形式：</p>
+<pre><code class="language-python">a.union(b)               # 并集，返回新集合
+a.intersection(b)        # 交集
+a.difference(b)          # 差集
+
+a |= b                   # 原地并集，等价 a.update(b)
+a &amp;= b                   # 原地交集
+a -= b                   # 原地差集
+</code></pre>
+<p>子集和超集判断：</p>
+<pre><code class="language-python">a = {1, 2}
+b = {1, 2, 3}
+
+a &lt;= b              # True，a 是 b 的子集
+a.issubset(b)       # True
+b &gt;= a              # True，b 是 a 的超集
+a.isdisjoint({4})   # True，没有交集
+</code></pre>
+<h2 id="frozenset"><a class="header" href="#frozenset">frozenset</a></h2>
+<p><code>frozenset</code> 是不可变的集合，可以作为 <code>dict</code> 的键或放进另一个 <code>set</code>：</p>
+<pre><code class="language-python">fs = frozenset([1, 2, 3])
+d = {fs: "ok"}          # 可以，普通 set 不行
+</code></pre>
+<h2 id="常用模板-3"><a class="header" href="#常用模板-3">常用模板</a></h2>
+<h3 id="去重"><a class="header" href="#去重">去重</a></h3>
+<pre><code class="language-python">nums = [1, 2, 2, 3]
+unique = list(set(nums))
+</code></pre>
+<p><code>set</code> 是无序的，如果需要保持原有顺序，可以用 <code>dict.fromkeys</code>：</p>
+<pre><code class="language-python">nums = [3, 1, 3, 2, 1]
+unique = list(dict.fromkeys(nums))    # [3, 1, 2]
+</code></pre>
+<h3 id="判断重复"><a class="header" href="#判断重复">判断重复</a></h3>
+<pre><code class="language-python">nums = [1, 2, 3, 2]
+seen = set()
+
+for x in nums:
+    if x in seen:
+        print("重复元素:", x)
+    seen.add(x)
+</code></pre>
+<p>更简洁的写法是直接比较长度：</p>
+<pre><code class="language-python">has_duplicate = len(nums) != len(set(nums))
+</code></pre>
+<h3 id="集合运算求交并"><a class="header" href="#集合运算求交并">集合运算求交并</a></h3>
+<pre><code class="language-python">a = {1, 2, 3}
+b = {3, 4, 5}
+
+print(sorted(a &amp; b))    # [3]
+print(sorted(a | b))    # [1, 2, 3, 4, 5]
+</code></pre>
+<p>由于 <code>set</code> 无序，需要有序输出时记得 <code>sorted()</code>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="collections"><a class="header" href="#collections">collections</a></h1>
+<p><code>collections</code> 模块提供了几种标准容器之外的专用容器，刷题里最常用的是 <code>deque</code>、<code>defaultdict</code> 和 <code>Counter</code>。</p>
+<h2 id="速览-11"><a class="header" href="#速览-11">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>类型</th><th>作用</th><th>快速跳转</th></tr>
+</thead>
+<tbody>
+<tr><td><code>deque</code></td><td>双端队列，两端增删 O(1)</td><td><a href="#deque">deque</a></td></tr>
+<tr><td><code>defaultdict</code></td><td>带默认值的 dict</td><td><a href="#defaultdict">defaultdict</a></td></tr>
+<tr><td><code>Counter</code></td><td>计数器</td><td><a href="#counter">Counter</a></td></tr>
+<tr><td><code>OrderedDict</code></td><td>有序字典，可移动 / 两端弹出</td><td><a href="#ordereddict">OrderedDict</a></td></tr>
+<tr><td><code>namedtuple</code></td><td>带字段名的元组</td><td><a href="#namedtuple">namedtuple</a></td></tr>
+<tr><td><code>ChainMap</code></td><td>多个 dict 合并成一个视图</td><td><a href="#chainmap">ChainMap</a></td></tr>
+<tr><td><code>UserDict</code> / <code>UserList</code></td><td>方便继承的包装类</td><td><a href="#userdict-和-userlist">UserDict 和 UserList</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="deque"><a class="header" href="#deque">deque</a></h2>
+<p>双端队列，两端插入删除都是 O(1)，是 BFS、滑动窗口、单调队列的基础。</p>
+<pre><code class="language-python">from collections import deque
+
+q = deque([1, 2, 3])
+
+q.append(4)        # 右端加入
+q.appendleft(0)    # 左端加入
+q.pop()            # 右端弹出
+q.popleft()        # 左端弹出
+</code></pre>
+<p>按下标访问 <code>q[i]</code> 是 O(n)，不要当 list 用；两端操作才是 O(1)。</p>
+<p>其他常用方法：</p>
+<pre><code class="language-python">q = deque([1, 2, 3, 4, 5])
+
+q.rotate(1)           # 整体右移一位：[5, 1, 2, 3, 4]
+q.rotate(-1)          # 整体左移一位
+q.extend([6, 7])      # 右端批量加入
+q.extendleft([0, -1]) # 左端逐个 appendleft，顺序会反过来
+</code></pre>
+<p><code>maxlen</code> 可以限制长度，超出后自动从另一端挤出，很适合维护固定大小的窗口：</p>
+<pre><code class="language-python">q = deque(maxlen=3)
+for i in range(5):
+    q.append(i)
+
+print(q)    # deque([2, 3, 4], maxlen=3)
+</code></pre>
+<h3 id="bfs-模板"><a class="header" href="#bfs-模板">BFS 模板</a></h3>
+<pre><code class="language-python">from collections import deque
+
+def bfs(start, graph):
+    dist = {start: 0}
+    q = deque([start])
+
+    while q:
+        node = q.popleft()
+        for nxt in graph[node]:
+            if nxt not in dist:
+                dist[nxt] = dist[node] + 1
+                q.append(nxt)
+
+    return dist
+</code></pre>
+<h3 id="单调队列模板"><a class="header" href="#单调队列模板">单调队列模板</a></h3>
+<p>求每个长度为 k 的窗口的最大值，用一个单调递减的 deque 存下标：</p>
+<pre><code class="language-python">from collections import deque
+
+def max_sliding_window(nums, k):
+    q = deque()      # 存下标，对应的值单调递减
+    ans = []
+
+    for i, x in enumerate(nums):
+        while q and nums[q[-1]] &lt;= x:
+            q.pop()
+        q.append(i)
+
+        if q[0] &lt;= i - k:      # 队头滑出窗口
+            q.popleft()
+
+        if i &gt;= k - 1:
+            ans.append(nums[q[0]])
+
+    return ans
+</code></pre>
+<h2 id="defaultdict"><a class="header" href="#defaultdict">defaultdict</a></h2>
+<p><code>defaultdict</code> 在访问不存在的键时会自动创建一个默认值，省去 <code>if key not in d</code> 的判断。</p>
+<pre><code class="language-python">from collections import defaultdict
+
+# 参数是"默认值的工厂函数"
+count = defaultdict(int)      # 默认 0
+groups = defaultdict(list)    # 默认 []
+seen = defaultdict(set)       # 默认 set()
+</code></pre>
+<p>常见默认值写法：</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>默认值</th><th>工厂函数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td><code>int</code></td></tr>
+<tr><td><code>0.0</code></td><td><code>float</code></td></tr>
+<tr><td><code>[]</code></td><td><code>list</code></td></tr>
+<tr><td><code>{}</code></td><td><code>dict</code></td></tr>
+<tr><td><code>set()</code></td><td><code>set</code></td></tr>
+<tr><td>自定义</td><td><code>lambda: ...</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="计数-1"><a class="header" href="#计数-1">计数</a></h3>
+<pre><code class="language-python">count = defaultdict(int)
+for x in nums:
+    count[x] += 1
+</code></pre>
+<h3 id="分组-1"><a class="header" href="#分组-1">分组</a></h3>
+<pre><code class="language-python">groups = defaultdict(list)
+for w in words:
+    groups[len(w)].append(w)
+</code></pre>
+<h3 id="建图"><a class="header" href="#建图">建图</a></h3>
+<p>这是刷题里最常用的场景之一：</p>
+<pre><code class="language-python">graph = defaultdict(list)
+for u, v in edges:
+    graph[u].append(v)
+    graph[v].append(u)     # 无向图
+</code></pre>
+<h2 id="counter"><a class="header" href="#counter">Counter</a></h2>
+<p><code>Counter</code> 是专门用来计数的字典，键是元素，值是出现次数。</p>
+<pre><code class="language-python">from collections import Counter
+
+c = Counter("hello")
+print(c)          # Counter({'l': 2, 'h': 1, 'e': 1, 'o': 1})
+
+c["l"]            # 2
+c["z"]            # 0，不存在的键返回 0，不会报错
+</code></pre>
+<p>常用方法：</p>
+<pre><code class="language-python">c = Counter([1, 1, 2, 3, 3, 3])
+
+c.most_common(2)      # [(3, 3), (1, 2)]，出现最多的前 2 个
+c.elements()          # 展开成元素迭代器（按计数重复）
+c.total()             # 所有计数之和，等价 sum(c.values())，Python 3.10+
+</code></pre>
+<p>统计和更新：</p>
+<pre><code class="language-python">c = Counter()
+c.update([1, 1, 2])   # 累加计数
+c.subtract([1])       # 相减，计数可能变成 0 或负数
+del c[2]              # 删除某个键
+</code></pre>
+<p><code>Counter</code> 还支持集合式的算术运算，结果只保留计数大于 0 的部分：</p>
+<pre><code class="language-python">a = Counter("aab")
+b = Counter("abc")
+
+a + b     # 相加
+a - b     # 相减，负数结果会被丢弃
+a &amp; b     # 取较小计数（交集）
+a | b     # 取较大计数（并集）
+</code></pre>
+<h3 id="模板出现次数最多的-k-个元素"><a class="header" href="#模板出现次数最多的-k-个元素">模板：出现次数最多的 k 个元素</a></h3>
+<pre><code class="language-python">from collections import Counter
+
+nums = [1, 1, 1, 2, 2, 3]
+top2 = Counter(nums).most_common(2)
+print(top2)     # [(1, 3), (2, 2)]
+</code></pre>
+<h2 id="ordereddict"><a class="header" href="#ordereddict">OrderedDict</a></h2>
+<p>从 Python 3.7 起，普通 <code>dict</code> 已经保证插入顺序，所以 <code>OrderedDict</code> 现在主要用于两个场景：需要改变某个键的位置，或需要从两端弹出。</p>
+<pre><code class="language-python">from collections import OrderedDict
+
+od = OrderedDict()
+od["a"] = 1
+od["b"] = 2
+od["c"] = 3
+
+od.move_to_end("a")              # 移到末尾
+od.move_to_end("a", last=False)  # 移到开头
+
+od.popitem()                     # 弹出最后一个
+od.popitem(last=False)           # 弹出第一个
+</code></pre>
+<p>后两个操作是实现 LRU 缓存（最近最少使用）的关键。</p>
+<h2 id="namedtuple"><a class="header" href="#namedtuple">namedtuple</a></h2>
+<p><code>namedtuple</code> 是带字段名的元组，可以按名字访问，仍然不可变、可哈希。详细用法见 <a href="#命名元组">tuple</a>。</p>
+<pre><code class="language-python">from collections import namedtuple
+
+Point = namedtuple("Point", ["x", "y"])
+p = Point(1, 2)
+
+print(p.x, p.y)    # 1 2
+print(p[0])        # 1
+</code></pre>
+<h2 id="chainmap"><a class="header" href="#chainmap">ChainMap</a></h2>
+<p><code>ChainMap</code> 把多个字典串成一个逻辑上的字典，查找时按顺序在多个字典里找，写操作只作用于第一个。</p>
+<pre><code class="language-python">from collections import ChainMap
+
+defaults = {"color": "red", "size": "m"}
+user = {"color": "blue"}
+
+c = ChainMap(user, defaults)
+print(c["color"])    # blue，user 优先
+print(c["size"])     # m，回退到 defaults
+</code></pre>
+<p>常用于合并配置（局部覆盖全局），刷题里用得不多。</p>
+<h2 id="userdict-和-userlist"><a class="header" href="#userdict-和-userlist">UserDict 和 UserList</a></h2>
+<p><code>dict</code> 和 <code>list</code> 也能直接继承，但 <code>UserDict</code>、<code>UserList</code> 用组合实现，行为更干净，适合需要自定义容器时使用。</p>
+<pre><code class="language-python">from collections import UserDict
+
+class MyDict(UserDict):
+    def __missing__(self, key):
+        return 0
+</code></pre>
+<h2 id="小结常见场景怎么选"><a class="header" href="#小结常见场景怎么选">小结：常见场景怎么选</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>场景</th><th>选择</th></tr>
+</thead>
+<tbody>
+<tr><td>两端增删、BFS、滑动窗口</td><td><code>deque</code></td></tr>
+<tr><td>计数</td><td><code>Counter</code> 或 <code>defaultdict(int)</code></td></tr>
+<tr><td>分组、建图</td><td><code>defaultdict(list)</code></td></tr>
+<tr><td>记录下标</td><td>普通 <code>dict</code></td></tr>
+<tr><td>移动键、LRU</td><td><code>OrderedDict</code></td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="heapq"><a class="header" href="#heapq">heapq</a></h1>
+<p><code>heapq</code> 模块在普通 <code>list</code> 上实现二叉堆，可以当优先队列使用。它<strong>只有小顶堆</strong>，也就是每次弹出的是最小元素。</p>
+<h2 id="速览-12"><a class="header" href="#速览-12">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>函数</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>heapify</code></td><td>把 list 原地变成堆，O(n)</td></tr>
+<tr><td><code>heappush</code></td><td>插入元素</td></tr>
+<tr><td><code>heappop</code></td><td>弹出并返回最小元素</td></tr>
+<tr><td><code>heappushpop</code></td><td>先 push 再 pop，比分开快</td></tr>
+<tr><td><code>heapreplace</code></td><td>先 pop 再 push，比分开快</td></tr>
+<tr><td><code>nlargest</code> / <code>nsmallest</code></td><td>求最大 / 最小的 k 个元素</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="基本使用-2"><a class="header" href="#基本使用-2">基本使用</a></h2>
+<pre><code class="language-python">import heapq
+
+nums = [5, 2, 8, 1]
+heapq.heapify(nums)     # 原地建堆
+
+heapq.heappush(nums, 3)
+smallest = heapq.heappop(nums)    # 1
+
+print(nums[0])    # 堆顶，即当前最小值
+</code></pre>
+<p>堆只保证堆顶是最小值，整体并不有序；要得到有序结果需要不断 <code>heappop</code>。</p>
+<h2 id="大顶堆-1"><a class="header" href="#大顶堆-1">大顶堆</a></h2>
+<p><code>heapq</code> 没有大顶堆，常用的做法有两种。</p>
+<p>把元素取负后入堆，弹出的再取回来：</p>
+<pre><code class="language-python">import heapq
+
+nums = [5, 2, 8, 1]
+heap = [-x for x in nums]
+heapq.heapify(heap)
+
+largest = -heapq.heappop(heap)    # 8
+</code></pre>
+<p>或者用 <code>(优先级, 值)</code> 形式的元组，对优先级取负：</p>
+<pre><code class="language-python">heap = [(-x, x) for x in nums]
+heapq.heapify(heap)
+
+_, largest = heapq.heappop(heap)    # 8
+</code></pre>
+<h2 id="自定义优先级"><a class="header" href="#自定义优先级">自定义优先级</a></h2>
+<p>元组会按元素依次比较，所以可以把优先级放在第一位：</p>
+<pre><code class="language-python">import heapq
+
+# (距离, 节点)
+pq = [(3, "a"), (1, "b"), (2, "c")]
+heapq.heapify(pq)
+
+node = heapq.heappop(pq)[1]    # 'b'
+</code></pre>
+<p>优先级相同时，堆会继续比较第二个元素。当第二个元素不可比较时，可以加一个自增序号作为 tie-breaker：</p>
+<pre><code class="language-python">import heapq
+from itertools import count
+
+counter = count()
+pq = []
+
+heapq.heappush(pq, (1, next(counter), {"data": "x"}))
+heapq.heappush(pq, (1, next(counter), {"data": "y"}))
+</code></pre>
+<h2 id="top-k"><a class="header" href="#top-k">Top K</a></h2>
+<p>求最大或最小的 k 个元素，直接用 <code>nlargest</code> / <code>nsmallest</code> 最简单：</p>
+<pre><code class="language-python">import heapq
+
+nums = [3, 1, 5, 2, 4]
+
+heapq.nlargest(2, nums)     # [5, 4]
+heapq.nsmallest(2, nums)    # [1, 2]
+
+# 可以配合 key
+words = ["aaa", "b", "cc"]
+heapq.nlargest(2, words, key=len)    # ['aaa', 'cc']
+</code></pre>
+<p>如果是不断到来的数据流，不想全部保留，可以用大小为 k 的小顶堆维护最大的 k 个：</p>
+<pre><code class="language-python">import heapq
+
+def top_k(nums, k):
+    heap = []
+    for x in nums:
+        heapq.heappush(heap, x)
+        if len(heap) &gt; k:
+            heapq.heappop(heap)    # 弹出最小的，堆里只剩最大的 k 个
+    return heap
+</code></pre>
+<p>反过来要维护最小的 k 个，就用大顶堆（取负）。</p>
+<h2 id="常见模板"><a class="header" href="#常见模板">常见模板</a></h2>
+<h3 id="dijkstra-最短路"><a class="header" href="#dijkstra-最短路">Dijkstra 最短路</a></h3>
+<pre><code class="language-python">import heapq
+from collections import defaultdict
+
+def dijkstra(graph, start):
+    dist = {start: 0}
+    pq = [(0, start)]      # (距离, 节点)
+
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d &gt; dist.get(u, float("inf")):
+            continue        # 过期状态，跳过
+
+        for v, w in graph[u]:
+            nd = d + w
+            if nd &lt; dist.get(v, float("inf")):
+                dist[v] = nd
+                heapq.heappush(pq, (nd, v))
+
+    return dist
+</code></pre>
+<h3 id="数据流中位数对顶堆"><a class="header" href="#数据流中位数对顶堆">数据流中位数（对顶堆）</a></h3>
+<p>一个小顶堆存较大的一半，一个大顶堆存较小的一半：</p>
+<pre><code class="language-python">import heapq
+
+class MedianFinder:
+    def __init__(self):
+        self.small = []   # 大顶堆（存负值），较小的一半
+        self.large = []   # 小顶堆，较大的一半
+
+    def add(self, x):
+        heapq.heappush(self.small, -x)
+        # 保证 small 的最大值 &lt;= large 的最小值
+        heapq.heappush(self.large, -heapq.heappop(self.small))
+
+        if len(self.large) &gt; len(self.small):
+            heapq.heappush(self.small, -heapq.heappop(self.large))
+
+    def median(self):
+        if len(self.small) &gt; len(self.large):
+            return -self.small[0]
+        return (-self.small[0] + self.large[0]) / 2
+</code></pre>
+<h2 id="和-queuepriorityqueue-的区别"><a class="header" href="#和-queuepriorityqueue-的区别">和 queue.PriorityQueue 的区别</a></h2>
+<p><code>queue.PriorityQueue</code> 线程安全，但更慢，而且没有 <code>heapify</code>、<code>nlargest</code> 这些函数。刷题里一般直接用 <code>heapq</code>。</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="bisect"><a class="header" href="#bisect">bisect</a></h1>
+<p><code>bisect</code> 模块在有序列表上做二分查找，查找是 O(log n)。</p>
+<h2 id="速览-13"><a class="header" href="#速览-13">速览</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>函数</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>bisect_left(a, x)</code></td><td>第一个 <code>&gt;= x</code> 的位置，即 lower_bound</td></tr>
+<tr><td><code>bisect_right(a, x)</code></td><td>第一个 <code>&gt; x</code> 的位置，即 upper_bound</td></tr>
+<tr><td><code>insort_left(a, x)</code></td><td>插入 x 并保持有序，插在相等元素的左边</td></tr>
+<tr><td><code>insort_right(a, x)</code></td><td>插入 x 并保持有序，插在相等元素的右边</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>bisect</code> 是 <code>bisect_right</code> 的别名。</p>
+<h2 id="查找位置"><a class="header" href="#查找位置">查找位置</a></h2>
+<pre><code class="language-python">import bisect
+
+nums = [1, 3, 3, 5, 7]
+
+bisect.bisect_left(nums, 3)     # 1，第一个 3 的下标
+bisect.bisect_right(nums, 3)    # 3，最后一个 3 的下一个位置
+bisect.bisect_left(nums, 4)     # 3，4 可以插入的位置
+</code></pre>
+<p>用 <code>bisect_right - bisect_left</code> 可以统计某个值出现的次数：</p>
+<pre><code class="language-python">count = bisect.bisect_right(nums, 3) - bisect.bisect_left(nums, 3)   # 2
+</code></pre>
+<h2 id="插入"><a class="header" href="#插入">插入</a></h2>
+<pre><code class="language-python">import bisect
+
+nums = [1, 3, 5]
+bisect.insort(nums, 4)
+
+print(nums)     # [1, 3, 4, 5]
+</code></pre>
+<p>查找是 O(log n)，但插入本身要移动元素，是 O(n)。</p>
+<h2 id="手写二分"><a class="header" href="#手写二分">手写二分</a></h2>
+<p>需要更复杂的判断时还是要手写二分，下面是两个通用模板：</p>
+<pre><code class="language-python">def lower_bound(nums, x):
+    # 第一个 &gt;= x 的位置，找不到返回 len(nums)
+    lo, hi = 0, len(nums)
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if nums[mid] &lt; x:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+
+def upper_bound(nums, x):
+    # 第一个 &gt; x 的位置
+    lo, hi = 0, len(nums)
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if nums[mid] &lt;= x:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+</code></pre>
+<h2 id="模板统计区间内元素个数"><a class="header" href="#模板统计区间内元素个数">模板：统计区间内元素个数</a></h2>
+<pre><code class="language-python">import bisect
+
+# 有序数组 nums 中，值落在 [lo, hi] 范围内的元素个数
+cnt = bisect.bisect_right(nums, hi) - bisect.bisect_left(nums, lo)
+</code></pre>
+<h2 id="注意"><a class="header" href="#注意">注意</a></h2>
+<p><code>bisect</code> 要求列表有序，它不会检查，也不会自动排序。</p>
+<p>如果数据需要频繁插入删除且始终有序，<code>bisect</code> 的插入是 O(n)，这时可以考虑第三方库 <code>sortedcontainers</code>（提供 <code>SortedList</code> 等）。</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <p><a href="tokio/rust/异步.html">rust 异步</a> 中介绍了 Rust 的异步编程模型和 Future 的概念，这里主要是对 Tokio 的介绍</p>
 <h1 id="tokio"><a class="header" href="#tokio">tokio</a></h1>
